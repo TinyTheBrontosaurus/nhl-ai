@@ -1,5 +1,9 @@
 {
   "info": {
+    "away-attack-time": {
+      "address": 16763452,
+      "type": ">u2"
+    },
     "away-checks": {
       "address": 16763458,
       "type": ">u2"
@@ -18,6 +22,10 @@
     },
     "away-shots": {
       "address": 16763442,
+      "type": ">u2"
+    },
+    "home-attack-time": {
+      "address": 16762584,
       "type": ">u2"
     },
     "home-checks": {
