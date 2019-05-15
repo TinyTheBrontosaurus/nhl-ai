@@ -10,6 +10,7 @@ cd gym-retro
 pip3 install -e .
 
 # Build, for Ubuntu 18.04
+
 sudo apt-get install capnproto libcapnp-dev libqt5opengl5-dev qtbase5-dev pkg-config
 
 # Build it

@@ -60,12 +60,48 @@
       "address": 16761958,
       "type": ">u2"
     },
-    "player-AM-x-home-w-puck": {
+    "player-away-28-x": {
+      "address": 16757706,
+      "type": ">i2"
+    },
+    "player-away-28-y": {
+      "address": 16757738,
+      "type": ">i2"
+    },
+    "player-away-goalie-y-1": {
+      "address": 16758238,
+      "type": ">i2"
+    },
+    "player-away-goalie-y-2": {
+      "address": 16758880,
+      "type": ">i2"
+    },
+    "player-away-goalie-y-ice": {
+      "address": 16758250,
+      "type": ">i2"
+    },
+    "player-home-89-x": {
       "address": 16756810,
       "type": ">i2"
     },
-    "player-AM-y-home-w-puck": {
+    "player-home-89-y": {
       "address": 16756842,
+      "type": ">i2"
+    },
+    "player-w-puck-ice-x": {
+      "address": 16760700,
+      "type": ">i2"
+    },
+    "player-w-puck-ice-y": {
+      "address": 16760702,
+      "type": ">i2"
+    },
+    "player-w-puck-screen-x": {
+      "address": 16760262,
+      "type": ">i2"
+    },
+    "player-w-puck-screen-y": {
+      "address": 16760264,
       "type": ">i2"
     },
     "time": {
