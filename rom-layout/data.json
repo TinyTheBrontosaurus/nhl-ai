@@ -60,8 +60,20 @@
       "address": 16761958,
       "type": ">u2"
     },
+    "player-AM-x-home-w-puck": {
+      "address": 16756810,
+      "type": ">i2"
+    },
+    "player-AM-y-home-w-puck": {
+      "address": 16756842,
+      "type": ">i2"
+    },
     "time": {
       "address": 16761960,
+      "type": ">u2"
+    },
+    "time-shootout": {
+      "address": 16766036,
       "type": ">u2"
     }
   }
