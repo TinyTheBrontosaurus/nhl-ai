@@ -1,0 +1,52 @@
+{
+  "info": {
+    "away-checks": {
+      "address": 16763458,
+      "type": ">u2"
+    },
+    "away-goals": {
+      "address": 16763454,
+      "type": ">u2"
+    },
+    "away-pass-att": {
+      "address": 16763460,
+      "type": ">u2"
+    },
+    "away-pass-com": {
+      "address": 16763462,
+      "type": ">u2"
+    },
+    "away-shots": {
+      "address": 16763442,
+      "type": ">u2"
+    },
+    "home-checks": {
+      "address": 16762590,
+      "type": ">u2"
+    },
+    "home-goals": {
+      "address": 16762586,
+      "type": ">u2"
+    },
+    "home-pass-att": {
+      "address": 16762592,
+      "type": ">u2"
+    },
+    "home-pass-com": {
+      "address": 16762594,
+      "type": ">u2"
+    },
+    "home-shots": {
+      "address": 16762574,
+      "type": ">u2"
+    },
+    "period": {
+      "address": 16761958,
+      "type": ">u2"
+    },
+    "time": {
+      "address": 16761960,
+      "type": ">u2"
+    }
+  }
+}
