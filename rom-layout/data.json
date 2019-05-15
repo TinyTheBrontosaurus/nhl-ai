@@ -8,6 +8,10 @@
       "address": 16763458,
       "type": ">u2"
     },
+    "away-faceoff": {
+      "address": 16763456,
+      "type": ">u2"
+    },
     "away-goals": {
       "address": 16763454,
       "type": ">u2"
@@ -30,6 +34,10 @@
     },
     "home-checks": {
       "address": 16762590,
+      "type": ">u2"
+    },
+    "home-faceoff": {
+      "address": 16762588,
       "type": ">u2"
     },
     "home-goals": {
