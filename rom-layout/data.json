@@ -56,10 +56,6 @@
       "address": 16762574,
       "type": ">u2"
     },
-    "home-velocity-y-1": {
-      "address": 16758644,
-      "type": ">i2"
-    },
     "home-velocity-y-2": {
       "address": 16756852,
       "type": ">i2"
@@ -96,6 +92,38 @@
       "address": 16758250,
       "type": ">i2"
     },
+    "player-home-10-x": {
+      "address": 16756938,
+      "type": ">i2"
+    },
+    "player-home-10-y": {
+      "address": 16756970,
+      "type": ">i2"
+    },
+    "player-home-16-x": {
+      "address": 16757066,
+      "type": ">i2"
+    },
+    "player-home-16-y": {
+      "address": 16757098,
+      "type": ">i2"
+    },
+    "player-home-7-x": {
+      "address": 16757222,
+      "type": ">i2"
+    },
+    "player-home-7-y": {
+      "address": 16757226,
+      "type": ">i2"
+    },
+    "player-home-8-x": {
+      "address": 16757322,
+      "type": ">i2"
+    },
+    "player-home-8-y": {
+      "address": 16757354,
+      "type": ">i2"
+    },
     "player-home-89-x": {
       "address": 16756810,
       "type": ">i2"
@@ -104,24 +132,48 @@
       "address": 16756842,
       "type": ">i2"
     },
-    "player-home-goalie-x-ice": {
+    "player-home-goalie-ice-x": {
       "address": 16757478,
       "type": ">i2"
     },
-    "player-home-goalie-x-screen": {
+    "player-home-goalie-ice-y": {
+      "address": 16757482,
+      "type": ">i2"
+    },
+    "player-home-goalie-screen-x": {
       "address": 16757450,
+      "type": ">i2"
+    },
+    "player-home-goalie-screen-y": {
+      "address": 16757470,
       "type": ">i2"
     },
     "player-home-goalie-y-2": {
       "address": 16758868,
       "type": ">i2"
     },
-    "player-home-goalie-y-ice": {
-      "address": 16757482,
+    "player-home-shootout-v-x": {
+      "address": 16756850,
       "type": ">i2"
     },
-    "player-home-goalie-y-screen": {
-      "address": 16757470,
+    "player-home-shootout-v-y": {
+      "address": 16756852,
+      "type": ">i2"
+    },
+    "player-home-shootout-x": {
+      "address": 16756810,
+      "type": ">i2"
+    },
+    "player-home-shootout-y": {
+      "address": 16756842,
+      "type": ">i2"
+    },
+    "player-home-w-puck-x": {
+      "address": 16760700,
+      "type": ">i2"
+    },
+    "player-home-w-puck-y": {
+      "address": 16760702,
       "type": ">i2"
     },
     "player-w-puck-ice-x": {
@@ -162,6 +214,14 @@
     },
     "puck-screen-y": {
       "address": 16758886,
+      "type": ">i2"
+    },
+    "puck-velocity-x": {
+      "address": 16758642,
+      "type": ">i2"
+    },
+    "puck-velocity-y": {
+      "address": 16758644,
       "type": ">i2"
     },
     "time": {
