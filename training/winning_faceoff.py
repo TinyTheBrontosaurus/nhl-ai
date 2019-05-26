@@ -1,93 +1,77 @@
-import cv2
 import neat
+import retro
 import pickle
-
-env = retro.make('SonicTheHedgehog2-Genesis', 'AquaticRuinZone.Act1')
-
-imgarray = []
-
-xpos_end = 0
+from loguru import logger
 
 
-def eval_genomes(genomes, config):
-    for genome_id, genome in genomes:
-        ob = env.reset()
-        ac = env.action_space.sample()
+class FaceoffTrainer:
 
-        inx, iny, inc = env.observation_space.shape
+    def __init__(self):
+        self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff', obs_type=retro.Observations.RAM)
 
-        inx = int(inx / 8)
-        iny = int(iny / 8)
+        self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                                  neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                                  'config-feedforward')
 
-        net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
+        self.population = neat.Population(self.config)
 
-        current_max_fitness = 0
-        fitness_current = 0
-        frame = 0
-        counter = 0
-        xpos = 0
-        xpos_max = 0
+        self.population.add_reporter(neat.StdOutReporter(True))
+        self.population.add_reporter(neat.StatisticsReporter())
+        self.population.add_reporter(neat.Checkpointer(10))
 
-        done = False
-        # cv2.namedWindow("main", cv2.WINDOW_NORMAL)
+        self.fittest = None
 
-        while not done:
+    def train(self):
+        self.fittest = self.population.run(self._eval_genomes)
 
-            env.render()
-            frame += 1
-            # scaledimg = cv2.cvtColor(ob, cv2.COLOR_BGR2RGB)
-            # scaledimg = cv2.resize(scaledimg, (iny, inx))
-            ob = cv2.resize(ob, (inx, iny))
-            ob = cv2.cvtColor(ob, cv2.COLOR_BGR2GRAY)
-            ob = np.reshape(ob, (inx, iny))
-            # cv2.imshow('main', scaledimg)
-            # cv2.waitKey(1)
+    def _eval_genomes(self, genomes, config):
 
-            imgarray = np.ndarray.flatten(ob)
+        for genome_id, genome in genomes:
+            ob = self.env.reset()
+            actions = self.env.action_space.sample()
 
-            nnOutput = net.activate(imgarray)
+            net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
 
-            ob, rew, done, info = env.step(nnOutput)
+            current_max_fitness = 0
+            fitness_current = 0
+            frame = 0
+            counter = 0
 
-            # xpos = info['x']
-            # xpos_end = info['screen_x_end']
+            done = False
 
+            while not done:
 
-            # if xpos > xpos_max:
-            # fitness_current += 1
-            # xpos_max = xpos
+                frame += 1
 
-            # if xpos == xpos_end and xpos > 500:
-            # fitness_current += 100000
-            # done = True
+                features = [1, 2, 3]
+                actions = net.activate(features)
 
-            fitness_current += rew
+                ob, rew, done, info = self.env.step(actions)
 
-            if fitness_current > current_max_fitness:
-                current_max_fitness = fitness_current
-                counter = 0
-            else:
-                counter += 1
+                #features = []
 
-            if done or counter == 250:
-                done = True
-                print(genome_id, fitness_current)
+                if counter > 300:
+                    done = True
 
-            genome.fitness = fitness_current
+                if faceoffs >= 1:
+                    done = True
+
+                genome.fitness = faceoffs_won - faceoffs_lost
+
+            logger.info("{gid} {score} {counter}", genome_id, genome.fitness, counter)
 
 
-config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                     neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                     'config-feedforward')
 
-p = neat.Population(config)
+def main():
+    trainer = FaceoffTrainer()
+    trainer.run()
 
-p.add_reporter(neat.StdOutReporter(True))
-stats = neat.StatisticsReporter()
-p.add_reporter(stats)
-p.add_reporter(neat.Checkpointer(10))
 
-winner = p.run(eval_genomes)
+    logger.info("Starting Training")
 
-with open('winner.pkl', 'wb') as output:
-    pickle.dump(winner, output, 1)
+    with open('winner.pkl', 'wb') as output:
+        pickle.dump(winner, output, 1)
+
+
+if __name__ == "__main__":
+    main()
