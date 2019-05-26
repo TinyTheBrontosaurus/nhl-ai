@@ -45,22 +45,26 @@ class FaceoffTrainer:
 
                 frame += 1
 
-                features = [1, 2, 3]
+                features = range(15)
                 actions = net.activate(features)
 
                 ob, rew, done, info = self.env.step(actions)
 
+                faceoffs_won = info['home-faceoff']
+                faceoffs_lost = info['away-faceoff']
+                total_faceoffs = faceoffs_won + faceoffs_lost
                 #features = []
 
                 if counter > 300:
                     done = True
 
-                if faceoffs >= 1:
+                if total_faceoffs >= 1:
                     done = True
 
                 genome.fitness = faceoffs_won - faceoffs_lost
 
-            logger.info("{gid} {score} {counter}", genome_id, genome.fitness, counter)
+            logger.info("{gid} {score} {counter}",
+                        gid=genome_id, score=genome.fitness, counter=counter)
 
 
 
