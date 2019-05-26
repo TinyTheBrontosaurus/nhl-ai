@@ -64,13 +64,11 @@ class FaceoffTrainer:
 
 def main():
     trainer = FaceoffTrainer()
-    trainer.run()
-
-
     logger.info("Starting Training")
+    trainer.train()
 
-    with open('winner.pkl', 'wb') as output:
-        pickle.dump(winner, output, 1)
+    with open('fittest.pkl', 'wb') as output:
+        pickle.dump(trainer.fittest, output, 1)
 
 
 if __name__ == "__main__":
