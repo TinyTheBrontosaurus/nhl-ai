@@ -7,7 +7,9 @@ from loguru import logger
 class FaceoffTrainer:
 
     def __init__(self):
-        self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff', obs_type=retro.Observations.RAM)
+        self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
+                              obs_type=retro.Observations.RAM,
+                              inttype=retro.data.Integrations.ALL)
 
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                   neat.DefaultSpeciesSet, neat.DefaultStagnation,
