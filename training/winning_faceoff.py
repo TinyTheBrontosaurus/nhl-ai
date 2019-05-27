@@ -9,6 +9,9 @@ import math
 import time
 import tqdm
 import multiprocessing
+import subprocess
+import os
+import datetime
 from training.custom_neat_utils import TqdmReporter, GenerationReporter, Checkpointer
 
 
@@ -184,7 +187,7 @@ class FaceoffTrainer:
                 if info['player-w-puck-ice-x'] == info['player-home-7-x'] and \
                    info['player-w-puck-ice-y'] == info['player-home-7-y']:
                     player_w_puck = 7
-                    puck_bonus = 600
+                    puck_bonus = 1000
                 elif info['player-w-puck-ice-x'] == info['player-home-10-x'] and \
                      info['player-w-puck-ice-y'] == info['player-home-10-y']:
                     player_w_puck = 10
@@ -196,15 +199,15 @@ class FaceoffTrainer:
                 elif info['player-w-puck-ice-x'] == info['player-home-89-x'] and \
                      info['player-w-puck-ice-y'] == info['player-home-89-y']:
                     player_w_puck = 89
-                    puck_bonus = 200
+                    puck_bonus = 500
                 elif info['player-w-puck-ice-x'] == info['player-home-8-x'] and \
                      info['player-w-puck-ice-y'] == info['player-home-8-y']:
                     player_w_puck = 8
-                    puck_bonus = 500
+                    puck_bonus = 100
                 elif info['player-w-puck-ice-x'] == info['player-home-goalie-ice-x'] and \
                      info['player-w-puck-ice-y'] == info['player-home-goalie-ice-y']:
                     player_w_puck = 31
-                    puck_bonus = 1000
+                    puck_bonus = 20
                 else:
                     player_w_puck = None
                     puck_bonus = 0
@@ -231,15 +234,46 @@ def main():
     parser.add_argument('--render', action='store_true', help="Watch the game while training")
     parser.add_argument('--replay', action='store_true', help="Replay a trained network")
     parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
-                        default="fittest.pkl")
+                        default=None)
     parser.add_argument('--nproc', type=int, help="The number of processes to run", default=multiprocessing.cpu_count())
     args = parser.parse_args()
+    model_filename = None
 
-    model_filename = args.model_file
+    module_name = os.path.splitext(os.path.basename(__file__))[0]
+    log_folder_root = os.path.abspath(os.path.join("logs", module_name))
 
-    logger.remove(0)
-    logger.add("file_{time}.log")
+    if not args.replay:
+        # Setup target og folder
+        module_name = os.path.splitext(os.path.basename(__file__))[0]
+        friendly_time = str(datetime.datetime.now()).replace(':', "-").replace(" ", "_")
+        log_folder = os.path.join(log_folder_root, friendly_time)
 
+        # Replace the standard logger with logging to a file
+        logger.remove(0)
+        logger.add(os.path.join(log_folder, "event.log"))
+
+        if args.model_file is None:
+            model_filename = os.path.join(log_folder, "fittest.pkl")
+        # Log the beginning of the file
+        version = subprocess.check_output(["git", "describe", "--dirty", "--always"]).strip()
+
+        logger.info("Running program: {}", module_name)
+        logger.info("Version: {}", version)
+        logger.info("Full path: {}", __file__)
+    else:
+        # If replaying, then find the most recent logged folder with a fittest.pkl
+        if args.model_file is None:
+            potential_folders = os.listdir(log_folder_root)
+            for folder in reversed(sorted(potential_folders)):
+                if os.path.isdir(folder):
+                    model_filename = os.path.join(folder, "fittest.pkl")
+                    if os.path.exists(model_filename):
+                        logger.info("Replaying {}".format(folder))
+                        break
+            if model_filename is None:
+                raise FileNotFoundError("Could not find fittest.pkl")
+
+    # Run tqdm and do training vs replay
     with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
         trainer = FaceoffTrainerRunner(render=args.render, progress_bar=progress_bar, stream=logger.info)
 
@@ -250,7 +284,7 @@ def main():
             with open(model_filename, 'wb') as f:
                 pickle.dump(trainer.fittest, f, 1)
         else:
-            # Make it easy to view
+            # Make it easy to view when replaying
             trainer.rate = 1
             trainer.render = True
             trainer.short_circuit = False
