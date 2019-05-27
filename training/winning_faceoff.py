@@ -264,10 +264,12 @@ def main():
         # If replaying, then find the most recent logged folder with a fittest.pkl
         if args.model_file is None:
             potential_folders = os.listdir(log_folder_root)
-            for folder in reversed(sorted(potential_folders)):
+            for subfolder in reversed(sorted(potential_folders)):
+                folder = os.path.join(log_folder_root, subfolder)
                 if os.path.isdir(folder):
-                    model_filename = os.path.join(folder, "fittest.pkl")
-                    if os.path.exists(model_filename):
+                    potential_filename = os.path.join(folder, "fittest.pkl")
+                    if os.path.exists(potential_filename):
+                        model_filename = potential_filename
                         logger.info("Replaying {}".format(folder))
                         break
             if model_filename is None:
