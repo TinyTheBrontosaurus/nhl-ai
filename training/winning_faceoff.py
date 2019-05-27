@@ -55,18 +55,19 @@ class Discretizer(gym.ActionWrapper):
 
 class FaceoffTrainerRunner:
 
-    def __init__(self, render=False, progress_bar=None):
+    def __init__(self, render=False, progress_bar=None, stream=print):
+        self.stream = stream
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                   neat.DefaultSpeciesSet, neat.DefaultStagnation,
                                   'config-feedforward')
 
         self.population = neat.Population(self.config)
 
-        self.population.add_reporter(GenerationReporter(True, logger.info))
+        self.population.add_reporter(GenerationReporter(True, self.stream))
         self.population.add_reporter(neat.StatisticsReporter())
         if progress_bar is not None:
             self.population.add_reporter(TqdmReporter(progress_bar))
-        self.population.add_reporter(Checkpointer(1, stream=logger.info))
+        self.population.add_reporter(Checkpointer(10, stream=self.stream))
 
         self.fittest = None
 
@@ -223,9 +224,11 @@ def main():
 
     model_filename = args.model_file
 
+    logger.remove(0)
+    logger.add("file_{time}.log")
 
     with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
-        trainer = FaceoffTrainerRunner(render=args.render, progress_bar=progress_bar)
+        trainer = FaceoffTrainerRunner(render=args.render, progress_bar=progress_bar, stream=logger.info)
         if args.rt:
             trainer.rate = 1
 
