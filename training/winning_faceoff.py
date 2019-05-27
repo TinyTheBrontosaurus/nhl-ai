@@ -8,6 +8,7 @@ import numpy as np
 import math
 import time
 import tqdm
+import multiprocessing
 
 
 
@@ -60,7 +61,7 @@ class TqdmReporter(neat.reporting.BaseReporter):
         self.progress_bar.update()
 
 
-class FaceoffTrainerRunner():
+class FaceoffTrainerRunner:
 
     def __init__(self, render=False, progress_bar=None):
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -69,11 +70,11 @@ class FaceoffTrainerRunner():
 
         self.population = neat.Population(self.config)
 
-        self.population.add_reporter(neat.StdOutReporter(True))
-        self.population.add_reporter(neat.StatisticsReporter())
+        #self.population.add_reporter(neat.StdOutReporter(True))
+        #self.population.add_reporter(neat.StatisticsReporter())
         if progress_bar is not None:
             self.population.add_reporter(TqdmReporter(progress_bar))
-        self.population.add_reporter(neat.Checkpointer(10))
+        #self.population.add_reporter(neat.Checkpointer(10))
 
         self.fittest = None
 
@@ -90,15 +91,19 @@ class FaceoffTrainerRunner():
                     score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
                     player_w_puck=results["player_w_puck"])
 
-    def train(self):
-        parallelizer = neat.ParallelEvaluator(1, self.trainer.eval_genome)
-        self.fittest = self.population.run(parallelizer.evaluate)
+    def train(self, nproc=1):
+        if nproc <= 1:
+            self.fittest = self.population.run(self.eval_genomes)
+        else:
+            parallelizer = neat.ParallelEvaluator(nproc, self.trainer.eval_genome)
+            self.fittest = self.population.run(parallelizer.evaluate)
 
     def eval_genomes(self, genomes, config):
 
         for genome_id, genome in genomes:
 
-            results = self.trainer.eval_genome(genome, config)
+            _ = self.trainer.eval_genome(genome, config)
+            results = self.trainer.results
             logger.info("{gid:5} {score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
                         gid=genome_id, score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
                         player_w_puck=results["player_w_puck"])
@@ -212,6 +217,7 @@ def main():
     parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
                         default="fittest.pkl")
     parser.add_argument('--rt', action='store_true', help="Run renderer in real-time")
+    parser.add_argument('--nproc', type=int, help="The number of processes to run", default=multiprocessing.cpu_count())
     args = parser.parse_args()
 
     model_filename = args.model_file
@@ -224,7 +230,7 @@ def main():
 
         if not args.replay:
             # Train
-            trainer.train()
+            trainer.train(nproc=args.nproc)
 
             with open(model_filename, 'wb') as f:
                 pickle.dump(trainer.fittest, f, 1)
