@@ -67,6 +67,44 @@ class FaceoffTrainer:
 
         self.fittest = None
 
+    def run(self, genome):
+        _ = self.env.reset()
+
+        frame = 0
+        counter = 0
+        score = 0
+
+        done = False
+
+        while not done:
+
+            frame += 1
+            counter += 1
+
+            self.env.render()
+
+            net = neat.nn.recurrent.RecurrentNetwork.create(genome, self.config)
+
+            features = [frame]
+            actions = net.activate(features)
+
+            ob, rew, done, info = self.env.step(actions)
+
+            faceoffs_won = info['home-faceoff']
+            faceoffs_lost = info['away-faceoff']
+            total_faceoffs = faceoffs_won + faceoffs_lost
+
+            if counter > 600:
+                done = True
+
+            if total_faceoffs >= 1:
+                done = True
+
+            score = faceoffs_won - faceoffs_lost
+
+        logger.info("{score:+} {counter}",
+                    score=score, counter=counter)
+
     def train(self):
         self.fittest = self.population.run(self._eval_genomes)
 
@@ -111,6 +149,11 @@ class FaceoffTrainer:
 
 def main():
     trainer = FaceoffTrainer()
+    with open('fittest.pkl', 'rb') as f:
+        model = pickle.load(f)
+
+    trainer.run(model)
+
     logger.info("Starting Training")
     trainer.train()
 
