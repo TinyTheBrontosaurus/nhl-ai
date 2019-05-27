@@ -184,7 +184,7 @@ class FaceoffTrainer:
                 if info['player-w-puck-ice-x'] == info['player-home-7-x'] and \
                    info['player-w-puck-ice-y'] == info['player-home-7-y']:
                     player_w_puck = 7
-                    puck_bonus = 1000
+                    puck_bonus = 600
                 elif info['player-w-puck-ice-x'] == info['player-home-10-x'] and \
                      info['player-w-puck-ice-y'] == info['player-home-10-y']:
                     player_w_puck = 10
@@ -196,15 +196,15 @@ class FaceoffTrainer:
                 elif info['player-w-puck-ice-x'] == info['player-home-89-x'] and \
                      info['player-w-puck-ice-y'] == info['player-home-89-y']:
                     player_w_puck = 89
-                    puck_bonus = 500
+                    puck_bonus = 200
                 elif info['player-w-puck-ice-x'] == info['player-home-8-x'] and \
                      info['player-w-puck-ice-y'] == info['player-home-8-y']:
                     player_w_puck = 8
-                    puck_bonus = 100
+                    puck_bonus = 500
                 elif info['player-w-puck-ice-x'] == info['player-home-goalie-ice-x'] and \
                      info['player-w-puck-ice-y'] == info['player-home-goalie-ice-y']:
                     player_w_puck = 31
-                    puck_bonus = 20
+                    puck_bonus = 1000
                 else:
                     player_w_puck = None
                     puck_bonus = 0
