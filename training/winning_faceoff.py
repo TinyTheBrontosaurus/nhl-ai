@@ -60,14 +60,9 @@ class TqdmReporter(neat.reporting.BaseReporter):
         self.progress_bar.update()
 
 
-class FaceoffTrainer:
+class FaceoffTrainerRunner():
 
     def __init__(self, render=False, progress_bar=None):
-        self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
-                              obs_type=retro.Observations.RAM,
-                              inttype=retro.data.Integrations.ALL)
-
-        self.env = Discretizer(self.env)
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                   neat.DefaultSpeciesSet, neat.DefaultStagnation,
                                   'config-feedforward')
@@ -86,27 +81,52 @@ class FaceoffTrainer:
 
         self.rate = None
 
+        self.trainer = FaceoffTrainer(render)
+
     def run(self, genome):
-        results = self._eval_genome(genome, self.config)
+        results = self.trainer.eval_genome(genome, self.config)
 
         logger.info("S:{score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
                     score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
                     player_w_puck=results["player_w_puck"])
 
     def train(self):
-        self.fittest = self.population.run(self._eval_genomes)
+        parallelizer = neat.ParallelEvaluator(1, self.trainer.eval_genome)
+        self.fittest = self.population.run(parallelizer.evaluate)
 
-    def _eval_genomes(self, genomes, config):
+    def eval_genomes(self, genomes, config):
 
         for genome_id, genome in genomes:
 
-            results = self._eval_genome(genome, config)
+            results = self.trainer.eval_genome(genome, config)
             logger.info("{gid:5} {score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
                         gid=genome_id, score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
                         player_w_puck=results["player_w_puck"])
 
 
-    def _eval_genome(self, genome, config):
+class FaceoffTrainer:
+    genv = None
+    def __init__(self, render=False):
+        self.env = None
+        self.render = render
+        self.rate = None
+        self.results = None
+
+    def create_env(self):
+        self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
+                              obs_type=retro.Observations.RAM,
+                              inttype=retro.data.Integrations.ALL)
+
+        self.env = Discretizer(self.env)
+
+    def eval_genome(self, genome, config):
+
+            if FaceoffTrainer.genv is None:
+                logger.warning("Creating Env")
+                self.create_env()
+                FaceoffTrainer.genv = self.env
+            self.env = FaceoffTrainer.genv
+
             _ = self.env.reset()
 
             net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
@@ -181,7 +201,8 @@ class FaceoffTrainer:
 
                 genome.fitness = score
 
-            return {"score": score, "frame": frame, "puck_y": puck_y, "player_w_puck": player_w_puck}
+            self.results = {"score": score, "frame": frame, "puck_y": puck_y, "player_w_puck": player_w_puck}
+            return score
 
 
 def main():
@@ -197,7 +218,7 @@ def main():
 
 
     with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
-        trainer = FaceoffTrainer(render=args.render, progress_bar=progress_bar)
+        trainer = FaceoffTrainerRunner(render=args.render, progress_bar=progress_bar)
         if args.rt:
             trainer.rate = 1
 
