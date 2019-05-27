@@ -85,8 +85,8 @@ class FaceoffTrainer:
         for genome_id, genome in genomes:
 
             results = self._eval_genome(genome, config)
-            logger.info("{gid:3} {score:+} {counter}",
-                        gid=genome_id, score=genome.fitness, counter=results["frame"])
+            logger.info("{gid:5} {score:+4} T:{counter} Y:{puck_y:3}",
+                        gid=genome_id, score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"])
 
 
     def _eval_genome(self, genome, config):
@@ -98,6 +98,9 @@ class FaceoffTrainer:
             score = 0
 
             done = False
+
+            min_puck_y = 500
+            puck_y = 0
 
             while not done:
 
@@ -113,7 +116,9 @@ class FaceoffTrainer:
 
                 faceoffs_won = info['home-faceoff']
                 faceoffs_lost = info['away-faceoff']
+                puck_y = info['puck-ice-y']
                 total_faceoffs = faceoffs_won + faceoffs_lost
+                min_puck_y = min(puck_y, min_puck_y)
 
                 if frame > 600:
                     done = True
@@ -121,10 +126,16 @@ class FaceoffTrainer:
                 if total_faceoffs >= 1:
                     done = True
 
-                score = faceoffs_won - faceoffs_lost
+                we_got_it = info['player-w-puck-ice-x'] == info['player-home-7-x'] and \
+                            info['player-w-puck-ice-y'] == info['player-home-7-y']
+
+                score = (faceoffs_won - faceoffs_lost) * 100 + -min_puck_y
+                if we_got_it:
+                    score += 1000
+
                 genome.fitness = score
 
-            return {"score": score, "frame": frame}
+            return {"score": score, "frame": frame, "puck_y": puck_y}
 
 
 def main():
