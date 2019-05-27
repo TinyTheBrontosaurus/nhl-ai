@@ -24,7 +24,7 @@ class TqdmReporter(neat.reporting.BaseReporter):
     def end_generation(self, config, population, species_set):
         self.update()
 
-    def post_evaluate(self, config, population, species, best_genome):
+    def found_solution(self, config, generation, best):
         self.update()
 
     def update(self):
