@@ -7,7 +7,9 @@ from loguru import logger
 import numpy as np
 import math
 import time
-
+import tqdm
+import multiprocessing
+from training.custom_neat_utils import TqdmReporter, GenerationReporter, Checkpointer
 
 
 class Discretizer(gym.ActionWrapper):
@@ -50,51 +52,102 @@ class Discretizer(gym.ActionWrapper):
         return self._actions[index].copy()
 
 
-class FaceoffTrainer:
 
-    def __init__(self, render=False):
-        self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
-                              obs_type=retro.Observations.RAM,
-                              inttype=retro.data.Integrations.ALL)
+class FaceoffTrainerRunner:
 
-        self.env = Discretizer(self.env)
+    def __init__(self, render=False, progress_bar=None, stream=print, short_circuit=False):
+        self.stream = stream
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                   neat.DefaultSpeciesSet, neat.DefaultStagnation,
                                   'config-feedforward')
 
         self.population = neat.Population(self.config)
 
-        self.population.add_reporter(neat.StdOutReporter(True))
+        self.population.add_reporter(GenerationReporter(True, self.stream))
         self.population.add_reporter(neat.StatisticsReporter())
-        self.population.add_reporter(neat.Checkpointer(10))
+        if progress_bar is not None:
+            self.population.add_reporter(TqdmReporter(progress_bar, stream=logger.info))
+        self.population.add_reporter(Checkpointer(10, stream=self.stream))
 
         self.fittest = None
 
-        self.render = render
+        self.trainer = FaceoffTrainer(render, short_circuit=short_circuit)
 
-        self.rate = None
+
+    @property
+    def rate(self):
+        return self.trainer.rate
+
+    @rate.setter
+    def rate(self, value):
+        self.trainer.rate = value
+
+    @property
+    def render(self):
+        return self.trainer.render
+
+    @render.setter
+    def render(self, value):
+        self.trainer.render = value
+
+    @property
+    def short_circuit(self):
+        return self.trainer.short_circuit
+
+    @short_circuit.setter
+    def short_circuit(self, value):
+        self.trainer.short_circuit = value
 
     def run(self, genome):
-        results = self._eval_genome(genome, self.config)
+        _ = self.trainer.eval_genome(genome, self.config)
+        results = self.trainer.results
 
-        logger.info("{score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
+        logger.debug("S:{score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
                     score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
                     player_w_puck=results["player_w_puck"])
 
-    def train(self):
-        self.fittest = self.population.run(self._eval_genomes)
+    def train(self, nproc=1):
+        if nproc <= 1:
+            self.fittest = self.population.run(self.eval_genomes)
+        else:
+            parallelizer = neat.ParallelEvaluator(nproc, self.trainer.eval_genome)
+            self.fittest = self.population.run(parallelizer.evaluate)
 
-    def _eval_genomes(self, genomes, config):
+    def eval_genomes(self, genomes, config):
 
         for genome_id, genome in genomes:
 
-            results = self._eval_genome(genome, config)
-            logger.info("{gid:5} {score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
+            _ = self.trainer.eval_genome(genome, config)
+            results = self.trainer.results
+            logger.debug("{gid:5} {score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
                         gid=genome_id, score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
                         player_w_puck=results["player_w_puck"])
 
 
-    def _eval_genome(self, genome, config):
+class FaceoffTrainer:
+    genv = None
+    def __init__(self, render=False, short_circuit=False):
+        self.env = None
+        self.render = render
+        self.rate = None
+        self.results = None
+        self.short_circuit = short_circuit
+
+    def create_env(self):
+        self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
+                              obs_type=retro.Observations.RAM,
+                              inttype=retro.data.Integrations.ALL)
+
+        self.env = Discretizer(self.env)
+
+    def eval_genome(self, genome, config):
+
+            if FaceoffTrainer.genv is None:
+                logger.warning("Creating Env")
+                self.create_env()
+                FaceoffTrainer.genv = self.env
+            self.env = FaceoffTrainer.genv
+
             _ = self.env.reset()
 
             net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
@@ -116,7 +169,7 @@ class FaceoffTrainer:
                 actions = net.activate(features)
 
                 if self.render:
-                    self.env.render()
+                    _ = self.env.render()
                     if self.rate:
                         time.sleep(0.01)
 
@@ -162,14 +215,15 @@ class FaceoffTrainer:
                 if frame > 300:
                     done = True
 
-                if puck_bonus > 0 and faceoffs_won > 0:
+                if self.short_circuit and puck_bonus > 0 and faceoffs_won > 0:
                     done = True
 
                 score = (faceoffs_won - faceoffs_lost) * 100 + -min_puck_y + puck_bonus
 
                 genome.fitness = score
 
-            return {"score": score, "frame": frame, "puck_y": puck_y, "player_w_puck": player_w_puck}
+            self.results = {"score": score, "frame": frame, "puck_y": puck_y, "player_w_puck": player_w_puck}
+            return score
 
 
 def main():
@@ -178,26 +232,33 @@ def main():
     parser.add_argument('--replay', action='store_true', help="Replay a trained network")
     parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
                         default="fittest.pkl")
-    parser.add_argument('--rt', action='store_true', help="Run renderer in real-time")
+    parser.add_argument('--nproc', type=int, help="The number of processes to run", default=multiprocessing.cpu_count())
     args = parser.parse_args()
 
     model_filename = args.model_file
 
-    trainer = FaceoffTrainer(render=args.render)
-    if args.rt:
-        trainer.rate = 1
+    logger.remove(0)
+    logger.add("file_{time}.log")
 
-    if not args.replay:
-        # Train
-        trainer.train()
+    with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
+        trainer = FaceoffTrainerRunner(render=args.render, progress_bar=progress_bar, stream=logger.info)
 
-        with open(model_filename, 'wb') as f:
-            pickle.dump(trainer.fittest, f, 1)
-    else:
-        # Replay
-        with open(model_filename, 'rb') as f:
-            model = pickle.load(f)
-        trainer.run(model)
+        if not args.replay:
+            # Train
+            trainer.train(nproc=args.nproc)
+
+            with open(model_filename, 'wb') as f:
+                pickle.dump(trainer.fittest, f, 1)
+        else:
+            # Make it easy to view
+            trainer.rate = 1
+            trainer.render = True
+            trainer.short_circuit = False
+
+            # Replay
+            with open(model_filename, 'rb') as f:
+                model = pickle.load(f)
+            trainer.run(model)
 
 
 
