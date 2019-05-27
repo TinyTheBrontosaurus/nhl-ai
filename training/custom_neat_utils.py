@@ -92,7 +92,7 @@ class GenerationReporter(neat.reporting.BaseReporter):
 
     def complete_extinction(self):
         self.num_extinctions += 1
-        print('All species extinct.')
+        self.stream('All species extinct.')
 
     def found_solution(self, config, generation, best):
         self.stream('\nBest individual in generation {0} meets fitness threshold - complexity: {1!r}'.format(
