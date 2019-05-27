@@ -2,6 +2,7 @@ import neat
 import retro
 import pickle
 import gym
+import argparse
 from loguru import logger
 import numpy as np
 import math
@@ -47,9 +48,10 @@ class Discretizer(gym.ActionWrapper):
             index = len(self._actions) - 1
         return self._actions[index].copy()
 
+
 class FaceoffTrainer:
 
-    def __init__(self):
+    def __init__(self, render=False):
         self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
                               obs_type=retro.Observations.RAM,
                               inttype=retro.data.Integrations.ALL)
@@ -67,43 +69,13 @@ class FaceoffTrainer:
 
         self.fittest = None
 
+        self.render = render
+
     def run(self, genome):
-        _ = self.env.reset()
-
-        frame = 0
-        counter = 0
-        score = 0
-
-        done = False
-
-        while not done:
-
-            frame += 1
-            counter += 1
-
-            self.env.render()
-
-            net = neat.nn.recurrent.RecurrentNetwork.create(genome, self.config)
-
-            features = [frame]
-            actions = net.activate(features)
-
-            ob, rew, done, info = self.env.step(actions)
-
-            faceoffs_won = info['home-faceoff']
-            faceoffs_lost = info['away-faceoff']
-            total_faceoffs = faceoffs_won + faceoffs_lost
-
-            if counter > 600:
-                done = True
-
-            if total_faceoffs >= 1:
-                done = True
-
-            score = faceoffs_won - faceoffs_lost
+        results = self._eval_genome(genome, self.config)
 
         logger.info("{score:+} {counter}",
-                    score=score, counter=counter)
+                    score=results['score'], counter=results['counter'])
 
     def train(self):
         self.fittest = self.population.run(self._eval_genomes)
@@ -111,22 +83,31 @@ class FaceoffTrainer:
     def _eval_genomes(self, genomes, config):
 
         for genome_id, genome in genomes:
+
+            results = self._eval_genome(genome, config)
+            logger.info("{gid:3} {score:+} {counter}",
+                        gid=genome_id, score=genome.fitness, counter=results["frame"])
+
+
+    def _eval_genome(self, genome, config):
             _ = self.env.reset()
 
             net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
 
             frame = 0
-            counter = 0
+            score = 0
 
             done = False
 
             while not done:
 
                 frame += 1
-                counter += 1
 
                 features = [frame]
                 actions = net.activate(features)
+
+                if self.render:
+                    self.env.render()
 
                 ob, rew, done, info = self.env.step(actions)
 
@@ -134,31 +115,42 @@ class FaceoffTrainer:
                 faceoffs_lost = info['away-faceoff']
                 total_faceoffs = faceoffs_won + faceoffs_lost
 
-                if counter > 600:
+                if frame > 600:
                     done = True
 
                 if total_faceoffs >= 1:
                     done = True
 
-                genome.fitness = faceoffs_won - faceoffs_lost
+                score = faceoffs_won - faceoffs_lost
+                genome.fitness = score
 
-            logger.info("{gid:3} {score:+} {counter}",
-                        gid=genome_id, score=genome.fitness, counter=counter)
-
+            return {"score": score, "frame": frame}
 
 
 def main():
-    trainer = FaceoffTrainer()
-    with open('fittest.pkl', 'rb') as f:
-        model = pickle.load(f)
+    parser = argparse.ArgumentParser(description="Train or test a model to win a faceoff")
+    parser.add_argument('--render', action='store_true', help="Watch the game while training")
+    parser.add_argument('--replay', action='store_true', help="Replay a trained network")
+    parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
+                        default="fittest.pkl")
+    args = parser.parse_args()
 
-    trainer.run(model)
+    model_filename = args.model_file
 
-    logger.info("Starting Training")
-    trainer.train()
+    trainer = FaceoffTrainer(render=args.render)
 
-    with open('fittest.pkl', 'wb') as output:
-        pickle.dump(trainer.fittest, output, 1)
+    if not args.replay:
+        # Train
+        trainer.train()
+
+        with open(model_filename, 'wb') as f:
+            pickle.dump(trainer.fittest, f, 1)
+    else:
+        # Replay
+        with open(model_filename, 'rb') as f:
+            model = pickle.load(f)
+        trainer.run(model)
+
 
 
 if __name__ == "__main__":
