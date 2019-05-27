@@ -55,7 +55,7 @@ class Discretizer(gym.ActionWrapper):
 
 class FaceoffTrainerRunner:
 
-    def __init__(self, render=False, progress_bar=None, stream=print):
+    def __init__(self, render=False, progress_bar=None, stream=print, short_circuit=False):
         self.stream = stream
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                   neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -71,10 +71,7 @@ class FaceoffTrainerRunner:
 
         self.fittest = None
 
-        self.render = render
-
-        self.trainer = FaceoffTrainer(render)
-        self.trainer.rate = None
+        self.trainer = FaceoffTrainer(render, short_circuit=short_circuit)
 
 
     @property
@@ -84,6 +81,22 @@ class FaceoffTrainerRunner:
     @rate.setter
     def rate(self, value):
         self.trainer.rate = value
+
+    @property
+    def render(self):
+        return self.trainer.render
+
+    @render.setter
+    def render(self, value):
+        self.trainer.render = value
+
+    @property
+    def short_circuit(self):
+        return self.trainer.short_circuit
+
+    @short_circuit.setter
+    def short_circuit(self, value):
+        self.trainer.short_circuit = value
 
     def run(self, genome):
         _ = self.trainer.eval_genome(genome, self.config)
@@ -113,11 +126,12 @@ class FaceoffTrainerRunner:
 
 class FaceoffTrainer:
     genv = None
-    def __init__(self, render=False):
+    def __init__(self, render=False, short_circuit=False):
         self.env = None
         self.render = render
         self.rate = None
         self.results = None
+        self.short_circuit = short_circuit
 
     def create_env(self):
         self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
@@ -201,7 +215,7 @@ class FaceoffTrainer:
                 if frame > 300:
                     done = True
 
-                if puck_bonus > 0 and faceoffs_won > 0:
+                if self.short_circuit and puck_bonus > 0 and faceoffs_won > 0:
                     done = True
 
                 score = (faceoffs_won - faceoffs_lost) * 100 + -min_puck_y + puck_bonus
@@ -218,7 +232,6 @@ def main():
     parser.add_argument('--replay', action='store_true', help="Replay a trained network")
     parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
                         default="fittest.pkl")
-    parser.add_argument('--rt', action='store_true', help="Run renderer in real-time")
     parser.add_argument('--nproc', type=int, help="The number of processes to run", default=multiprocessing.cpu_count())
     args = parser.parse_args()
 
@@ -229,8 +242,6 @@ def main():
 
     with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
         trainer = FaceoffTrainerRunner(render=args.render, progress_bar=progress_bar, stream=logger.info)
-        if args.rt:
-            trainer.rate = 1
 
         if not args.replay:
             # Train
@@ -239,6 +250,11 @@ def main():
             with open(model_filename, 'wb') as f:
                 pickle.dump(trainer.fittest, f, 1)
         else:
+            # Make it easy to view
+            trainer.rate = 1
+            trainer.render = True
+            trainer.short_circuit = False
+
             # Replay
             with open(model_filename, 'rb') as f:
                 model = pickle.load(f)
