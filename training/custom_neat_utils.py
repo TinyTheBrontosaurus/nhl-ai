@@ -20,12 +20,25 @@ class TqdmReporter(neat.reporting.BaseReporter):
         """
         self.progress_bar = progress_bar
         self.stream = stream
+        self._last_fitness = None
+        self._fitness_stall = 0
 
     def end_generation(self, config, population, species_set):
         self.update()
 
     def found_solution(self, config, generation, best):
         self.update()
+
+    def post_evaluate(self, config, population, species, best_genome):
+        if self._last_fitness != best_genome.fitness:
+            self._last_fitness = best_genome.fitness
+            self._fitness_stall = 0
+        else:
+            self._fitness_stall += 1
+
+        self.progress_bar.set_postfix(fitness="{}/{}".format(best_genome.fitness, config.fitness_threshold),
+                                      progress="{:.2f}%".format(best_genome.fitness / config.fitness_threshold * 100),
+                                      stall=self._fitness_stall)
 
     def update(self):
         if self.progress_bar is not None:
