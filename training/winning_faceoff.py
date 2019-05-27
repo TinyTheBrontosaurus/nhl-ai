@@ -9,7 +9,7 @@ import math
 import time
 import tqdm
 import multiprocessing
-
+from training.custom_neat_utils import TqdmReporter, GenerationReporter
 
 
 class Discretizer(gym.ActionWrapper):
@@ -52,14 +52,6 @@ class Discretizer(gym.ActionWrapper):
         return self._actions[index].copy()
 
 
-class TqdmReporter(neat.reporting.BaseReporter):
-
-    def __init__(self, progress_bar):
-        self.progress_bar = progress_bar
-
-    def end_generation(self, config, population, species_set):
-        self.progress_bar.update()
-
 
 class FaceoffTrainerRunner:
 
@@ -70,11 +62,11 @@ class FaceoffTrainerRunner:
 
         self.population = neat.Population(self.config)
 
-        self.population.add_reporter(neat.StdOutReporter(True))
+        self.population.add_reporter(GenerationReporter(True, logger.info))
         self.population.add_reporter(neat.StatisticsReporter())
         if progress_bar is not None:
             self.population.add_reporter(TqdmReporter(progress_bar))
-        #self.population.add_reporter(neat.Checkpointer(10))
+        self.population.add_reporter(neat.Checkpointer(1))
 
         self.fittest = None
 
@@ -96,7 +88,7 @@ class FaceoffTrainerRunner:
         _ = self.trainer.eval_genome(genome, self.config)
         results = self.trainer.results
 
-        logger.info("S:{score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
+        logger.debug("S:{score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
                     score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
                     player_w_puck=results["player_w_puck"])
 
@@ -113,7 +105,7 @@ class FaceoffTrainerRunner:
 
             _ = self.trainer.eval_genome(genome, config)
             results = self.trainer.results
-            logger.info("{gid:5} {score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
+            logger.debug("{gid:5} {score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
                         gid=genome_id, score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
                         player_w_puck=results["player_w_puck"])
 
