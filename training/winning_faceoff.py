@@ -70,8 +70,8 @@ class FaceoffTrainerRunner:
 
         self.population = neat.Population(self.config)
 
-        #self.population.add_reporter(neat.StdOutReporter(True))
-        #self.population.add_reporter(neat.StatisticsReporter())
+        self.population.add_reporter(neat.StdOutReporter(True))
+        self.population.add_reporter(neat.StatisticsReporter())
         if progress_bar is not None:
             self.population.add_reporter(TqdmReporter(progress_bar))
         #self.population.add_reporter(neat.Checkpointer(10))
@@ -80,12 +80,21 @@ class FaceoffTrainerRunner:
 
         self.render = render
 
-        self.rate = None
-
         self.trainer = FaceoffTrainer(render)
+        self.trainer.rate = None
+
+
+    @property
+    def rate(self):
+        return self.trainer.rate
+
+    @rate.setter
+    def rate(self, value):
+        self.trainer.rate = value
 
     def run(self, genome):
-        results = self.trainer.eval_genome(genome, self.config)
+        _ = self.trainer.eval_genome(genome, self.config)
+        results = self.trainer.results
 
         logger.info("S:{score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
                     score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
