@@ -6,6 +6,7 @@ import argparse
 from loguru import logger
 import numpy as np
 import math
+import time
 
 
 
@@ -71,11 +72,14 @@ class FaceoffTrainer:
 
         self.render = render
 
+        self.rate = None
+
     def run(self, genome):
         results = self._eval_genome(genome, self.config)
 
-        logger.info("{score:+} {counter}",
-                    score=results['score'], counter=results['counter'])
+        logger.info("{score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
+                    score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
+                    player_w_puck=results["player_w_puck"])
 
     def train(self):
         self.fittest = self.population.run(self._eval_genomes)
@@ -85,8 +89,9 @@ class FaceoffTrainer:
         for genome_id, genome in genomes:
 
             results = self._eval_genome(genome, config)
-            logger.info("{gid:5} {score:+4} T:{counter} Y:{puck_y:3}",
-                        gid=genome_id, score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"])
+            logger.info("{gid:5} {score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
+                        gid=genome_id, score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
+                        player_w_puck=results["player_w_puck"])
 
 
     def _eval_genome(self, genome, config):
@@ -101,6 +106,7 @@ class FaceoffTrainer:
 
             min_puck_y = 500
             puck_y = 0
+            player_w_puck = None
 
             while not done:
 
@@ -111,6 +117,8 @@ class FaceoffTrainer:
 
                 if self.render:
                     self.env.render()
+                    if self.rate:
+                        time.sleep(0.01)
 
                 ob, rew, done, info = self.env.step(actions)
 
@@ -120,22 +128,48 @@ class FaceoffTrainer:
                 total_faceoffs = faceoffs_won + faceoffs_lost
                 min_puck_y = min(puck_y, min_puck_y)
 
-                if frame > 600:
+                if info['player-w-puck-ice-x'] == info['player-home-7-x'] and \
+                   info['player-w-puck-ice-y'] == info['player-home-7-y']:
+                    player_w_puck = 7
+                    puck_bonus = 1000
+                elif info['player-w-puck-ice-x'] == info['player-home-10-x'] and \
+                     info['player-w-puck-ice-y'] == info['player-home-10-y']:
+                    player_w_puck = 10
+                    puck_bonus = 200
+                elif info['player-w-puck-ice-x'] == info['player-home-16-x'] and \
+                     info['player-w-puck-ice-y'] == info['player-home-16-y']:
+                    player_w_puck = 16
+                    puck_bonus = 300
+                elif info['player-w-puck-ice-x'] == info['player-home-89-x'] and \
+                     info['player-w-puck-ice-y'] == info['player-home-89-y']:
+                    player_w_puck = 89
+                    puck_bonus = 500
+                elif info['player-w-puck-ice-x'] == info['player-home-8-x'] and \
+                     info['player-w-puck-ice-y'] == info['player-home-8-y']:
+                    player_w_puck = 8
+                    puck_bonus = 100
+                elif info['player-w-puck-ice-x'] == info['player-home-goalie-ice-x'] and \
+                     info['player-w-puck-ice-y'] == info['player-home-goalie-ice-y']:
+                    player_w_puck = 31
+                    puck_bonus = 20
+                else:
+                    player_w_puck = None
+                    puck_bonus = 0
+
+                if faceoffs_won <= 0:
+                    puck_bonus = 0
+
+                if frame > 300:
                     done = True
 
-                if total_faceoffs >= 1:
+                if puck_bonus > 0 and faceoffs_won > 0:
                     done = True
 
-                we_got_it = info['player-w-puck-ice-x'] == info['player-home-7-x'] and \
-                            info['player-w-puck-ice-y'] == info['player-home-7-y']
-
-                score = (faceoffs_won - faceoffs_lost) * 100 + -min_puck_y
-                if we_got_it:
-                    score += 1000
+                score = (faceoffs_won - faceoffs_lost) * 100 + -min_puck_y + puck_bonus
 
                 genome.fitness = score
 
-            return {"score": score, "frame": frame, "puck_y": puck_y}
+            return {"score": score, "frame": frame, "puck_y": puck_y, "player_w_puck": player_w_puck}
 
 
 def main():
@@ -144,11 +178,14 @@ def main():
     parser.add_argument('--replay', action='store_true', help="Replay a trained network")
     parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
                         default="fittest.pkl")
+    parser.add_argument('--rt', action='store_true', help="Run renderer in real-time")
     args = parser.parse_args()
 
     model_filename = args.model_file
 
     trainer = FaceoffTrainer(render=args.render)
+    if args.rt:
+        trainer.rate = 1
 
     if not args.replay:
         # Train
