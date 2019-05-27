@@ -7,6 +7,7 @@ from loguru import logger
 import numpy as np
 import math
 import time
+import tqdm
 
 
 
@@ -50,9 +51,18 @@ class Discretizer(gym.ActionWrapper):
         return self._actions[index].copy()
 
 
+class TqdmReporter(neat.reporting.BaseReporter):
+
+    def __init__(self, progress_bar):
+        self.progress_bar = progress_bar
+
+    def end_generation(self, config, population, species_set):
+        self.progress_bar.update()
+
+
 class FaceoffTrainer:
 
-    def __init__(self, render=False):
+    def __init__(self, render=False, progress_bar=None):
         self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
                               obs_type=retro.Observations.RAM,
                               inttype=retro.data.Integrations.ALL)
@@ -66,6 +76,8 @@ class FaceoffTrainer:
 
         self.population.add_reporter(neat.StdOutReporter(True))
         self.population.add_reporter(neat.StatisticsReporter())
+        if progress_bar is not None:
+            self.population.add_reporter(TqdmReporter(progress_bar))
         self.population.add_reporter(neat.Checkpointer(10))
 
         self.fittest = None
@@ -77,7 +89,7 @@ class FaceoffTrainer:
     def run(self, genome):
         results = self._eval_genome(genome, self.config)
 
-        logger.info("{score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
+        logger.info("S:{score:+5} T:{counter} Y:{puck_y:+4}, #:{player_w_puck}",
                     score=genome.fitness, counter=results["frame"], puck_y=results["puck_y"],
                     player_w_puck=results["player_w_puck"])
 
@@ -116,7 +128,7 @@ class FaceoffTrainer:
                 actions = net.activate(features)
 
                 if self.render:
-                    self.env.render()
+                    foo = self.env.render()
                     if self.rate:
                         time.sleep(0.01)
 
@@ -183,21 +195,23 @@ def main():
 
     model_filename = args.model_file
 
-    trainer = FaceoffTrainer(render=args.render)
-    if args.rt:
-        trainer.rate = 1
 
-    if not args.replay:
-        # Train
-        trainer.train()
+    with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
+        trainer = FaceoffTrainer(render=args.render, progress_bar=progress_bar)
+        if args.rt:
+            trainer.rate = 1
 
-        with open(model_filename, 'wb') as f:
-            pickle.dump(trainer.fittest, f, 1)
-    else:
-        # Replay
-        with open(model_filename, 'rb') as f:
-            model = pickle.load(f)
-        trainer.run(model)
+        if not args.replay:
+            # Train
+            trainer.train()
+
+            with open(model_filename, 'wb') as f:
+                pickle.dump(trainer.fittest, f, 1)
+        else:
+            # Replay
+            with open(model_filename, 'rb') as f:
+                model = pickle.load(f)
+            trainer.run(model)
 
 
 
