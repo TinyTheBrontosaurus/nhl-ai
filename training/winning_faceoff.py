@@ -155,7 +155,7 @@ class FaceoffTrainer:
                 actions = net.activate(features)
 
                 if self.render:
-                    foo = self.env.render()
+                    _ = self.env.render()
                     if self.rate:
                         time.sleep(0.01)
 
