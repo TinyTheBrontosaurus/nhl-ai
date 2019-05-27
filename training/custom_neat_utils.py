@@ -3,6 +3,13 @@ import time
 from neat.math_util import mean, stdev
 from neat.six_util import itervalues, iterkeys
 
+import gzip
+import random
+
+try:
+    import cPickle as pickle # pylint: disable=import-error
+except ImportError:
+    import pickle # pylint: disable=import-error
 
 class TqdmReporter(neat.reporting.BaseReporter):
 
@@ -104,3 +111,21 @@ class GenerationReporter(neat.reporting.BaseReporter):
 
     def info(self, msg):
         self.stream(msg)
+
+
+class Checkpointer(neat.checkpoint.Checkpointer):
+    def __init__(self, generation_interval=100, time_interval_seconds=300,
+                 filename_prefix='neat-checkpoint-', stream=print):
+        super().__init__(generation_interval, time_interval_seconds, filename_prefix)
+        self.stream = stream
+
+    def save_checkpoint(self, config, population, species_set, generation):
+        """ Save the current simulation state. """
+        filename = '{0}{1}'.format(self.filename_prefix,generation)
+        self.stream("Saving checkpoint to {0}".format(filename))
+
+        with gzip.open(filename, 'w', compresslevel=5) as f:
+            data = (generation, config, population, species_set, random.getstate())
+            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+

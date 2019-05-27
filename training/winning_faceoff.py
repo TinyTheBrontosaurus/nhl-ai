@@ -9,7 +9,7 @@ import math
 import time
 import tqdm
 import multiprocessing
-from training.custom_neat_utils import TqdmReporter, GenerationReporter
+from training.custom_neat_utils import TqdmReporter, GenerationReporter, Checkpointer
 
 
 class Discretizer(gym.ActionWrapper):
@@ -66,7 +66,7 @@ class FaceoffTrainerRunner:
         self.population.add_reporter(neat.StatisticsReporter())
         if progress_bar is not None:
             self.population.add_reporter(TqdmReporter(progress_bar))
-        self.population.add_reporter(neat.Checkpointer(1))
+        self.population.add_reporter(Checkpointer(1, stream=logger.info))
 
         self.fittest = None
 
