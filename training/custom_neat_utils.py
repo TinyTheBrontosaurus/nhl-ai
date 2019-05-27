@@ -13,16 +13,25 @@ except ImportError:
 
 class TqdmReporter(neat.reporting.BaseReporter):
 
-    def __init__(self, progress_bar):
+    def __init__(self, progress_bar, stream=None):
         """
         Reporter that prints out TQDM for each generation
         :param progress_bar: The TQDM progress bar
         """
         self.progress_bar = progress_bar
+        self.stream = stream
 
     def end_generation(self, config, population, species_set):
+        self.update()
+
+    def post_evaluate(self, config, population, species, best_genome):
+        self.update()
+
+    def update(self):
         if self.progress_bar is not None:
             self.progress_bar.update()
+            if self.stream is not None:
+                self.stream(str(self.progress_bar))
 
     def __getstate__(self):
         """

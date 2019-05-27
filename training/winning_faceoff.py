@@ -66,7 +66,7 @@ class FaceoffTrainerRunner:
         self.population.add_reporter(GenerationReporter(True, self.stream))
         self.population.add_reporter(neat.StatisticsReporter())
         if progress_bar is not None:
-            self.population.add_reporter(TqdmReporter(progress_bar))
+            self.population.add_reporter(TqdmReporter(progress_bar, stream=logger.info))
         self.population.add_reporter(Checkpointer(10, stream=self.stream))
 
         self.fittest = None
