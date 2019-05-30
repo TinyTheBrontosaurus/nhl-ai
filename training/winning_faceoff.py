@@ -3,6 +3,7 @@ import numpy as np
 import math
 import sys
 from training import runner
+import neat
 
 
 class Discretizer(gym.ActionWrapper):
@@ -46,11 +47,10 @@ class Discretizer(gym.ActionWrapper):
 
 
 class FaceoffTrainer:
-    def __init__(self, net, short_circuit=False):
+    def __init__(self, genome, config, short_circuit=False):
         self.short_circuit = short_circuit
-        self.net = net
+        self.net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
 
-        self._discretizer = Discretizer
         self._frame = 0
         self._score = 0
         self._done = False
@@ -59,12 +59,13 @@ class FaceoffTrainer:
         self._player_w_puck = None
         self._stats = {}
 
-        # TODO: What's the first action
-        self._next_action = None
+        # The first action
+        features = [self._frame]
+        self._next_action = self.net.activate(features)
 
-    @property
-    def discretizer(self):
-        return self._discretizer
+    @classmethod
+    def discretizer_class(cls):
+        return Discretizer
 
     @property
     def next_action(self):

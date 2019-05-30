@@ -17,6 +17,8 @@ from training.custom_neat_utils import TqdmReporter, GenerationReporter, Checkpo
 
 class Runner:
 
+    genv = None
+
     def __init__(self, trainer_class, render=False, progress_bar=None, stream=print, short_circuit=False):
         self.stream = stream
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -33,22 +35,15 @@ class Runner:
 
         self.fittest = None
 
-        self.trainer = trainer_class(short_circuit=short_circuit)
+        self._trainer_class = trainer_class
 
         self.render = render
         self.rate = None
         self.env = None
-
-    @property
-    def short_circuit(self):
-        return self.trainer.short_circuit
-
-    @short_circuit.setter
-    def short_circuit(self, value):
-        self.trainer.short_circuit = value
+        self._short_circuit = short_circuit
 
     def run(self, genome):
-        _ = self.trainer.eval_genome(genome, self.config)
+        _ = self._eval_genome(genome, self.config)
 
         logger.debug("S:{score:+5} Stats:{stats}",
                     score=genome.fitness, stats=self.trainer.stats)
@@ -65,11 +60,11 @@ class Runner:
                               # obs_type=retro.Observations.RAM,
                               inttype=retro.data.Integrations.ALL)
 
-        self.env = self.trainer.discretizer(self.env)
+        self.env = self._trainer_class.discretizer_class()(self.env)
 
     def _eval_genome(self, genome, config):
 
-        if FaceoffTrainer.genv is None:
+        if Runner.genv is None:
             logger.warning("Creating Env")
             self.create_env()
             Runner.genv = self.env
@@ -77,25 +72,26 @@ class Runner:
 
         _ = self.env.reset()
 
-        self.trainer.net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
+        trainer = self._trainer_class(genome, config, short_circuit=self._short_circuit)
 
-        while not self.trainer.done:
+        while not trainer.done:
 
             if self.render:
                 _ = self.env.render()
                 if self.rate:
                     time.sleep(0.01)
 
-            step = self.env.step(self.trainer.next_action)
+            step = self.env.step(trainer.next_action)
 
-            genome.fitness = self.trainer.tick(*step)
+            genome.fitness = trainer.tick(*step)
+        return trainer.stats
 
     def _eval_genomes(self, genomes, config):
 
         for genome_id, genome in genomes:
-            _ = self.trainer.eval_genome(genome, config)
+            stats = self._eval_genome(genome, config)
             logger.debug("{gid:5} {score:+5} Stats:{stats}",
-                    gid=genome_id, score=genome.fitness, stats=self.trainer.stats)
+                    gid=genome_id, score=genome.fitness, stats=stats)
 
 
 def main(argv, trainer_class):
@@ -161,7 +157,7 @@ def main(argv, trainer_class):
             # Make it easy to view when replaying
             trainer.rate = 1
             trainer.render = True
-            trainer.short_circuit = False
+            trainer._short_circuit = False
 
             # Replay
             with open(model_filename, 'rb') as f:
