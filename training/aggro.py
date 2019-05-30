@@ -1,41 +1,24 @@
 import sys
-from training import runner
-from training import discretizers
+from training import runner, discretizers
 import neat
 import typing
 
 
-class BButtonDiscretizer(discretizers.IndependentDiscretizer):
-    """
-    For a faceoff, only the "B" button and DPAD is important
-    """
-    def __init__(self, env):
-        super().__init__(env, [
-            ['B', None],
-            *discretizers.IndependentDiscretizer.DPAD
-         ])
-
-
-class FaceoffTrainer(runner.Trainer):
+class AggroTrainer(runner.Trainer):
     def __init__(self, genome: neat.DefaultGenome, config: neat.Config, short_circuit: bool):
         super().__init__(genome, config, short_circuit)
         self.net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
 
-        self._frame = 0
         self._score = 0
         self._done = False
-        self._min_puck_y = 500
-        self._puck_y = 0
-        self._player_w_puck = None
         self._stats = {}
 
         # The first action
-        features = [self._frame]
-        self._next_action = self.net.activate(features)
+        self._next_action = [0] * 12
 
     @classmethod
-    def discretizer_class(cls) -> typing.Callable[[], BButtonDiscretizer]:
-        return BButtonDiscretizer
+    def discretizer_class(cls) -> typing.Callable[[], discretizers.Genesis3ButtonDiscretizer]:
+        return discretizers.Genesis3ButtonDiscretizer
 
     @property
     def next_action(self) -> list:
@@ -50,8 +33,8 @@ class FaceoffTrainer(runner.Trainer):
         return self._done
 
     def tick(self, ob, rew, done, info) -> float:
-        faceoffs_won = info['home-faceoff']
-        faceoffs_lost = info['away-faceoff']
+        home_checks = info['home-checks']
+        away_checks = info['away-checks']
         puck_y = info['puck-ice-y']
         total_faceoffs = faceoffs_won + faceoffs_lost
         self._min_puck_y = min(puck_y, self._min_puck_y)
@@ -106,4 +89,4 @@ class FaceoffTrainer(runner.Trainer):
 
 
 if __name__ == "__main__":
-    runner.main(sys.argv[1:], FaceoffTrainer)
+    runner.main(sys.argv[1:], AggroTrainer)
