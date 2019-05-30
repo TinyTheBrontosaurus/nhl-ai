@@ -4,6 +4,7 @@ import math
 import sys
 from training import runner
 import neat
+import typing
 
 
 class Discretizer(gym.ActionWrapper):
@@ -39,16 +40,16 @@ class Discretizer(gym.ActionWrapper):
             self._actions.append(arr)
         self.action_space = gym.spaces.Discrete(len(self._actions))
 
-    def action(self, a):
+    def action(self, a: typing.List[float]) -> list:
         index = math.floor(a[0] * len(self._actions))
         if index >= len(self._actions):
             index = len(self._actions) - 1
         return self._actions[index].copy()
 
 
-class FaceoffTrainer:
-    def __init__(self, genome, config, short_circuit=False):
-        self.short_circuit = short_circuit
+class FaceoffTrainer(runner.Trainer):
+    def __init__(self, genome: neat.DefaultGenome, config: neat.Config, short_circuit: bool):
+        super().__init__(genome, config, short_circuit)
         self.net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
 
         self._frame = 0
@@ -64,22 +65,22 @@ class FaceoffTrainer:
         self._next_action = self.net.activate(features)
 
     @classmethod
-    def discretizer_class(cls):
+    def discretizer_class(cls) -> typing.Callable[[], Discretizer]:
         return Discretizer
 
     @property
-    def next_action(self):
+    def next_action(self) -> list:
         return self._next_action
 
     @property
-    def stats(self):
+    def stats(self) -> dict:
         return self._stats
 
     @property
-    def done(self):
+    def done(self) -> bool:
         return self._done
 
-    def tick(self, ob, rew, done, info):
+    def tick(self, ob, rew, done, info) -> float:
         faceoffs_won = info['home-faceoff']
         faceoffs_lost = info['away-faceoff']
         puck_y = info['puck-ice-y']
