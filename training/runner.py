@@ -20,6 +20,15 @@ class Runner:
     genv = None
 
     def __init__(self, trainer_class, render=False, progress_bar=None, stream=print, short_circuit=False):
+        """
+        Provides a progress bar, logging to files assorted by type and timestamp.
+        :param trainer_class: The class to be used for training
+        :param render: True to render the emulated screen, which will decrease speed
+        :param progress_bar: The progress bar to use
+        :param stream: The stream to which to print logs
+        :param short_circuit: True to indicate to the trainer to stop as soon as the goal is achieved. Typically
+        don't want to short-circuit if viewing a replay
+        """
         self.stream = stream
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                   neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -43,26 +52,52 @@ class Runner:
         self._short_circuit = short_circuit
 
     def run(self, genome):
-        _ = self._eval_genome(genome, self.config)
+        """
+        Replay against a specific genome
+        """
+        stats = self._eval_genome(genome, self.config)
 
         logger.debug("S:{score:+5} Stats:{stats}",
-                    score=genome.fitness, stats=self.trainer.stats)
+                    score=genome.fitness, stats=stats)
 
     def train(self, nproc=1):
+        """
+        Train with a specified number of processes
+        :param nproc: The number of processes
+        """
         if nproc <= 1:
+            # Single-threaded. Print more stats
             self.fittest = self.population.run(self._eval_genomes)
         else:
+            # Multi-threaded. Use the parallelizer and print fewer stats
             parallelizer = neat.ParallelEvaluator(nproc, self._eval_genome)
             self.fittest = self.population.run(parallelizer.evaluate)
 
     def create_env(self):
+        """
+        Create the environment. This is created once per process to save CPU
+        """
         self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
-                              # obs_type=retro.Observations.RAM,
+                              obs_type=retro.Observations.RAM,
                               inttype=retro.data.Integrations.ALL)
 
         self.env = self._trainer_class.discretizer_class()(self.env)
 
+    def _eval_genomes(self, genomes, config):
+        """
+        Evaluate many genomes serially in a for-loop
+        """
+
+        for genome_id, genome in genomes:
+            stats = self._eval_genome(genome, config)
+            logger.debug("{gid:5} {score:+5} Stats:{stats}",
+                    gid=genome_id, score=genome.fitness, stats=stats)
+
     def _eval_genome(self, genome, config):
+        """
+        Evaluate a single genome
+        :return: The trainer's stats, as a dictionary
+        """
 
         if Runner.genv is None:
             logger.warning("Creating Env")
@@ -76,27 +111,28 @@ class Runner:
 
         while not trainer.done:
 
-            if self.render:
-                _ = self.env.render()
-                if self.rate:
-                    time.sleep(0.01)
-
+            self._render()
             step = self.env.step(trainer.next_action)
 
             genome.fitness = trainer.tick(*step)
+
+        self._render()
+
         return trainer.stats
 
-    def _eval_genomes(self, genomes, config):
-
-        for genome_id, genome in genomes:
-            stats = self._eval_genome(genome, config)
-            logger.debug("{gid:5} {score:+5} Stats:{stats}",
-                    gid=genome_id, score=genome.fitness, stats=stats)
+    def _render(self):
+        """
+        Render and sleep based upon the settings
+        """
+        if self.render:
+            _ = self.env.render()
+            if self.rate:
+                time.sleep(0.01)
 
 
 def main(argv, trainer_class):
     parser = argparse.ArgumentParser(description="Train or test a model to win a faceoff")
-    parser.add_argument('--render', action='store_true', help="Watch the game while training")
+    parser.add_argument('--render', action='store_true', help="Watch the game while running")
     parser.add_argument('--replay', action='store_true', help="Replay a trained network")
     parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
                         default=None)
@@ -104,11 +140,11 @@ def main(argv, trainer_class):
     args = parser.parse_args(argv)
     model_filename = None
 
-    module_name = os.path.splitext(os.path.basename(__file__))[0]
+    module_name = trainer_class.__name__
     log_folder_root = os.path.abspath(os.path.join("logs", module_name))
 
     if not args.replay:
-        # Setup target og folder
+        # Setup target log folder
         module_name = os.path.splitext(os.path.basename(__file__))[0]
         friendly_time = str(datetime.datetime.now()).replace(':', "-").replace(" ", "_")
         log_folder = os.path.join(log_folder_root, friendly_time)
