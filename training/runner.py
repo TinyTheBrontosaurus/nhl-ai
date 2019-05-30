@@ -51,7 +51,7 @@ class Runner:
         self.env = None
         self._short_circuit = short_circuit
 
-    def run(self, genome):
+    def replay(self, genome):
         """
         Replay against a specific genome
         """
@@ -161,6 +161,21 @@ def main(argv, trainer_class):
         logger.info("Running program: {}", module_name)
         logger.info("Version: {}", version)
         logger.info("Full path: {}", __file__)
+
+        # Run tqdm and do training vs replay
+        with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
+            runner = Runner(trainer_class=trainer_class,
+                             render=args.render,
+                             progress_bar=progress_bar,
+                             stream=logger.info)
+
+            # Train
+            runner.train(nproc=args.nproc)
+
+            # Dump the result
+            with open(model_filename, 'wb') as f:
+                pickle.dump(runner.fittest, f, 1)
+
     else:
         # If replaying, then find the most recent logged folder with a fittest.pkl
         if args.model_file is None:
@@ -176,26 +191,15 @@ def main(argv, trainer_class):
             if model_filename is None:
                 raise FileNotFoundError("Could not find fittest.pkl")
 
-    # Run tqdm and do training vs replay
-    with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
-        trainer = Runner(trainer_class=trainer_class,
-                         render=args.render,
-                         progress_bar=progress_bar,
-                         stream=logger.info)
+        runner = Runner(trainer_class=trainer_class,
+                        render=True,
+                        stream=logger.info,
+                        short_circuit=False)
 
-        if not args.replay:
-            # Train
-            trainer.train(nproc=args.nproc)
+        # Make it easy to view when replaying
+        runner.rate = 1
 
-            with open(model_filename, 'wb') as f:
-                pickle.dump(trainer.fittest, f, 1)
-        else:
-            # Make it easy to view when replaying
-            trainer.rate = 1
-            trainer.render = True
-            trainer._short_circuit = False
-
-            # Replay
-            with open(model_filename, 'rb') as f:
-                model = pickle.load(f)
-            trainer.run(model)
+        # Replay
+        with open(model_filename, 'rb') as f:
+            model = pickle.load(f)
+        runner.replay(model)
