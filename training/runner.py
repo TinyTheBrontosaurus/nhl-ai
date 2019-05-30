@@ -17,6 +17,13 @@ import typing
 
 class Trainer(abc.ABC):
     def __init__(self, genome: neat.DefaultGenome, config: neat.Config, short_circuit: bool):
+        """
+        Abstract class for scoring scenarios and running genomes
+        :param genome: The genome
+        :param config: The config
+        :param short_circuit: False to keep running to the end of the scenario. True to stop as soon as it's won/lost
+        """
+
         self.genome = genome
         self.config = config
         self.short_circuit = short_circuit
