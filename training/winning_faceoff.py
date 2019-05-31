@@ -27,8 +27,10 @@ class FaceoffTrainer(runner.Trainer):
         self._done = False
         self._min_puck_y = 500
         self._puck_y = 0
-        self._player_w_puck = None
+        self._faceoff_winner = None
         self._stats = {}
+        # No bonus until faceoff is won
+        self._puck_bonus = 0
 
         # The first action
         features = [self._frame]
@@ -57,42 +59,39 @@ class FaceoffTrainer(runner.Trainer):
         total_faceoffs = faceoffs_won + faceoffs_lost
         self._min_puck_y = min(puck_y, self._min_puck_y)
 
-        player_w_puck = get_player_w_puck(info)
+        # First to touch the puck (not None and not {}) wins the faceoff
+        if total_faceoffs > 0 and not self._faceoff_winner:
+            self._faceoff_winner = get_player_w_puck(info)
 
-        # Incentivize RD to win
-        bonuses = {
-            'LW': 200,
-            'C': 300,
-            'RW': 500,
-            'LD': 100,
-            'RD': 1000,
-            'G': 20
-        }
+            # Incentivize RD to win
+            bonuses = {
+                'LW': 200,
+                'C': 300,
+                'RW': 500,
+                'LD': 100,
+                'RD': 1000,
+                'G': 20
+            }
 
-        puck_bonus = 0
-        if player_w_puck.get('team') == 'home':
-            puck_bonus = bonuses.get(player_w_puck.get('pos'), 0)
-
-        # No bonus before a faceoff is won
-        if faceoffs_won <= 0:
-            puck_bonus = 0
+            if self._faceoff_winner.get('team') == 'home':
+                self._puck_bonus = bonuses.get(self._faceoff_winner.get('pos'), 0)
 
         # Always end after this time
         if self._frame > 300:
             self._done = True
 
         # Stop early once a faceoff has been won and someone has the puck
-        if self.short_circuit and puck_bonus > 0 and faceoffs_won > 0:
+        if self.short_circuit and self._puck_bonus > 0 and faceoffs_won > 0:
             self._done = True
 
-        score = (faceoffs_won - faceoffs_lost) * 100 + -self._min_puck_y + puck_bonus
+        score = (faceoffs_won - faceoffs_lost) * 100 + -self._min_puck_y + self._puck_bonus
 
         # Calculate action for the next frame
         self._frame += 1
         features = [self._frame]
         self._next_action = self.net.activate(features)
 
-        self._stats = {"score": score, "frame": self._frame, "puck_y": puck_y, "player_w_puck": player_w_puck}
+        self._stats = {"score": score, "frame": self._frame, "puck_y": puck_y, "faceoff_winner": self._faceoff_winner}
 
         return score
 
