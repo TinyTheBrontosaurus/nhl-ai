@@ -24,7 +24,7 @@ class IndependentDiscretizer(gym.ActionWrapper):
 
         # Create all combinations on the D pad for pressing B or not (2*3*3==18)
         actions = []
-        for button_combo in itertools.product(independent_buttons):
+        for button_combo in itertools.product(*independent_buttons):
             none_less_combo = [x for x in button_combo if x is not None]
             actions.append(none_less_combo)
 
