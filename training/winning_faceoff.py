@@ -3,6 +3,7 @@ from training import runner
 from training import discretizers
 import neat
 import typing
+from training.info_utils import get_player_w_puck
 
 
 class BButtonDiscretizer(discretizers.IndependentDiscretizer):
@@ -56,40 +57,31 @@ class FaceoffTrainer(runner.Trainer):
         total_faceoffs = faceoffs_won + faceoffs_lost
         self._min_puck_y = min(puck_y, self._min_puck_y)
 
-        if info['player-w-puck-ice-x'] == info['player-home-7-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-7-y']:
-            player_w_puck = 7
-            puck_bonus = 1000
-        elif info['player-w-puck-ice-x'] == info['player-home-10-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-10-y']:
-            player_w_puck = 10
-            puck_bonus = 200
-        elif info['player-w-puck-ice-x'] == info['player-home-16-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-16-y']:
-            player_w_puck = 16
-            puck_bonus = 300
-        elif info['player-w-puck-ice-x'] == info['player-home-89-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-89-y']:
-            player_w_puck = 89
-            puck_bonus = 500
-        elif info['player-w-puck-ice-x'] == info['player-home-8-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-8-y']:
-            player_w_puck = 8
-            puck_bonus = 100
-        elif info['player-w-puck-ice-x'] == info['player-home-goalie-ice-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-goalie-ice-y']:
-            player_w_puck = 31
-            puck_bonus = 20
-        else:
-            player_w_puck = None
-            puck_bonus = 0
+        player_w_puck = get_player_w_puck(info)
 
+        # Incentivize RD to win
+        bonuses = {
+            'LW': 200,
+            'C': 300,
+            'RW': 500,
+            'LD': 100,
+            'RD': 1000,
+            'G': 20
+        }
+
+        puck_bonus = 0
+        if player_w_puck.get('team') == 'home':
+            puck_bonus = bonuses.get(player_w_puck.get('pos'), 0)
+
+        # No bonus before a faceoff is won
         if faceoffs_won <= 0:
             puck_bonus = 0
 
+        # Always end after this time
         if self._frame > 300:
             self._done = True
 
+        # Stop early once a faceoff has been won and someone has the puck
         if self.short_circuit and puck_bonus > 0 and faceoffs_won > 0:
             self._done = True
 
