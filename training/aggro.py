@@ -12,9 +12,11 @@ class AggroTrainer(runner.Trainer):
         self._score = 0
         self._done = False
         self._stats = {}
+        self._frame = 0
 
         # The first action
-        self._next_action = [0] * 12
+        features = [self._frame]
+        self._next_action = self.net.activate(features)
 
     @classmethod
     def discretizer_class(cls) -> typing.Callable[[], discretizers.Genesis3ButtonDiscretizer]:
@@ -35,55 +37,20 @@ class AggroTrainer(runner.Trainer):
     def tick(self, ob, rew, done, info) -> float:
         home_checks = info['home-checks']
         away_checks = info['away-checks']
-        puck_y = info['puck-ice-y']
-        total_faceoffs = faceoffs_won + faceoffs_lost
-        self._min_puck_y = min(puck_y, self._min_puck_y)
 
-        if info['player-w-puck-ice-x'] == info['player-home-7-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-7-y']:
-            player_w_puck = 7
-            puck_bonus = 1000
-        elif info['player-w-puck-ice-x'] == info['player-home-10-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-10-y']:
-            player_w_puck = 10
-            puck_bonus = 200
-        elif info['player-w-puck-ice-x'] == info['player-home-16-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-16-y']:
-            player_w_puck = 16
-            puck_bonus = 300
-        elif info['player-w-puck-ice-x'] == info['player-home-89-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-89-y']:
-            player_w_puck = 89
-            puck_bonus = 500
-        elif info['player-w-puck-ice-x'] == info['player-home-8-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-8-y']:
-            player_w_puck = 8
-            puck_bonus = 100
-        elif info['player-w-puck-ice-x'] == info['player-home-goalie-ice-x'] and \
-                        info['player-w-puck-ice-y'] == info['player-home-goalie-ice-y']:
-            player_w_puck = 31
-            puck_bonus = 20
-        else:
-            player_w_puck = None
-            puck_bonus = 0
-
-        if faceoffs_won <= 0:
-            puck_bonus = 0
-
-        if self._frame > 300:
+        # Play for a minute
+        if info['time'] < 600 - 60:
             self._done = True
 
-        if self.short_circuit and puck_bonus > 0 and faceoffs_won > 0:
-            self._done = True
-
-        score = (faceoffs_won - faceoffs_lost) * 100 + -self._min_puck_y + puck_bonus
+        # Pure score on checks
+        score = (home_checks * 100) - (away_checks * 50)
 
         # Calculate action for the next frame
         self._frame += 1
         features = [self._frame]
         self._next_action = self.net.activate(features)
 
-        self._stats = {"score": score, "frame": self._frame, "puck_y": puck_y, "player_w_puck": player_w_puck}
+        self._stats = {"score": score}
 
         return score
 
