@@ -119,6 +119,7 @@ class Runner:
         self.rate = None
         self.env = None
         self._short_circuit = short_circuit
+        self._listeners: typing.Callable[[typing.Any] * 4 + [dict], typing.Any] = []
 
     def replay(self, genome: neat.DefaultGenome):
         """
@@ -146,12 +147,18 @@ class Runner:
         Create the environment. This is created once per process to save CPU
         """
         self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
-                              obs_type=retro.Observations.RAM,
                               inttype=retro.data.Integrations.ALL)
 
         # Wrap the env
         if self._trainer_class.discretizer_class is not None:
             self.env = self._trainer_class.discretizer_class()(self.env)
+
+    def add_listener(self, listener: typing.Callable[[typing.Any] * 4 + [dict], typing.Any]):
+        """
+        Add a listener callback that is called with a frame and all the stats/reward/image associated
+        that that frame
+        """
+        self._listeners.append(listener)
 
     def _eval_genomes(self, genomes: typing.List[neat.DefaultGenome], config: neat.Config):
         """
@@ -185,6 +192,9 @@ class Runner:
             step = self.env.step(trainer.next_action)
 
             genome.fitness = trainer.tick(*step)
+
+            for listener in self._listeners:
+                listener(*step, trainer.stats)
 
         self._render()
 
@@ -340,6 +350,10 @@ def replay_training(args):
 
     # Make it easy to view when replaying
     runner.rate = 1
+    runner.add_listener(movie_maker)
 
     for model in models:
         runner.replay(model)
+
+def movie_maker(ob, rew, done, info, stats):
+    bar = 1
