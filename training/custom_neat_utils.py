@@ -135,6 +135,31 @@ class GenerationReporter(neat.reporting.BaseReporter):
         self.stream(msg)
 
 
+class SaveBestOfGeneration(neat.reporting.BaseReporter):
+    def __init__(self, prefix: str):
+        """
+        Save the best genome at the end of each generation
+        :param prefix: The prefix for the genomes being saved. Each will have "{id}.pkl"
+        added as a suffix
+        """
+        self.generation: int = None
+        self.prefix: str = prefix
+
+    def start_generation(self, generation: int):
+        """
+        Capture the ID of the next generation
+        """
+        self.generation = generation
+
+    def post_evaluate(self, config, population, species, best_genome):
+
+        if best_genome is not None:
+            # Dump the result
+            model_filename = "{}{}.pkl".format(self.prefix, self.generation)
+            with open(model_filename, 'wb') as f:
+                pickle.dump(best_genome, f, 1)
+
+
 class Checkpointer(neat.checkpoint.Checkpointer):
     def __init__(self, generation_interval=100, time_interval_seconds=300,
                  filename_prefix='neat-checkpoint-', stream=print):

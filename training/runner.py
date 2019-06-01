@@ -10,7 +10,7 @@ import multiprocessing
 import subprocess
 import os
 import datetime
-from training.custom_neat_utils import TqdmReporter, GenerationReporter, Checkpointer
+from training.custom_neat_utils import TqdmReporter, GenerationReporter, Checkpointer, SaveBestOfGeneration
 import abc
 import typing
 
@@ -84,7 +84,7 @@ class Runner:
                  progress_bar:tqdm.tqdm=None,
                  stream=print,
                  short_circuit:bool=False,
-                 checkpoint_filename_prefix:str=None):
+                 log_folder:str=""):
         """
         Provides a progress bar, logging to files assorted by type and timestamp.
         :param trainer_class: The class to be used for training
@@ -93,6 +93,7 @@ class Runner:
         :param stream: The stream to which to print logs
         :param short_circuit: True to indicate to the trainer to stop as soon as the goal is achieved. Typically
         don't want to short-circuit if viewing a replay
+        :param log_folder: The folder in which to log checkpoints and generational results
         """
         self.stream = stream
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -106,7 +107,8 @@ class Runner:
         if progress_bar is not None:
             self.population.add_reporter(TqdmReporter(progress_bar, stream=logger_info_workaround))
         self.population.add_reporter(Checkpointer(10, stream=self.stream,
-                                                  filename_prefix=checkpoint_filename_prefix))
+                                                  filename_prefix=os.path.join(log_folder, "neat-checkpoint-")))
+        self.population.add_reporter(SaveBestOfGeneration(os.path.join(log_folder, "generation-")))
 
         self.fittest = None
 
@@ -167,7 +169,7 @@ class Runner:
         """
 
         if Runner.genv is None:
-            logger.warning("Creating Env")
+            logger.debug("Creating Env")
             self.create_env()
             Runner.genv = self.env
         self.env = Runner.genv
@@ -209,7 +211,7 @@ def main(argv, trainer_class):
                         default=None)
     parser.add_argument('--nproc', type=int, help="The number of processes to run", default=multiprocessing.cpu_count())
     args = parser.parse_args(argv)
-    model_filename = None
+    model_filename = args.model_file[0] if args.model_file is not None else None
 
     module_name = trainer_class.__name__
     log_folder_root = os.path.abspath(os.path.join("logs", module_name))
@@ -239,7 +241,7 @@ def main(argv, trainer_class):
                             render=args.render,
                             progress_bar=progress_bar,
                             stream=logger_info_workaround,
-                            checkpoint_filename_prefix=os.path.join(log_folder, "neat-checkpoint-"))
+                            log_folder=log_folder)
 
             # Train
             runner.train(nproc=args.nproc)
@@ -250,7 +252,7 @@ def main(argv, trainer_class):
 
     else:
         # If replaying, then find the most recent logged folder with a fittest.pkl
-        if args.model_file is None:
+        if model_filename is None:
             potential_folders = os.listdir(log_folder_root)
             for subfolder in reversed(sorted(potential_folders)):
                 folder = os.path.join(log_folder_root, subfolder)
