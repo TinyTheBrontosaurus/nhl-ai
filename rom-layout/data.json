@@ -232,6 +232,11 @@
       "address": 16758644,
       "type": ">i2"
     },
+    "shootout-stoppage": {
+      "address": 16759012,
+      "mask": 1,
+      "type": "|i1"
+    },
     "time": {
       "address": 16761960,
       "type": ">u2"
