@@ -189,7 +189,12 @@ class Runner:
         while not trainer.done:
 
             self._render()
-            step = self.env.step(trainer.next_action)
+            next_action = trainer.next_action
+
+            # If there is no action, then no buttons are being pressed
+            if next_action is None:
+                next_action = [0] * len(self.env.buttons)
+            step = self.env.step(next_action)
 
             genome.fitness = trainer.tick(*step)
 
