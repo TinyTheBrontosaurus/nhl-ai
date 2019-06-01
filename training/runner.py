@@ -13,6 +13,7 @@ import datetime
 from training.custom_neat_utils import TqdmReporter, GenerationReporter, Checkpointer, SaveBestOfGeneration
 import abc
 import typing
+from natsort import natsorted
 
 
 def logger_info_workaround(*args, **kwargs):
@@ -205,18 +206,28 @@ class Runner:
 
 def main(argv, trainer_class):
     parser = argparse.ArgumentParser(description="Train or test a model to win a faceoff")
-    parser.add_argument('--render', action='store_true', help="Watch the game while running")
-    parser.add_argument('--replay', action='store_true', help="Replay a trained network")
+    replay_parser = parser.add_mutually_exclusive_group()
+    replay_parser.add_argument('--render', action='store_true', help="Watch the game while training")
+    replay_parser.add_argument('--replay', action='store_true',
+                               help="Replay a trained network")
+    replay_parser.add_argument('--replay-training', action='store_true',
+                               help="Replay all major generations of training")
     parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
                         default=None)
     parser.add_argument('--nproc', type=int, help="The number of processes to run", default=multiprocessing.cpu_count())
     args = parser.parse_args(argv)
-    model_filename = args.model_file[0] if args.model_file is not None else None
+    args.model_filename = args.model_file[0] if args.model_file is not None else None
 
     module_name = trainer_class.__name__
-    log_folder_root = os.path.abspath(os.path.join("logs", module_name))
+    args.log_folder_root = os.path.abspath(os.path.join("logs", module_name))
+    args.trainer_class = trainer_class
 
-    if not args.replay:
+    do_replay = args.replay or args.replay_training
+
+    if not do_replay:
+        model_filename = args.model_filename
+        log_folder_root = args.log_folder_root
+
         # Setup target log folder
         module_name = os.path.splitext(os.path.basename(__file__))[0]
         friendly_time = str(datetime.datetime.now()).replace(':', "-").replace(" ", "_")
@@ -250,30 +261,78 @@ def main(argv, trainer_class):
         with open(model_filename, 'wb') as f:
             pickle.dump(runner.fittest, f, 1)
 
-    else:
-        # If replaying, then find the most recent logged folder with a fittest.pkl
+    elif args.replay:
+        replay(args)
+    elif args.replay_training:
+        replay_training(args)
+
+def replay(args):
+    model_filename = args.model_filename
+    log_folder_root = args.log_folder_root
+
+    # If replaying, then find the most recent logged folder with a fittest.pkl
+    if model_filename is None:
+        potential_folders = os.listdir(log_folder_root)
+        for subfolder in reversed(sorted(potential_folders)):
+            folder = os.path.join(log_folder_root, subfolder)
+            if os.path.isdir(folder):
+                potential_filename = os.path.join(folder, "fittest.pkl")
+                if os.path.exists(potential_filename):
+                    model_filename = potential_filename
+                    logger.info("Replaying {}".format(folder))
+                    break
         if model_filename is None:
-            potential_folders = os.listdir(log_folder_root)
-            for subfolder in reversed(sorted(potential_folders)):
-                folder = os.path.join(log_folder_root, subfolder)
-                if os.path.isdir(folder):
-                    potential_filename = os.path.join(folder, "fittest.pkl")
-                    if os.path.exists(potential_filename):
-                        model_filename = potential_filename
-                        logger.info("Replaying {}".format(folder))
-                        break
-            if model_filename is None:
-                raise FileNotFoundError("Could not find fittest.pkl")
+            raise FileNotFoundError("Could not find fittest.pkl")
 
-        runner = Runner(trainer_class=trainer_class,
-                        render=True,
-                        stream=logger_info_workaround,
-                        short_circuit=False)
+    # Replay
+    with open(model_filename, 'rb') as f:
+        model = pickle.load(f)
 
-        # Make it easy to view when replaying
-        runner.rate = 1
+    runner = Runner(trainer_class=trainer_class,
+                    render=True,
+                    stream=logger_info_workaround,
+                    short_circuit=False)
 
-        # Replay
+    # Make it easy to view when replaying
+    runner.rate = 1
+
+    runner.replay(model)
+
+
+def replay_training(args):
+    log_folder_root = args.log_folder_root
+
+    model_filenames = None
+
+    # If replaying, then find the most recent logged folder with any generation-{}.pkl
+    potential_folders = os.listdir(log_folder_root)
+    for subfolder in reversed(sorted(potential_folders)):
+        folder = os.path.join(log_folder_root, subfolder)
+        if os.path.isdir(folder):
+            potential_filename = os.path.join(folder, "generation-0.pkl")
+            if os.path.exists(potential_filename):
+                model_filenames = [os.path.join(folder, x) for x in os.listdir(folder)
+                                   if x.startswith('generation-') and x.endswith('.pkl')]
+
+                logger.info("Replaying {} unique generations from training in folder {}".format(
+                    folder, len(model_filenames)))
+                break
+    if model_filenames is None:
+        raise FileNotFoundError("Could not find fittest.pkl")
+
+    # Replay
+    models = []
+    for model_filename in natsorted(model_filenames):
         with open(model_filename, 'rb') as f:
-            model = pickle.load(f)
+            models.append( pickle.load(f))
+
+    runner = Runner(trainer_class=args.trainer_class,
+                    render=True,
+                    stream=logger_info_workaround,
+                    short_circuit=False)
+
+    # Make it easy to view when replaying
+    runner.rate = 1
+
+    for model in models:
         runner.replay(model)
