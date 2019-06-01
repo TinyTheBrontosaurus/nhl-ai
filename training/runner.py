@@ -267,6 +267,10 @@ def main(argv, trainer_class):
         replay_training(args)
 
 def replay(args):
+    """
+    Search for the latest folder with a "fittest" genome in it, and replay it
+    If a genome file is provided, uses that instead of searching
+    """
     model_filename = args.model_filename
     log_folder_root = args.log_folder_root
 
@@ -300,6 +304,9 @@ def replay(args):
 
 
 def replay_training(args):
+    """
+    Search for the latest folder with genome logs in it, and replay those genomes
+    """
     log_folder_root = args.log_folder_root
 
     model_filenames = None
