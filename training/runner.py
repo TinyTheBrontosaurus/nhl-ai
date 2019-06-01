@@ -15,6 +15,16 @@ import abc
 import typing
 
 
+def logger_info_workaround(*args, **kwargs):
+    """
+    Due to a bug in loguru/multiprocessing interaction, it is not possible to send a logger.info
+    function pointer into multiprocessing to be picked. A workaround is to wrap in another
+    function
+    See https://github.com/Delgan/loguru/issues/102 for bug details and resolution
+    """
+    return logger.info(*args, **kwargs)
+
+
 class Trainer(abc.ABC):
     def __init__(self, genome: neat.DefaultGenome, config: neat.Config, short_circuit: bool):
         """
@@ -94,7 +104,7 @@ class Runner:
         self.population.add_reporter(GenerationReporter(True, self.stream))
         self.population.add_reporter(neat.StatisticsReporter())
         if progress_bar is not None:
-            self.population.add_reporter(TqdmReporter(progress_bar, stream=logger.info))
+            self.population.add_reporter(TqdmReporter(progress_bar, stream=logger_info_workaround))
         self.population.add_reporter(Checkpointer(10, stream=self.stream,
                                                   filename_prefix=checkpoint_filename_prefix))
 
@@ -121,13 +131,12 @@ class Runner:
         Train with a specified number of processes
         :param nproc: The number of processes
         """
-        if nproc <= 1:
-            # Single-threaded. Print more stats
-            self.fittest = self.population.run(self._eval_genomes)
-        else:
-            # Multi-threaded. Use the parallelizer and print fewer stats
-            parallelizer = neat.ParallelEvaluator(nproc, self._eval_genome)
-            self.fittest = self.population.run(parallelizer.evaluate)
+        # Note: Code to run single-threaded is as follows
+        # >>> self.fittest = self.population.run(self._eval_genomes)
+
+        # Multi-threaded execution
+        parallelizer = neat.ParallelEvaluator(nproc, self._eval_genome_score)
+        self.fittest = self.population.run(parallelizer.evaluate)
 
     def create_env(self):
         """
@@ -178,6 +187,10 @@ class Runner:
 
         return trainer.stats
 
+    def _eval_genome_score(self, genome: neat.DefaultGenome, config: neat.Config):
+        _ = self._eval_genome(genome, config)
+        return genome.fitness
+
     def _render(self):
         """
         Render and sleep based upon the settings
@@ -225,7 +238,7 @@ def main(argv, trainer_class):
             runner = Runner(trainer_class=trainer_class,
                             render=args.render,
                             progress_bar=progress_bar,
-                            stream=logger.info,
+                            stream=logger_info_workaround,
                             checkpoint_filename_prefix=os.path.join(log_folder, "neat-checkpoint-"))
 
             # Train
@@ -252,7 +265,7 @@ def main(argv, trainer_class):
 
         runner = Runner(trainer_class=trainer_class,
                         render=True,
-                        stream=logger.info,
+                        stream=logger_info_workaround,
                         short_circuit=False)
 
         # Make it easy to view when replaying
