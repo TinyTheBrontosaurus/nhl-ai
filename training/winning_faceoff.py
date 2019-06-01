@@ -60,7 +60,7 @@ class FaceoffTrainer(runner.Trainer):
         self._min_puck_y = min(puck_y, self._min_puck_y)
 
         # First to touch the puck (not None and not {}) wins the faceoff
-        if total_faceoffs > 0 and not self._faceoff_winner:
+        if total_faceoffs > 0 and not self._faceoff_winner and faceoffs_won > 0:
             self._faceoff_winner = get_player_w_puck(info)
 
             # Incentivize RD to win
