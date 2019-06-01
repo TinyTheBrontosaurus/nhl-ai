@@ -144,6 +144,7 @@ class SaveBestOfGeneration(neat.reporting.BaseReporter):
         """
         self.generation: int = None
         self.prefix: str = prefix
+        self.last_logged = None
 
     def start_generation(self, generation: int):
         """
@@ -154,10 +155,24 @@ class SaveBestOfGeneration(neat.reporting.BaseReporter):
     def post_evaluate(self, config, population, species, best_genome):
 
         if best_genome is not None:
-            # Dump the result
-            model_filename = "{}{}.pkl".format(self.prefix, self.generation)
-            with open(model_filename, 'wb') as f:
-                pickle.dump(best_genome, f, 1)
+            # Only log new genomes; don't log the same genome over and over again when stalled
+            new_best_species_id = species.get_species_id(best_genome.key)
+            new_best_genome_key = best_genome.key
+
+            if self.last_logged is None:
+                log_it = True
+            elif new_best_species_id == self.last_logged[0] and new_best_genome_key == self.last_logged[1]:
+                log_it = False
+            else:
+                log_it = True
+
+            if log_it:
+                self.last_logged = (new_best_species_id, new_best_genome_key)
+
+                # Dump the result
+                model_filename = "{}{}.pkl".format(self.prefix, self.generation)
+                with open(model_filename, 'wb') as f:
+                    pickle.dump(best_genome, f, 1)
 
 
 class Checkpointer(neat.checkpoint.Checkpointer):
