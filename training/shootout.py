@@ -42,6 +42,13 @@ class ShootoutTrainer(runner.Trainer):
         return 'config-shootout'
 
     @classmethod
+    def get_scenario_string(cls) -> str:
+        """
+        Accessor for the scenario to use
+        """
+        return 'ChiAtBuf-Shootout-Mogilny'
+
+    @classmethod
     def discretizer_class(cls) -> typing.Callable[[], CButtonDiscretizer]:
         return CButtonDiscretizer
 
@@ -110,7 +117,7 @@ class ShootoutTrainer(runner.Trainer):
             score += 100000
 
         # Stop early once stoppage occurs
-        if self.short_circuit and info['shootout_stoppage']:
+        if info['shootout-stoppage']:
             self._done = True
 
         features = [

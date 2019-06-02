@@ -46,6 +46,13 @@ class Trainer(abc.ABC):
         """
         return 'config-feedforward'
 
+    @classmethod
+    def get_scenario_string(cls) -> str:
+        """
+        Accessor for the scenario to use
+        """
+        return 'ChiAtBuf-Faceoff'
+
     @abc.abstractclassmethod
     def discretizer_class(cls) -> typing.Callable[[], gym.ActionWrapper]:
         """
@@ -142,18 +149,19 @@ class Runner:
         Train with a specified number of processes
         :param nproc: The number of processes
         """
-        # Note: Code to run single-threaded is as follows
-        # >>> self.fittest = self.population.run(self._eval_genomes)
-
-        # Multi-threaded execution
-        parallelizer = neat.ParallelEvaluator(nproc, self._eval_genome_score)
-        self.fittest = self.population.run(parallelizer.evaluate)
+        # Run single-threaded is as follows. Kept in for easier debugging
+        if nproc <= 1:
+            self.fittest = self.population.run(self._eval_genomes)
+        else:
+            # Multi-threaded execution
+            parallelizer = neat.ParallelEvaluator(nproc, self._eval_genome_score)
+            self.fittest = self.population.run(parallelizer.evaluate)
 
     def create_env(self):
         """
         Create the environment. This is created once per process to save CPU
         """
-        self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
+        self.env = retro.make('Nhl94-Genesis', self._trainer_class.get_scenario_string(),
                               inttype=retro.data.Integrations.ALL)
 
         # Wrap the env
