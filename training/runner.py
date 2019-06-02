@@ -303,6 +303,7 @@ def replay(args):
     """
     model_filename = args.model_filename
     log_folder_root = args.log_folder_root
+    trainer_class = args.trainer_class
 
     # If replaying, then find the most recent logged folder with a fittest.pkl
     if model_filename is None:
