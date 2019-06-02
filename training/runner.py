@@ -132,7 +132,7 @@ class Runner:
         self.render = render
         self.rate = None
         self.env = None
-        self._short_circuit = short_circuit
+        self.short_circuit = short_circuit
         self._listeners: typing.Callable[[typing.Any] * 4 + [dict], typing.Any] = []
 
     def replay(self, genome: neat.DefaultGenome):
@@ -199,7 +199,7 @@ class Runner:
 
         _ = self.env.reset()
 
-        trainer = self._trainer_class(genome, config, short_circuit=self._short_circuit)
+        trainer = self._trainer_class(genome, config, short_circuit=self.short_circuit)
 
         while not trainer.done:
 
@@ -353,7 +353,7 @@ def replay_training(args):
                                    if x.startswith('generation-') and x.endswith('.pkl')]
 
                 logger.info("Replaying {} unique generations from training in folder {}".format(
-                    folder, len(model_filenames)))
+                    len(model_filenames), folder))
                 break
     if model_filenames is None:
         raise FileNotFoundError("Could not find fittest.pkl")
@@ -367,14 +367,16 @@ def replay_training(args):
     runner = Runner(trainer_class=args.trainer_class,
                     render=True,
                     stream=logger_info_workaround,
-                    short_circuit=False)
+                    short_circuit=True)
 
     # Make it easy to view when replaying
     runner.rate = 1
     runner.add_listener(movie_maker)
 
-    for model in models:
+    for model in models[0:-1]:
         runner.replay(model)
+    runner.short_circuit = False
+    runner.replay(models[-1])
 
 def movie_maker(ob, rew, done, info, stats):
     bar = 1
