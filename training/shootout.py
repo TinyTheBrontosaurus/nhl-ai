@@ -103,7 +103,7 @@ class ShootoutTrainer(runner.Trainer):
 
         distance_multiplier = max(self.GOAL_Y - delta_puck_net_y, 0)
 
-        juke_reward = delta_puck_goalie_x * distance_multiplier
+        juke_reward = delta_puck_goalie_x * distance_multiplier * 0.001
 
         # Reward all jukes
         self._score_acc += juke_reward
