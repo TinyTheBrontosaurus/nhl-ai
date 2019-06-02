@@ -39,6 +39,20 @@ class Trainer(abc.ABC):
         self.config = config
         self.short_circuit = short_circuit
 
+    @classmethod
+    def get_config_filename(cls) -> str:
+        """
+        Accessor for config filename
+        """
+        return 'config-feedforward'
+
+    @classmethod
+    def get_scenario_string(cls) -> str:
+        """
+        Accessor for the scenario to use
+        """
+        return 'ChiAtBuf-Faceoff'
+
     @abc.abstractclassmethod
     def discretizer_class(cls) -> typing.Callable[[], gym.ActionWrapper]:
         """
@@ -99,7 +113,7 @@ class Runner:
         self.stream = stream
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                   neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                                  'config-feedforward')
+                                  trainer_class.get_config_filename())
 
         self.population = neat.Population(self.config)
 
@@ -135,18 +149,19 @@ class Runner:
         Train with a specified number of processes
         :param nproc: The number of processes
         """
-        # Note: Code to run single-threaded is as follows
-        # >>> self.fittest = self.population.run(self._eval_genomes)
-
-        # Multi-threaded execution
-        parallelizer = neat.ParallelEvaluator(nproc, self._eval_genome_score)
-        self.fittest = self.population.run(parallelizer.evaluate)
+        # Run single-threaded is as follows. Kept in for easier debugging
+        if nproc <= 1:
+            self.fittest = self.population.run(self._eval_genomes)
+        else:
+            # Multi-threaded execution
+            parallelizer = neat.ParallelEvaluator(nproc, self._eval_genome_score)
+            self.fittest = self.population.run(parallelizer.evaluate)
 
     def create_env(self):
         """
         Create the environment. This is created once per process to save CPU
         """
-        self.env = retro.make('Nhl94-Genesis', 'ChiAtBuf-Faceoff',
+        self.env = retro.make('Nhl94-Genesis', self._trainer_class.get_scenario_string(),
                               inttype=retro.data.Integrations.ALL)
 
         # Wrap the env
@@ -189,7 +204,12 @@ class Runner:
         while not trainer.done:
 
             self._render()
-            step = self.env.step(trainer.next_action)
+            next_action = trainer.next_action
+
+            # If there is no action, then no buttons are being pressed
+            if next_action is None:
+                next_action = [0] * config.genome_config.num_outputs
+            step = self.env.step(next_action)
 
             genome.fitness = trainer.tick(*step)
 
@@ -283,6 +303,7 @@ def replay(args):
     """
     model_filename = args.model_filename
     log_folder_root = args.log_folder_root
+    trainer_class = args.trainer_class
 
     # If replaying, then find the most recent logged folder with a fittest.pkl
     if model_filename is None:
