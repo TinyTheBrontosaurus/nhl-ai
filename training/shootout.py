@@ -116,6 +116,8 @@ class ShootoutTrainer(runner.Trainer):
 
         if info['home-goals']:
             score += 100000
+            # Try to solve as quickly as possible
+            score += max(25 - info['time-shootout'], 0) * 1000
 
         # Stop early once stoppage occurs
         if info['shootout-stoppage']:
