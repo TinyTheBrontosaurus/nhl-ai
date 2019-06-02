@@ -39,6 +39,13 @@ class Trainer(abc.ABC):
         self.config = config
         self.short_circuit = short_circuit
 
+    @classmethod
+    def get_config_filename(cls) -> str:
+        """
+        Accessor for config filename
+        """
+        return 'config-feedforward'
+
     @abc.abstractclassmethod
     def discretizer_class(cls) -> typing.Callable[[], gym.ActionWrapper]:
         """
@@ -99,7 +106,7 @@ class Runner:
         self.stream = stream
         self.config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                   neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                                  'config-feedforward')
+                                  trainer_class.get_config_filename())
 
         self.population = neat.Population(self.config)
 

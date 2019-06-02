@@ -12,12 +12,15 @@ class CButtonDiscretizer(discretizers.IndependentDiscretizer):
     """
     def __init__(self, env):
         super().__init__(env, [
-            ['C', None],
+            [None, 'C'],
             *discretizers.IndependentDiscretizer.DPAD
          ])
 
 
 class ShootoutTrainer(runner.Trainer):
+
+    GOAL_Y = 256
+
     def __init__(self, genome: neat.DefaultGenome, config: neat.Config, short_circuit: bool):
         super().__init__(genome, config, short_circuit)
         self.net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
@@ -30,6 +33,13 @@ class ShootoutTrainer(runner.Trainer):
         self._done = False
 
         self._next_action = None
+
+    @classmethod
+    def get_config_filename(cls) -> str:
+        """
+        Accessor for config filename
+        """
+        return 'config-shootout'
 
     @classmethod
     def discretizer_class(cls) -> typing.Callable[[], CButtonDiscretizer]:
@@ -51,7 +61,6 @@ class ShootoutTrainer(runner.Trainer):
         # The first action
         # inputs: player x, y, puck x, y, goalie x, y
         # outputs: ud, lr, c
-
 
         shooter_x = info['player-home-shootout-x']
         shooter_y = info['player-home-shootout-y']
@@ -75,18 +84,30 @@ class ShootoutTrainer(runner.Trainer):
         # * shot location? want to discourage wasted shot
         # * time elapsed? again, want to dicourage wasted shot
 
-        puck_adjusted_goalie_x = min(max(puck_x, 245), 256)
+        puck_adjusted_goalie_x = min(max(puck_x, -23), 23)
 
         delta_puck_goalie_x = abs(puck_adjusted_goalie_x - goalie_x)
 
         # Lower numbers are better. but if behind the next (256) treat it the same as far from the net
-        delta_puck_net_y = 100 if puck_y > 255 else 256 - puck_y
+        delta_puck_net_y = self.GOAL_Y - puck_y
+        # If very close to the net (or behind), give the same credit as if above the slot
+        if delta_puck_net_y <= 2:
+            delta_puck_net_y = 100
 
+        distance_multiplier = max(self.GOAL_Y - delta_puck_net_y, 0)
 
+        juke_reward = delta_puck_goalie_x * distance_multiplier
+
+        # Reward all jukes
+        self._score_acc += juke_reward
 
         score = self._score_acc
+
+        score += max(self._max_puck_y, self.GOAL_Y)
+        score += max(self._max_shooter_y, self.GOAL_Y)
+
         if info['home-goals']:
-            score += 10000
+            score += 100000
 
         # Stop early once stoppage occurs
         if self.short_circuit and info['shootout_stoppage']:
@@ -102,7 +123,7 @@ class ShootoutTrainer(runner.Trainer):
         ]
         self._next_action = self.net.activate(features)
 
-        self._stats = {"score": score, "frame": self._frame, "puck_y": puck_y, "faceoff_winner": self._faceoff_winner}
+        self._stats = {"score": score}
 
         return score
 
