@@ -3,6 +3,7 @@ import retro
 import pickle
 import gym
 import argparse
+import functools
 from loguru import logger
 import time
 import tqdm
@@ -14,6 +15,8 @@ from training.custom_neat_utils import TqdmReporter, GenerationReporter, Checkpo
 import abc
 import typing
 from natsort import natsorted
+import imageio
+import numpy as np
 
 
 def logger_info_workaround(*args, **kwargs):
@@ -365,18 +368,28 @@ def replay_training(args):
             models.append( pickle.load(f))
 
     runner = Runner(trainer_class=args.trainer_class,
-                    render=True,
+                    render=args.render,
                     stream=logger_info_workaround,
                     short_circuit=True)
 
     # Make it easy to view when replaying
     runner.rate = 1
-    runner.add_listener(movie_maker)
 
-    for model in models[0:-1]:
-        runner.replay(model)
-    runner.short_circuit = False
-    runner.replay(models[-1])
+    folder = os.path.dirname(model_filenames[0])
+    remainder, timestamp = os.path.split(folder)
+    training_type = os.path.split(remainder)[1]
 
-def movie_maker(ob, rew, done, info, stats):
-    bar = 1
+    with imageio.get_writer(os.path.join(folder, 'training-replay.mp4'), 'ffmpeg', fps=60) as movie:
+        runner.add_listener(functools.partial(movie_maker, movie,
+                                              {"timestamp": timestamp, "training_type": training_type}))
+
+        for model in models[0:-1]:
+            runner.replay(model)
+        runner.short_circuit = False
+        runner.replay(models[-1])
+
+def movie_maker(movie, metadata, ob, rew, done, info, stats):
+    status_frame = np.zeros(ob.shape, dtype=np.uint8)
+
+    new_ob = np.concatenate((ob, status_frame), axis=1)
+    movie.append_data(new_ob)
