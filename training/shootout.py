@@ -31,6 +31,7 @@ class ShootoutTrainer(runner.Trainer):
         self._max_shooter_y = -500
 
         self._done = False
+        self._pending_stoppage = False
 
         self._next_action = None
 
@@ -118,6 +119,10 @@ class ShootoutTrainer(runner.Trainer):
 
         # Stop early once stoppage occurs
         if info['shootout-stoppage']:
+            if self.short_circuit:
+                self._done = True
+            self._pending_stoppage = True
+        elif self._pending_stoppage:
             self._done = True
 
         features = [
