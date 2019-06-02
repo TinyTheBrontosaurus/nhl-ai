@@ -22,18 +22,20 @@ class IndependentDiscretizer(gym.ActionWrapper):
         #  ['B', 'A', 'MODE', 'START', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'C', 'Y', 'X', 'Z']
         self.buttons = env.buttons
         self._independent_buttons = independent_buttons
-        self._all_false = False, * len(self.buttons)
+        self._all_false = (False,) * len(self.buttons)
 
     def action(self, a: typing.List[float]) -> list:
-        if len(a) != len(self._outputs):
-            raise ValueError("Have {} outputs, expected {} outputs".format(len(a), len(self._outputs)))
+        if len(a) != len(self._independent_buttons):
+            raise ValueError("Have {} outputs, expected {} outputs".format(len(a), len(self._independent_buttons)))
         buttons_pressed = list(self._all_false)
 
         for output, buttons in zip(a, self._independent_buttons):
             index = int(min(math.floor(output * len(buttons)), len(buttons) - 1))
 
             if buttons[index] is not None:
-                buttons_pressed[self.buttons.index(index)] = True
+                button_string = buttons[index]
+                pos = self.buttons.index(button_string)
+                buttons_pressed[pos] = True
 
         return buttons_pressed
 

@@ -200,7 +200,7 @@ class Runner:
 
             # If there is no action, then no buttons are being pressed
             if next_action is None:
-                next_action = [0] * len(self.env.buttons)
+                next_action = [0] * config.genome_config.num_outputs
             step = self.env.step(next_action)
 
             genome.fitness = trainer.tick(*step)
