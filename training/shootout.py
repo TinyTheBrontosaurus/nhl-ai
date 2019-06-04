@@ -72,8 +72,8 @@ class ShootoutTrainer(runner.Trainer):
 
         shooter_x = info['player-home-shootout-x']
         shooter_y = info['player-home-shootout-y']
-        goalie_x = info['player-away-goalie-x-ice']
-        goalie_y = info['player-away-goalie-y-ice']
+        goalie_x = info['player-away-G-x']
+        goalie_y = info['player-away-G-y']
         puck_x = info['puck-ice-x']
         puck_y = info['puck-ice-y']
 
