@@ -252,6 +252,7 @@ def main(argv, trainer_class):
     parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
                         default=None)
     parser.add_argument('--nproc', type=int, help="The number of processes to run", default=multiprocessing.cpu_count())
+    parser.add_argument('--all', action='store_true', help="process all folders")
     args = parser.parse_args(argv)
     args.model_filename = args.model_file[0] if args.model_file is not None else None
 
@@ -359,10 +360,14 @@ def replay_training(args):
 
                 logger.info("Replaying {} unique generations from training in folder {}".format(
                     len(model_filenames), folder))
-                break
+                convert_set(model_filenames, args)
+
+                if not args.all:
+                    break
     if model_filenames is None:
         raise FileNotFoundError("Could not find generation-0.pkl")
 
+def convert_set(model_filenames, args):
     # Replay
     models = []
     for model_filename in natsorted(model_filenames):
