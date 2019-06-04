@@ -415,8 +415,6 @@ def movie_maker(movie, metadata, ob, rew, done, info, stats):
     for offset, (key, value) in enumerate(to_draw.items()):
         draw.text((0, 5 + 12 * offset), "{:15}: {}".format(key, value), fill='rgb(255, 255, 255)')
 
-
-
     status_frame = np.array(img)
 
     new_ob = np.concatenate((ob, status_frame), axis=1)

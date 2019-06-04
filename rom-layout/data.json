@@ -64,12 +64,60 @@
       "address": 16761958,
       "type": ">u2"
     },
+    "player-away-10-x": {
+      "address": 16757734,
+      "type": ">i2"
+    },
+    "player-away-10-y": {
+      "address": 16757738,
+      "type": ">i2"
+    },
+    "player-away-16-x": {
+      "address": 16757862,
+      "type": ">i2"
+    },
+    "player-away-16-y": {
+      "address": 16757866,
+      "type": ">i2"
+    },
     "player-away-28-x": {
       "address": 16757706,
       "type": ">i2"
     },
     "player-away-28-y": {
-      "address": 16757738,
+      "address": 16757726,
+      "type": ">i2"
+    },
+    "player-away-7-x": {
+      "address": 16757734,
+      "type": ">i2"
+    },
+    "player-away-7-y": {
+      "address": 16757994,
+      "type": ">i2"
+    },
+    "player-away-8-x": {
+      "address": 16758118,
+      "type": ">i2"
+    },
+    "player-away-8-y": {
+      "address": 16758122,
+      "type": ">i2"
+    },
+    "player-away-89-x": {
+      "address": 16757578,
+      "type": ">i2"
+    },
+    "player-away-89-y": {
+      "address": 16757598,
+      "type": ">i2"
+    },
+    "player-away-control-x": {
+      "address": 16760272,
+      "type": ">i2"
+    },
+    "player-away-control-y": {
+      "address": 16760292,
       "type": ">i2"
     },
     "player-away-goalie-v-x": {
