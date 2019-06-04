@@ -381,13 +381,20 @@ def replay_training(args):
     remainder, timestamp = os.path.split(folder)
     training_type = os.path.split(remainder)[1]
 
+    generation_count = 0
+    metadata = {"timestamp": timestamp,
+                "scenario": training_type,
+                "generation": "{}/{}".format(generation_count, len(models))}
     with imageio.get_writer(os.path.join(folder, 'training-replay.mp4'), 'ffmpeg', fps=60) as movie:
-        runner.add_listener(functools.partial(movie_maker, movie,
-                                              {"timestamp": timestamp, "training_type": training_type}))
+        runner.add_listener(functools.partial(movie_maker, movie, metadata))
 
         for model in models[0:-1]:
+            generation_count += 1
+            metadata["generation"] = "{}/{}".format(generation_count, len(models))
             runner.replay(model)
         runner.short_circuit = False
+        generation_count += 1
+        metadata["generation"] = "{}/{}".format(generation_count, len(models))
         runner.replay(models[-1])
 
 def movie_maker(movie, metadata, ob, rew, done, info, stats):
