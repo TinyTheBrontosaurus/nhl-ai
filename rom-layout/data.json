@@ -64,51 +64,51 @@
       "address": 16761958,
       "type": ">u2"
     },
-    "player-away-10-x": {
-      "address": 16757734,
-      "type": ">i2"
-    },
-    "player-away-10-y": {
-      "address": 16757738,
-      "type": ">i2"
-    },
-    "player-away-16-x": {
+    "player-away-C-x": {
       "address": 16757862,
       "type": ">i2"
     },
-    "player-away-16-y": {
+    "player-away-C-y": {
       "address": 16757866,
       "type": ">i2"
     },
-    "player-away-28-x": {
-      "address": 16757706,
+    "player-away-G-x": {
+      "address": 16758246,
       "type": ">i2"
     },
-    "player-away-28-y": {
-      "address": 16757726,
+    "player-away-G-y": {
+      "address": 16758250,
       "type": ">i2"
     },
-    "player-away-7-x": {
-      "address": 16757734,
-      "type": ">i2"
-    },
-    "player-away-7-y": {
-      "address": 16757994,
-      "type": ">i2"
-    },
-    "player-away-8-x": {
+    "player-away-LD-x": {
       "address": 16758118,
       "type": ">i2"
     },
-    "player-away-8-y": {
+    "player-away-LD-y": {
       "address": 16758122,
       "type": ">i2"
     },
-    "player-away-89-x": {
+    "player-away-LW-x": {
+      "address": 16757734,
+      "type": ">i2"
+    },
+    "player-away-LW-y": {
+      "address": 16757738,
+      "type": ">i2"
+    },
+    "player-away-RD-x": {
+      "address": 16757734,
+      "type": ">i2"
+    },
+    "player-away-RD-y": {
+      "address": 16757994,
+      "type": ">i2"
+    },
+    "player-away-RW-x": {
       "address": 16757578,
       "type": ">i2"
     },
-    "player-away-89-y": {
+    "player-away-RW-y": {
       "address": 16757598,
       "type": ">i2"
     },
@@ -132,10 +132,6 @@
       "address": 16758218,
       "type": ">i2"
     },
-    "player-away-goalie-x-ice": {
-      "address": 16758246,
-      "type": ">i2"
-    },
     "player-away-goalie-y-1": {
       "address": 16758238,
       "type": ">i2"
@@ -144,47 +140,51 @@
       "address": 16758880,
       "type": ">i2"
     },
-    "player-away-goalie-y-ice": {
-      "address": 16758250,
-      "type": ">i2"
-    },
-    "player-home-10-x": {
-      "address": 16756938,
-      "type": ">i2"
-    },
-    "player-home-10-y": {
-      "address": 16756970,
-      "type": ">i2"
-    },
-    "player-home-16-x": {
+    "player-home-C-x": {
       "address": 16757066,
       "type": ">i2"
     },
-    "player-home-16-y": {
+    "player-home-C-y": {
       "address": 16757098,
       "type": ">i2"
     },
-    "player-home-7-x": {
-      "address": 16757222,
+    "player-home-G-x": {
+      "address": 16757478,
       "type": ">i2"
     },
-    "player-home-7-y": {
-      "address": 16757226,
+    "player-home-G-y": {
+      "address": 16757482,
       "type": ">i2"
     },
-    "player-home-8-x": {
+    "player-home-LD-x": {
       "address": 16757322,
       "type": ">i2"
     },
-    "player-home-8-y": {
+    "player-home-LD-y": {
       "address": 16757354,
       "type": ">i2"
     },
-    "player-home-89-x": {
+    "player-home-LW-x": {
+      "address": 16756938,
+      "type": ">i2"
+    },
+    "player-home-LW-y": {
+      "address": 16756970,
+      "type": ">i2"
+    },
+    "player-home-RD-x": {
+      "address": 16757222,
+      "type": ">i2"
+    },
+    "player-home-RD-y": {
+      "address": 16757226,
+      "type": ">i2"
+    },
+    "player-home-RW-x": {
       "address": 16756810,
       "type": ">i2"
     },
-    "player-home-89-y": {
+    "player-home-RW-y": {
       "address": 16756842,
       "type": ">i2"
     },
@@ -194,14 +194,6 @@
     },
     "player-home-control-y": {
       "address": 16760702,
-      "type": ">i2"
-    },
-    "player-home-goalie-ice-x": {
-      "address": 16757478,
-      "type": ">i2"
-    },
-    "player-home-goalie-ice-y": {
-      "address": 16757482,
       "type": ">i2"
     },
     "player-home-goalie-screen-x": {
