@@ -361,7 +361,7 @@ def replay_training(args):
                     len(model_filenames), folder))
                 break
     if model_filenames is None:
-        raise FileNotFoundError("Could not find fittest.pkl")
+        raise FileNotFoundError("Could not find generation-0.pkl")
 
     # Replay
     models = []
