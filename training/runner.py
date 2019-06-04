@@ -17,6 +17,10 @@ import typing
 from natsort import natsorted
 import imageio
 import numpy as np
+from PIL import ImageDraw, Image
+
+
+VERSION = subprocess.check_output(["git", "describe", "--dirty", "--always"]).decode().strip()
 
 
 def logger_info_workaround(*args, **kwargs):
@@ -272,11 +276,9 @@ def main(argv, trainer_class):
 
         if args.model_file is None:
             model_filename = os.path.join(log_folder, "fittest.pkl")
-        # Log the beginning of the file
-        version = subprocess.check_output(["git", "describe", "--dirty", "--always"]).strip()
 
         logger.info("Running program: {}", module_name)
-        logger.info("Version: {}", version)
+        logger.info("Version: {}", VERSION)
         logger.info("Full path: {}", __file__)
 
         # Run tqdm and do training
@@ -389,7 +391,21 @@ def replay_training(args):
         runner.replay(models[-1])
 
 def movie_maker(movie, metadata, ob, rew, done, info, stats):
-    status_frame = np.zeros(ob.shape, dtype=np.uint8)
+    blank_frame = np.zeros(ob.shape, dtype=np.uint8)
+    img = Image.fromarray(blank_frame)
+    draw = ImageDraw.Draw(img)
+
+    to_draw = dict(metadata)
+    to_draw['version'] = VERSION
+    to_draw.update(stats)
+    to_draw['score'] = '{:>5.0f}'.format(stats['score'])
+
+    for offset, (key, value) in enumerate(to_draw.items()):
+        draw.text((0, 5 + 12 * offset), "{:15}: {}".format(key, value), fill='rgb(255, 255, 255)')
+
+
+
+    status_frame = np.array(img)
 
     new_ob = np.concatenate((ob, status_frame), axis=1)
     movie.append_data(new_ob)
