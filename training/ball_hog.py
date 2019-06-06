@@ -6,7 +6,7 @@ import typing
 from training.info_utils import get_player_w_puck, players_and_puck_feature
 
 
-class ShootoutTrainer(runner.Trainer):
+class BallHogTrainer(runner.Trainer):
 
     def __init__(self, genome: neat.DefaultGenome, config: neat.Config, short_circuit: bool):
         super().__init__(genome, config, short_circuit)
@@ -89,4 +89,4 @@ class ShootoutTrainer(runner.Trainer):
 
 
 if __name__ == "__main__":
-    runner.main(sys.argv[1:], ShootoutTrainer)
+    runner.main(sys.argv[1:], BallHogTrainer)
