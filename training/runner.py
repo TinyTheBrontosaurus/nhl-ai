@@ -18,6 +18,7 @@ from natsort import natsorted
 import imageio
 import numpy as np
 from PIL import ImageDraw, Image
+from training.visualize import draw_net
 
 
 VERSION = subprocess.check_output(["git", "describe", "--dirty", "--always"]).decode().strip()
@@ -337,11 +338,8 @@ def replay(args):
     # Make it easy to view when replaying
     runner.rate = 1
 
-    #runner.replay(model)
-    from training.visualize import draw_net
-    draw_net(runner.config, model)
+    runner.replay(model)
 
-    foo = 1
 def replay_training(args):
     """
     Search for the latest folder with genome logs in it, and replay those genomes
@@ -370,16 +368,24 @@ def replay_training(args):
         raise FileNotFoundError("Could not find generation-0.pkl")
 
 def convert_set(model_filenames, args):
-    # Replay
-    models = []
-    for model_filename in natsorted(model_filenames):
-        with open(model_filename, 'rb') as f:
-            models.append( pickle.load(f))
-
+    """
+    Convert a set of model files to movies
+    :param model_filenames: The model filenames
+    :param args: args from CLI
+    """
     runner = Runner(trainer_class=args.trainer_class,
                     render=args.render,
                     stream=logger_info_workaround,
                     short_circuit=True)
+
+    # Replay
+    models = []
+    for model_filename in natsorted(model_filenames):
+        with open(model_filename, 'rb') as f:
+            models.append(pickle.load(f))
+
+        # Log the SVG describing the model
+        draw_net(runner.config, models[-1], filename=model_filename + '.svg')
 
     # Make it easy to view when replaying
     runner.rate = 1
@@ -403,6 +409,7 @@ def convert_set(model_filenames, args):
         generation_count += 1
         metadata["generation"] = "{}/{}".format(generation_count, len(models))
         runner.replay(models[-1])
+
 
 def movie_maker(movie, metadata, ob, rew, done, info, stats):
     blank_frame = np.zeros(ob.shape, dtype=np.uint8)

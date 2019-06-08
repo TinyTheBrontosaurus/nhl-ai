@@ -1,3 +1,8 @@
+"""
+This file was originally copy/pasted from
+    https://github.com/CodeReclaimers/neat-python/blob/master/examples/xor/visualize.py
+and is presumably covered under the BSD 3-clause license.
+"""
 from __future__ import print_function
 
 import copy
