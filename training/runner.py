@@ -337,9 +337,11 @@ def replay(args):
     # Make it easy to view when replaying
     runner.rate = 1
 
-    runner.replay(model)
+    #runner.replay(model)
+    from training.visualize import draw_net
+    draw_net(runner.config, model)
 
-
+    foo = 1
 def replay_training(args):
     """
     Search for the latest folder with genome logs in it, and replay those genomes
@@ -419,3 +421,4 @@ def movie_maker(movie, metadata, ob, rew, done, info, stats):
 
     new_ob = np.concatenate((ob, status_frame), axis=1)
     movie.append_data(new_ob)
+
