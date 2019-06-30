@@ -68,7 +68,7 @@ class PassingDrillTrainer(runner.Trainer):
 
         pass_score_this_frame = 0
 
-        if player_w_puck.get('team') == 'home':
+        if self._last_player_w_puck is not None and player_w_puck.get('team') == 'home':
             self._stats['time_w_puck'] += 1.0 / 60
             last_pos = self._last_player_w_puck.get('pos')
             pos = player_w_puck.get('pos')
@@ -102,6 +102,8 @@ class PassingDrillTrainer(runner.Trainer):
             self._stats['time_wo_puck'] += 1.0 / 60
             self._stats['consecutive_passes'] = 0
             self._stats['consecutive_unique_passes'] = 0
+
+        self._last_player_w_puck = player_w_puck
 
         self._pass_accumulator += pass_score_this_frame
 
