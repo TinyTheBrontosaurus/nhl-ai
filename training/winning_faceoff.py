@@ -52,7 +52,7 @@ class FaceoffTrainer(runner.Trainer):
     def done(self) -> bool:
         return self._done
 
-    def tick(self, ob, rew, done, info) -> float:
+    def tick(self, ob, rew, done, info, env) -> float:
         faceoffs_won = info['home-faceoff']
         faceoffs_lost = info['away-faceoff']
         puck_y = info['puck-ice-y']

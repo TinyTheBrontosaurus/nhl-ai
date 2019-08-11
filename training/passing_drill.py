@@ -62,7 +62,7 @@ class PassingDrillTrainer(runner.Trainer):
     def done(self) -> bool:
         return self._done
 
-    def tick(self, ob, rew, done, info) -> float:
+    def tick(self, ob, rew, done, info, env) -> float:
 
         player_w_puck = get_player_w_puck(info)
 
@@ -114,6 +114,8 @@ class PassingDrillTrainer(runner.Trainer):
 
         features = players_and_puck_feature(info)
         self._next_action = self.net.activate(features)
+
+        buttons_pressed = env.action_labels(self._next_action)
 
         self._stats['score'] = score
 

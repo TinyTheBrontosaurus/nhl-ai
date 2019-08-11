@@ -39,6 +39,9 @@ class IndependentDiscretizer(gym.ActionWrapper):
 
         return buttons_pressed
 
+    def action_labels(self, a: typing.List[float]):
+        return [button for button, pressed in zip(self.buttons, self.action(a)) if pressed]
+
 
 class Genesis3ButtonDiscretizer(IndependentDiscretizer):
     def __init__(self, env):

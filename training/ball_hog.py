@@ -54,7 +54,7 @@ class BallHogTrainer(runner.Trainer):
     def done(self) -> bool:
         return self._done
 
-    def tick(self, ob, rew, done, info) -> float:
+    def tick(self, ob, rew, done, info, env) -> float:
 
         player_w_puck = get_player_w_puck(info)
 

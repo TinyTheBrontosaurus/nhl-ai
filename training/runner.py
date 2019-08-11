@@ -87,7 +87,7 @@ class Trainer(abc.ABC):
         """
 
     @abc.abstractmethod
-    def tick(self, ob, rew, done, info) -> float:
+    def tick(self, ob, rew, done, info, env) -> float:
         """
         Process a single timestep of the emulator. Expected that given this latest state,
         the actions and score will be updated
@@ -219,7 +219,7 @@ class Runner:
                 next_action = [0] * config.genome_config.num_outputs
             step = self.env.step(next_action)
 
-            genome.fitness = trainer.tick(*step)
+            genome.fitness = trainer.tick(*step, env=self.env)
 
             for listener in self._listeners:
                 listener(*step, trainer.stats)

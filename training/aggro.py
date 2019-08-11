@@ -34,7 +34,7 @@ class AggroTrainer(runner.Trainer):
     def done(self) -> bool:
         return self._done
 
-    def tick(self, ob, rew, done, info) -> float:
+    def tick(self, ob, rew, done, info, env) -> float:
         home_checks = info['home-checks']
         away_checks = info['away-checks']
 

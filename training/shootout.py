@@ -65,7 +65,7 @@ class ShootoutTrainer(runner.Trainer):
     def done(self) -> bool:
         return self._done
 
-    def tick(self, ob, rew, done, info) -> float:
+    def tick(self, ob, rew, done, info, env) -> float:
         # The first action
         # inputs: player x, y, puck x, y, goalie x, y
         # outputs: ud, lr, c
