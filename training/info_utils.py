@@ -159,6 +159,10 @@ class InfoAccumulator:
 
     @property
     def consecutive_passes(self):
+        """
+        Return stats per team showing the number of consecutive passes (in a list) and the number of
+        those passes that are unique (that is, up to 6 different players in a row)
+s        """
         consecutive = {'home': [], 'away': []}
         unique = {'home': [], 'away': []}
         unique_local = []
@@ -186,5 +190,4 @@ class InfoAccumulator:
 
                 pvs = cur
 
-        return consecutive
-
+        return {'consecutive': consecutive, 'unique': unique}
