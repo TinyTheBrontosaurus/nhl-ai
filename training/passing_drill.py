@@ -24,6 +24,7 @@ class PassingDrillTrainer(runner.Trainer):
             'consecutive_passes': 0,
             'unique_passes': 0,
             'consecutive_unique_passes': 0,
+            'b_pressed': 0,
         }
 
         self._recent_positions = []
@@ -109,13 +110,18 @@ class PassingDrillTrainer(runner.Trainer):
 
         score = self._pass_accumulator + self._stats['time_w_puck']
 
-        if info['time'] == 0:
+        if info['time'] == 400:
             self._done = True
 
         features = players_and_puck_feature(info)
         self._next_action = self.net.activate(features)
 
         buttons_pressed = env.action_labels(self._next_action)
+
+        if 'B' in buttons_pressed:
+            self.stats['b_pressed'] += 1
+
+        score += self.stats['b_pressed']
 
         self._stats['score'] = score
 
