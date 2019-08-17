@@ -169,9 +169,19 @@ class InfoAccumulator:
             for cur in self._possession_history[1:]:
                 if cur == pvs:
                     consecutive[cur][-1] += 1
+
+                    # Track consecutive unique passes
+                    if self._possession_history['pos'] not in unique_local:
+                        unique_local.append(self._possession_history['pos'])
+                        unique[cur][-1] += 1
+
+                        # If everyone has touched the puck (all 6 players) then reset the unique list
+                        if len(unique) >= 6:
+                            unique_local = []
                 else:
                     consecutive[cur].append(0)
-                    consecutive[cur].append(0)
+                    unique[cur].append(0)
+                    unique_local = []
 
 
                 pvs = cur
