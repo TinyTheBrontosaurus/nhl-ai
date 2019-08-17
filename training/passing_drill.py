@@ -103,6 +103,7 @@ class PassingDrillTrainer(runner.Trainer):
             self._stats['time_wo_puck'] += 1.0 / 60
             self._stats['consecutive_passes'] = 0
             self._stats['consecutive_unique_passes'] = 0
+            self._done = True
 
         self._last_player_w_puck = player_w_puck
 
@@ -121,7 +122,7 @@ class PassingDrillTrainer(runner.Trainer):
         if 'B' in buttons_pressed:
             self.stats['b_pressed'] += 1
 
-        score += self.stats['b_pressed']
+        # score += self.stats['b_pressed']
 
         self._stats['score'] = score
 
