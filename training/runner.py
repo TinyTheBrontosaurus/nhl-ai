@@ -380,7 +380,7 @@ def convert_set(model_filenames, args):
 
     # Replay
     models = []
-    for model_filename in natsorted(model_filenames):
+    for model_filename in [natsorted(model_filenames)[-1]]:
         with open(model_filename, 'rb') as f:
             models.append(pickle.load(f))
 

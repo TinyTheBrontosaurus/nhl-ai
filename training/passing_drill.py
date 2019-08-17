@@ -19,7 +19,8 @@ class PassingDrillTrainer(runner.Trainer):
         self._stats = {
             'score': 0,
             'time_w_puck': 0.0,
-            'time_wo_puck': 0.0,
+            'time_no_puck': 0.0,
+            'time_opp_puck': 0.0,
             'successful_passes': 0,
             'consecutive_passes': 0,
             'unique_passes': 0,
@@ -80,7 +81,7 @@ class PassingDrillTrainer(runner.Trainer):
                 self._stats['successful_passes'] += 1
                 self._stats['consecutive_passes'] += 1
 
-                pass_score_this_frame += self._stats['consecutive_passes'] * 100
+                pass_score_this_frame += self._stats['consecutive_passes'] * 10
 
                 # Pass to new player?
                 if pos not in self._recent_positions:
@@ -88,7 +89,7 @@ class PassingDrillTrainer(runner.Trainer):
                     self._stats['consecutive_unique_passes'] += 1
                     self._recent_positions.append(pos)
 
-                    pass_score_this_frame += self._stats['consecutive_unique_passes'] * 1000
+                    pass_score_this_frame += self._stats['consecutive_unique_passes'] * 100
 
                     # Always have it so at least two players can get passed the puck
                     if len(self._recent_positions) == 5:
@@ -100,18 +101,23 @@ class PassingDrillTrainer(runner.Trainer):
 
         elif player_w_puck.get('team') == 'away':
             self._last_player_w_puck = None
-            self._stats['time_wo_puck'] += 1.0 / 60
+            self._stats['time_opp_puck'] += 1.0 / 60
             self._stats['consecutive_passes'] = 0
             self._stats['consecutive_unique_passes'] = 0
             self._done = True
+        elif player_w_puck.get('team') == 'home':
+            self._stats['time_w_puck'] += 1.0 / 60
+        elif player_w_puck is None:
+            self._stats['time_no_puck'] += 1.0 / 60
 
         self._last_player_w_puck = player_w_puck
 
         self._pass_accumulator += pass_score_this_frame
 
-        score = self._pass_accumulator + self._stats['time_w_puck']
+        score = self._pass_accumulator + self._stats['time_w_puck'] * 2 + self._stats['time_no_puck']
 
-        if info['time'] == 400:
+        # Stop on end of period, or if opponent scores
+        if info['time'] == 0 or info['away-goals'] > 0:
             self._done = True
 
         features = players_and_puck_feature(info)
