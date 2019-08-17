@@ -1,3 +1,7 @@
+TEAMS = ('home', 'away')
+POSITIONS = ('LW', 'C', 'RW', 'LD', 'RD', 'G')
+DIMS = ('x', 'y')
+TIME_PER_FRAME  = 1.0 / 60
 
 
 class InfoWrapper:
@@ -19,10 +23,10 @@ class InfoWrapper:
 
         player_w_puck = {}
 
-        for team in ('home', 'away'):
-            for position in ('LW', 'C', 'RW', 'LD', 'RD', 'G'):
+        for team in TEAMS:
+            for position in POSITIONS:
                 possible_match = True
-                for dim in ('x', 'y'):
+                for dim in DIMS:
                     player_label = 'player-{}-{}-{}'.format(team, position, dim)
                     puck_pos = 'player-w-puck-ice-{}'.format(dim)
                     if self.info[player_label] != self.info[puck_pos]:
@@ -42,23 +46,22 @@ class InfoWrapper:
         """
         features = []
 
-        for team in ('home', 'away'):
-            for position in ('LW', 'C', 'RW', 'LD', 'RD', 'G'):
-                for dim in ('x', 'y'):
+        for team in TEAMS:
+            for position in POSITIONS:
+                for dim in DIMS:
                     player_label = 'player-{}-{}-{}'.format(team, position, dim)
                     features.append(self.info[player_label])
 
-        for dim in ('x', 'y'):
+        for dim in DIMS:
             features.append(self.info['player-w-puck-ice-{}'.format(dim)])
 
-        for dim in ('x', 'y'):
+        for dim in DIMS:
             features.append(self.info['puck-ice-{}'.format(dim)])
 
         features.append(0 if self.player_w_puck is {} else 1)
 
         return features
 
-TIME_PER_FRAME  = 1.0 / 60
 
 class InfoAccumulator:
 
