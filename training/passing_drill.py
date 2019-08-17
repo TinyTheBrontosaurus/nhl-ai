@@ -107,7 +107,7 @@ class PassingDrillTrainer(runner.Trainer):
             self._done = True
         elif player_w_puck.get('team') == 'home':
             self._stats['time_w_puck'] += 1.0 / 60
-        elif player_w_puck is None:
+        elif not player_w_puck:
             self._stats['time_no_puck'] += 1.0 / 60
 
         self._last_player_w_puck = player_w_puck
