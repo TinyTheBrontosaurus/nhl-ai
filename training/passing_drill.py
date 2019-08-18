@@ -66,15 +66,14 @@ class PassingDrillTrainer(runner.Trainer):
         score_vector = []
         score_vector.append(self._accumulator.time_puck['home'] * 2)
         score_vector.append(self._accumulator.time_puck[None] * 1)
-        score_vector.append(self._accumulator.pass_attempts * 3)
-        score_vector.append(self._accumulator.pass_count * 10)
-        consecutive_pass_vector = [math.pow(2, x) for x in self._accumulator.consecutive_passes['home']]
+        score_vector.append(self._accumulator.pass_attempts['home'] * 3)
+        score_vector.append(self._accumulator.pass_count['home'] * 10)
+        consecutive_pass_vector = [math.pow(2, x) for x in self._accumulator.consecutive_passes['consecutive']['home']]
         score_vector.append(sum(consecutive_pass_vector))
         score = sum(score_vector)
 
         # Calculate commands based on features
-        features = self._accumulator.wrapper.players_and_puck_feature()
-        self._next_action = self.net.activate(features)
+        self._next_action = self.net.activate(self._accumulator.wrapper.players_and_puck_feature)
         buttons_pressed = env.action_labels(self._next_action)
         if 'B' in buttons_pressed:
             self._b_pressed += 1
