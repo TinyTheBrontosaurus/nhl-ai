@@ -8,7 +8,7 @@ class InfoWrapper:
 
     def __init__(self):
         """
-        Grab derived info from an info object
+        Grab derived info directly from an individual info object. Basically f(info)
         """
         # Info that comes from env
         self.info: dict = {}
@@ -67,6 +67,10 @@ class InfoAccumulator:
 
 
     def __init__(self):
+        """
+        Grab derived info from the history of info objects. Basically f(info_n, info_{n-1})
+        """
+
         self._wrapper = InfoWrapper()
         self.time_puck = {
             'home': 0.0,
@@ -170,16 +174,16 @@ s        """
         unique = {'home': [], 'away': []}
         unique_local = []
 
-        if len(self._possession_history):
+        if len(self._possession_history['team']):
 
-            pvs = self._possession_history['team']
-            for cur in self._possession_history[1:]:
+            pvs = self._possession_history['team'][0]
+            for cur in self._possession_history['team'][1:]:
                 if cur == pvs:
                     consecutive[cur][-1] += 1
 
                     # Track consecutive unique passes
-                    if self._possession_history['pos'] not in unique_local:
-                        unique_local.append(self._possession_history['pos'])
+                    if self._possession_history['pos'][-1] not in unique_local:
+                        unique_local.append(self._possession_history['pos'][-1])
                         unique[cur][-1] += 1
 
                         # If everyone has touched the puck (all 6 players) then reset the unique list
