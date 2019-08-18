@@ -96,8 +96,8 @@ def test_accumulator_default(info):
     assert object_under_test.time_puck == {'home': pytest.approx(0.0),
                                            None: pytest.approx(TIME_PER_FRAME),
                                            'away': pytest.approx(0.0)}
-    assert object_under_test.consecutive_passes == {'consecutive': {'home': [], 'away': []},
-                                                    'unique':  {'home': [], 'away': []},}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [0], 'away': [0]},
+                                                    'unique':  {'home': [0], 'away': [0]},}
 
 def test_accumulator_first_poss(info):
     # Arrange
@@ -123,5 +123,39 @@ def test_accumulator_first_poss(info):
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 1),
                                            None: pytest.approx(TIME_PER_FRAME * 1),
                                            'away': pytest.approx(0.0)}
-    assert object_under_test.consecutive_passes == {'consecutive': {'home': [0], 'away': []},
-                                                    'unique':  {'home': [0], 'away': []},}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [0], 'away': [0]},
+                                                    'unique':  {'home': [0], 'away': [0]},}
+
+def test_accumulator_first_pass_direct(info):
+    # Arrange
+    object_under_test = InfoAccumulator()
+    object_under_test.info = info
+
+    # Previous test
+    info['player-w-puck-ice-x'] = 100
+    info['player-w-puck-ice-y'] = 200
+    object_under_test.accumulate()
+    info['player-{}-{}-x'.format('home', 'LW')] = 100
+    info['player-{}-{}-y'.format('home', 'LW')] = 200
+    object_under_test.accumulate()
+
+    info['player-w-puck-ice-x'] = 150
+    info['player-w-puck-ice-y'] = 250
+    info['player-{}-{}-x'.format('home', 'RW')] = 150
+    info['player-{}-{}-y'.format('home', 'RW')] = 250
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 1, 'away': 0}
+    assert object_under_test.pass_count == {'home': 1, 'away': 0}
+    assert object_under_test.steal_count == {'home': 0, 'away': 0}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 2),
+                                           None: pytest.approx(TIME_PER_FRAME * 1),
+                                           'away': pytest.approx(0.0)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [1], 'away': [0]},
+                                                    'unique':  {'home': [1], 'away': [0]},}
+
+

@@ -170,31 +170,32 @@ class InfoAccumulator:
         Return stats per team showing the number of consecutive passes (in a list) and the number of
         those passes that are unique (that is, up to 6 different players in a row)
 s        """
-        consecutive = {'home': [], 'away': []}
-        unique = {'home': [], 'away': []}
-        unique_local = []
+        consecutive = {'home': [0], 'away': [0]}
+        unique = {'home': [0], 'away': [0]}
 
         if len(self._possession_history['team']):
 
-            pvs = self._possession_history['team'][0]
-            for cur in self._possession_history['team'][1:]:
-                if cur == pvs:
-                    consecutive[cur][-1] += 1
+            pvs_team = self._possession_history['team'][0]
+            unique_local = [self._possession_history['pos'][0]]
+
+            for cur_team, cur_pos in zip(self._possession_history['team'][1:], self._possession_history['pos'][1:]):
+                if cur_team == pvs_team:
+                    consecutive[cur_team][-1] += 1
 
                     # Track consecutive unique passes
-                    if self._possession_history['pos'][-1] not in unique_local:
-                        unique_local.append(self._possession_history['pos'][-1])
-                        unique[cur][-1] += 1
+                    if cur_pos not in unique_local:
+                        unique_local.append(cur_pos)
+                        unique[cur_team][-1] += 1
 
                         # If everyone has touched the puck (all 6 players) then reset the unique list
                         if len(unique) >= 6:
                             unique_local = []
                 else:
-                    consecutive[cur].append(0)
-                    unique[cur].append(0)
+                    consecutive[cur_team].append(0)
+                    unique[cur_team].append(0)
                     unique_local = []
 
 
-                pvs = cur
+                pvs_team = cur_team
 
         return {'consecutive': consecutive, 'unique': unique}
