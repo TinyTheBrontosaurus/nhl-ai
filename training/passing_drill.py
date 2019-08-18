@@ -3,7 +3,8 @@ from training import runner
 from training import discretizers
 import neat
 import typing
-from training.info_utils import get_player_w_puck, players_and_puck_feature
+from training.info_utils import InfoAccumulator
+import math
 
 
 class PassingDrillTrainer(runner.Trainer):
@@ -12,27 +13,14 @@ class PassingDrillTrainer(runner.Trainer):
         super().__init__(genome, config, short_circuit)
         self.net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
 
-        self._last_player_w_puck = None
-
-        self._pass_accumulator = 0
-
-        self._stats = {
-            'score': 0,
-            'time_w_puck': 0.0,
-            'time_no_puck': 0.0,
-            'time_opp_puck': 0.0,
-            'successful_passes': 0,
-            'consecutive_passes': 0,
-            'unique_passes': 0,
-            'consecutive_unique_passes': 0,
-            'b_pressed': 0,
-        }
-
-        self._recent_positions = []
+        self._stats = {}
 
         self._done = False
 
         self._next_action = None
+
+        self._accumulator = InfoAccumulator()
+        self._b_pressed = 0
 
     @classmethod
     def get_config_filename(cls) -> str:
@@ -66,71 +54,42 @@ class PassingDrillTrainer(runner.Trainer):
 
     def tick(self, ob, rew, done, info, env) -> float:
 
-        player_w_puck = get_player_w_puck(info)
+        # Update stats
+        self._accumulator.info = info
+        self._accumulator.accumulate()
 
-        pass_score_this_frame = 0
-
-        if self._last_player_w_puck is not None and player_w_puck.get('team') == 'home':
-            self._stats['time_w_puck'] += 1.0 / 60
-            last_pos = self._last_player_w_puck.get('pos')
-            pos = player_w_puck.get('pos')
-
-            # No points for turnover, but points for passing
-            if last_pos is not None and last_pos != pos:
-                # Successful pass
-                self._stats['successful_passes'] += 1
-                self._stats['consecutive_passes'] += 1
-
-                pass_score_this_frame += self._stats['consecutive_passes'] * 10
-
-                # Pass to new player?
-                if pos not in self._recent_positions:
-                    self._stats['unique_passes'] += 1
-                    self._stats['consecutive_unique_passes'] += 1
-                    self._recent_positions.append(pos)
-
-                    pass_score_this_frame += self._stats['consecutive_unique_passes'] * 100
-
-                    # Always have it so at least two players can get passed the puck
-                    if len(self._recent_positions) == 5:
-                        self._recent_positions.pop(0)
-                else:
-                    self._stats['consecutive_unique_passes'] = 0
-
-
-
-        elif player_w_puck.get('team') == 'away':
-            self._last_player_w_puck = None
-            self._stats['time_opp_puck'] += 1.0 / 60
-            self._stats['consecutive_passes'] = 0
-            self._stats['consecutive_unique_passes'] = 0
-            self._done = True
-        elif player_w_puck.get('team') == 'home':
-            self._stats['time_w_puck'] += 1.0 / 60
-        elif not player_w_puck:
-            self._stats['time_no_puck'] += 1.0 / 60
-
-        self._last_player_w_puck = player_w_puck
-
-        self._pass_accumulator += pass_score_this_frame
-
-        score = self._pass_accumulator + self._stats['time_w_puck'] * 2 + self._stats['time_no_puck']
-
-        # Stop on end of period, or if opponent scores
-        if info['time'] == 0 or info['away-goals'] > 0:
+        # End when the other team gets the puck, home own goals, or time runs out
+        if info['time'] == 0 or info['away-goals'] > 0 or self._accumulator.wrapper.player_w_puck.get('team') == 'away':
             self._done = True
 
-        features = players_and_puck_feature(info)
+        # Rewards
+        score_vector = []
+        score_vector.append(self._accumulator.time_puck['home'] * 2)
+        score_vector.append(self._accumulator.time_puck[None] * 1)
+        score_vector.append(self._accumulator.pass_attempts * 3)
+        score_vector.append(self._accumulator.pass_count * 10)
+        consecutive_pass_vector = [math.pow(2, x) for x in self._accumulator.consecutive_passes['home']]
+        score_vector.append(sum(consecutive_pass_vector))
+        score = sum(score_vector)
+
+        # Calculate commands based on features
+        features = self._accumulator.wrapper.players_and_puck_feature()
         self._next_action = self.net.activate(features)
-
         buttons_pressed = env.action_labels(self._next_action)
-
         if 'B' in buttons_pressed:
-            self.stats['b_pressed'] += 1
+            self._b_pressed += 1
 
-        # score += self.stats['b_pressed']
-
-        self._stats['score'] = score
+        # Stats to track
+        self._stats = {
+            'score': score,
+            'time_w_puck': self._accumulator.time_puck['home'],
+            'time_no_puck': self._accumulator.time_puck[None],
+            'time_opp_puck': self._accumulator.time_puck['away'],
+            'successful_passes': self._accumulator.pass_count,
+            'consecutive_passes': self._accumulator.consecutive_passes['consecutive']['home'],
+            'unique_passes': self._accumulator.consecutive_passes['unique']['home'],
+            'b_pressed': self._b_pressed,
+        }
 
         return score
 

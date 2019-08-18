@@ -71,7 +71,7 @@ class InfoAccumulator:
         Grab derived info from the history of info objects. Basically f(info_n, info_{n-1})
         """
 
-        self._wrapper = InfoWrapper()
+        self.wrapper = InfoWrapper()
         self.time_puck = {
             'home': 0.0,
             None: 0.0,
@@ -107,11 +107,11 @@ class InfoAccumulator:
 
     @property
     def info(self):
-        return self._wrapper.info
+        return self.wrapper.info
 
     @info.setter
     def info(self, info):
-        self._wrapper.info = info
+        self.wrapper.info = info
 
     def _mark_received_puck(self, player_w_puck):
         # Make sure this isn't an initial possession
@@ -132,7 +132,7 @@ class InfoAccumulator:
 
     def accumulate(self):
 
-        player_w_puck = self._wrapper.player_w_puck
+        player_w_puck = self.wrapper.player_w_puck
 
         # Accumulate time with the puck
         self.time_puck[player_w_puck.get('team')] += TIME_PER_FRAME
