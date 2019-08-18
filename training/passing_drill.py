@@ -59,13 +59,28 @@ class PassingDrillTrainer(runner.Trainer):
         self._accumulator.accumulate()
 
         # End when the other team gets the puck, home own goals, or time runs out
-        if info['time'] == 0 or info['away-goals'] > 0 or self._accumulator.wrapper.player_w_puck.get('team') == 'away':
+        att = self._accumulator.pass_attempts['home']
+        cmp = self._accumulator.pass_count['home']
+
+        cmp_pct = 0.0
+
+        if att > 1:
+            cmp_pct = cmp / (att - 1)  # The latest one can't be counted since it might still be happening
+            threshold = 0.75  # 3/4 must be completed
+
+            if cmp_pct < threshold:
+                self._done = True
+        elif self._accumulator.wrapper.player_w_puck.get('team') == 'away':
+            self._done = True
+
+        if info['time'] == 0 or info['away-goals'] > 0:
             self._done = True
 
         # Rewards
         score_vector = []
         score_vector.append(self._accumulator.time_puck['home'] * 2)
         score_vector.append(self._accumulator.time_puck[None] * 1)
+        score_vector.append(self._accumulator.time_puck['away'] * -3)
         score_vector.append(self._accumulator.pass_attempts['home'] * 3)
         score_vector.append(self._accumulator.pass_count['home'] * 10)
         consecutive_pass_vector = [math.pow(2, x) for x in self._accumulator.consecutive_passes['consecutive']['home']]
@@ -86,6 +101,7 @@ class PassingDrillTrainer(runner.Trainer):
             'time_opp_puck': self._accumulator.time_puck['away'],
             'successful_passes': self._accumulator.pass_count,
             'consecutive_passes': self._accumulator.consecutive_passes['consecutive']['home'],
+            'cmp_pct': cmp_pct,
             'unique_passes': self._accumulator.consecutive_passes['unique']['home'],
             'b_pressed': self._b_pressed,
         }
