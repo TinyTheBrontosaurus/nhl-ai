@@ -81,7 +81,9 @@ def test_feature(info):
     assert actual == expected
 
 
-@pytest_steps.test_steps('ctor', 'first_possession', 'first_pass_direct', 'held', 'in_transit', 'received')
+@pytest_steps.test_steps('ctor', 'first_possession', 'first_pass_direct', 'held', 'in_transit', 'received',
+                         'unique-1', 'unique-2', 'unique-3', 'unique-4', 'unique-5', 'unique-6', 'unique-7',
+                         'turnover', 'away-1', 'away-2', 'turnover-2')
 def test_accumulator(info):
 
     def move_puck_to(team, pos):
@@ -92,6 +94,7 @@ def test_accumulator(info):
         info['player-w-puck-ice-x'] = 0
         info['player-w-puck-ice-y'] = 0
 
+    # Ctor
     # Arrange
     object_under_test = InfoAccumulator()
     object_under_test.info = info
@@ -111,7 +114,7 @@ def test_accumulator(info):
                                                     'unique':  {'home': [0], 'away': [0]},}
     yield
 
-
+    # First possession
     # Arrange
     move_puck_to('home', 'LW')
 
@@ -130,6 +133,7 @@ def test_accumulator(info):
                                                     'unique':  {'home': [0], 'away': [0]},}
     yield
 
+    # First pass, direct
     # Arrange
     move_puck_to('home', 'RW')
 
@@ -148,6 +152,7 @@ def test_accumulator(info):
                                                     'unique':  {'home': [1], 'away': [0]},}
     yield
 
+    # Held
     # Arrange
 
     # Act
@@ -200,6 +205,214 @@ def test_accumulator(info):
                                            None: pytest.approx(TIME_PER_FRAME * 2),
                                            'away': pytest.approx(0.0)}
     assert object_under_test.consecutive_passes == {'consecutive': {'home': [2], 'away': [0]},
-                                                    'unique': {'home': [1], 'away': [0]}, }
+                                                    'unique': {'home': [1, 0], 'away': [0]}, }
     yield
 
+    # Unique #1
+    # Arrange
+    move_puck_to('home', 'C')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 3, 'away': 0}
+    assert object_under_test.pass_count == {'home': 3, 'away': 0}
+    assert object_under_test.steal_count == {'home': 0, 'away': 0}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 5),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(0.0)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [3], 'away': [0]},
+                                                    'unique': {'home': [1, 1], 'away': [0]}, }
+    yield
+
+    # Unique #2
+    # Arrange
+    move_puck_to('home', 'RW')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 4, 'away': 0}
+    assert object_under_test.pass_count == {'home': 4, 'away': 0}
+    assert object_under_test.steal_count == {'home': 0, 'away': 0}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 6),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(0.0)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [4], 'away': [0]},
+                                                    'unique': {'home': [1, 2], 'away': [0]}, }
+    yield
+
+    # Unique #3
+    # Arrange
+    move_puck_to('home', 'LD')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 5, 'away': 0}
+    assert object_under_test.pass_count == {'home': 5, 'away': 0}
+    assert object_under_test.steal_count == {'home': 0, 'away': 0}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 7),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(0.0)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [5], 'away': [0]},
+                                                    'unique': {'home': [1, 3], 'away': [0]}, }
+    yield
+
+    # Unique #4
+    # Arrange
+    move_puck_to('home', 'RD')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 6, 'away': 0}
+    assert object_under_test.pass_count == {'home': 6, 'away': 0}
+    assert object_under_test.steal_count == {'home': 0, 'away': 0}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 8),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(0.0)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [6], 'away': [0]},
+                                                    'unique': {'home': [1, 4], 'away': [0]}, }
+    yield
+
+    # Unique #5
+    # Arrange
+    move_puck_to('home', 'G')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 7, 'away': 0}
+    assert object_under_test.pass_count == {'home': 7, 'away': 0}
+    assert object_under_test.steal_count == {'home': 0, 'away': 0}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 9),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(0.0)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [7], 'away': [0]},
+                                                    'unique': {'home': [1, 5], 'away': [0]}, }
+    yield
+
+    # Unique #6
+    # Arrange
+    move_puck_to('home', 'C')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 8, 'away': 0}
+    assert object_under_test.pass_count == {'home': 8, 'away': 0}
+    assert object_under_test.steal_count == {'home': 0, 'away': 0}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 10),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(0.0)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [8], 'away': [0]},
+                                                    'unique': {'home': [1, 6], 'away': [0]}, }
+    yield
+
+    # Unique #7
+    # Arrange
+    move_puck_to('home', 'LD')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 9, 'away': 0}
+    assert object_under_test.pass_count == {'home': 9, 'away': 0}
+    assert object_under_test.steal_count == {'home': 0, 'away': 0}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 11),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(0.0)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [9], 'away': [0]},
+                                                    'unique': {'home': [1, 7], 'away': [0]}, }
+    yield
+
+    # Turnover
+    # Arrange
+    move_puck_to('away', 'LD')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 10, 'away': 0}
+    assert object_under_test.pass_count == {'home': 9, 'away': 0}
+    assert object_under_test.steal_count == {'home': 0, 'away': 1}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 11),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(TIME_PER_FRAME * 1)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [9], 'away': [0, 0]},
+                                                    'unique': {'home': [1, 7], 'away': [0, 0]}, }
+    yield
+
+    # Away 1
+    # Arrange
+    move_puck_to('away', 'RD')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 10, 'away': 1}
+    assert object_under_test.pass_count == {'home': 9, 'away': 1}
+    assert object_under_test.steal_count == {'home': 0, 'away': 1}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 11),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(TIME_PER_FRAME * 2)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [9], 'away': [0, 1]},
+                                                    'unique': {'home': [1, 7], 'away': [0, 1]}, }
+    yield
+
+    # Away 2
+    # Arrange
+    move_puck_to('away', 'LW')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 10, 'away': 2}
+    assert object_under_test.pass_count == {'home': 9, 'away': 2}
+    assert object_under_test.steal_count == {'home': 0, 'away': 1}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 11),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(TIME_PER_FRAME * 3)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [9], 'away': [0, 2]},
+                                                    'unique': {'home': [1, 7], 'away': [0, 2]}, }
+    yield
+
+    # Turnover 2
+    # Arrange
+    move_puck_to('home', 'C')
+
+    # Act
+    object_under_test.accumulate()
+
+    # Assert
+    assert object_under_test.pass_attempts == {'home': 10, 'away': 3}
+    assert object_under_test.pass_count == {'home': 9, 'away': 2}
+    assert object_under_test.steal_count == {'home': 1, 'away': 1}
+
+    assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 12),
+                                           None: pytest.approx(TIME_PER_FRAME * 2),
+                                           'away': pytest.approx(TIME_PER_FRAME * 3)}
+    assert object_under_test.consecutive_passes == {'consecutive': {'home': [9, 0], 'away': [0, 2]},
+                                                    'unique': {'home': [1, 7, 0], 'away': [0, 2]}, }
+    yield

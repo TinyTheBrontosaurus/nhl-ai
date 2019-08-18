@@ -182,13 +182,16 @@ s        """
                 if cur_team == pvs_team:
                     consecutive[cur_team][-1] += 1
 
-                    # Track consecutive unique passes
-                    if cur_pos not in unique_local:
+                    # Track consecutive unique passes. As soon as the unique streak is broken, the entire set is reset
+                    if cur_pos in unique_local:
+                        unique_local = [cur_pos]
+                        unique[cur_team].append(0)
+                    else:
                         unique_local.append(cur_pos)
                         unique[cur_team][-1] += 1
 
                         # If everyone has touched the puck (all 6 players) then reset the unique list
-                        if len(unique) >= 6:
+                        if len(unique_local) >= 6:
                             unique_local = []
                 else:
                     consecutive[cur_team].append(0)
