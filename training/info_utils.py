@@ -126,6 +126,9 @@ class InfoAccumulator:
         self._possession_history['team'].append(player_w_puck['team'])
         self._possession_history['pos'].append(player_w_puck['pos'])
 
+    def _mark_caught_own_pass(self, player_w_puck):
+        self.pass_attempts[player_w_puck['team']] -= 1
+
     def _mark_lost_puck(self):
         # Note: Very loose definition of pass
         self.pass_attempts[self._last_frame_player_w_puck['team']] += 1
@@ -139,7 +142,10 @@ class InfoAccumulator:
 
         # Someone just got the puck
         if player_w_puck and not self._last_frame_player_w_puck:
-            self._mark_received_puck(player_w_puck)
+            if self._last_possessor and all([player_w_puck[key] == self._last_possessor[key] for key in player_w_puck.keys()]):
+                self._mark_caught_own_pass(player_w_puck)
+            else:
+                self._mark_received_puck(player_w_puck)
 
         # Someone just lost the puck
         elif not player_w_puck and self._last_frame_player_w_puck:
