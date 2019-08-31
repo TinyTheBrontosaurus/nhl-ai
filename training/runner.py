@@ -250,6 +250,8 @@ def main(argv, trainer_class):
                                help="Replay a trained network")
     replay_parser.add_argument('--replay-training', action='store_true',
                                help="Replay all major generations of training")
+    replay_parser.add_argument('--latest-only', action='store_true',
+                               help="Only replay the latest training model")
     parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
                         default=None)
     parser.add_argument('--nproc', type=int, help="The number of processes to run", default=multiprocessing.cpu_count())
@@ -380,7 +382,12 @@ def convert_set(model_filenames, args):
 
     # Replay
     models = []
-    for model_filename in [natsorted(model_filenames)[-1]]:
+    if args.latest_only:
+        model_filenames_to_process = [natsorted(model_filenames)[-1]]
+    else:
+        model_filenames_to_process = natsorted(model_filenames)
+
+    for model_filename in model_filenames_to_process:
         with open(model_filename, 'rb') as f:
             models.append(pickle.load(f))
 

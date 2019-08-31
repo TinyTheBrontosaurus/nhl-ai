@@ -142,7 +142,10 @@ class GameScoring1Trainer(runner.Trainer):
         # No reward past the red line
         distance_multiplier = max(InfoWrapper.AWAY_GOAL_Y - delta_puck_net_y, 0)
 
-        juke_this_frame = self._accumulator.wrapper.delta_puck_away_goalie_x * distance_multiplier
+        if self._accumulator.wrapper.player_w_puck.get('team') == 'home':
+            juke_this_frame = self._accumulator.wrapper.delta_puck_away_goalie_x * distance_multiplier
+        else:
+            juke_this_frame = 0
         # Theoretical max of accumulator is 60s * 60frames * 50 x-pixels * 250 y-pixels == 45M
         # Realistic (human) max of accumulator is a 1Hz sine wave towards the goalie,
         # average y-distance of 100, average x-distance of 1 * 60fps, 60s == 3,600,000
