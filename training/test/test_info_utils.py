@@ -105,7 +105,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 0, 'away': 0}
-    assert object_under_test.pass_count == {'home': 0, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 0, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(0.0),
@@ -124,7 +124,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 0, 'away': 0}
-    assert object_under_test.pass_count == {'home': 0, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 0, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 1),
@@ -143,7 +143,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 1, 'away': 0}
-    assert object_under_test.pass_count == {'home': 0, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 0, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 1),
@@ -162,7 +162,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 0, 'away': 0}
-    assert object_under_test.pass_count == {'home': 0, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 0, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 2),
@@ -182,7 +182,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 1, 'away': 0}
-    assert object_under_test.pass_count == {'home': 1, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 1, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 3),
@@ -200,7 +200,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 1, 'away': 0}
-    assert object_under_test.pass_count == {'home': 1, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 1, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 4),
@@ -219,7 +219,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 2, 'away': 0}
-    assert object_under_test.pass_count == {'home': 1, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 1, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 4),
@@ -238,7 +238,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 2, 'away': 0}
-    assert object_under_test.pass_count == {'home': 2, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 2, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 5),
@@ -257,7 +257,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 3, 'away': 0}
-    assert object_under_test.pass_count == {'home': 3, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 3, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 6),
@@ -276,7 +276,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 4, 'away': 0}
-    assert object_under_test.pass_count == {'home': 4, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 4, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 7),
@@ -295,7 +295,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 5, 'away': 0}
-    assert object_under_test.pass_count == {'home': 5, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 5, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 8),
@@ -314,7 +314,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 6, 'away': 0}
-    assert object_under_test.pass_count == {'home': 6, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 6, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 9),
@@ -333,7 +333,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 7, 'away': 0}
-    assert object_under_test.pass_count == {'home': 7, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 7, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 10),
@@ -352,7 +352,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 8, 'away': 0}
-    assert object_under_test.pass_count == {'home': 8, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 8, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 11),
@@ -371,7 +371,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 9, 'away': 0}
-    assert object_under_test.pass_count == {'home': 9, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 9, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 0}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 12),
@@ -390,7 +390,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 10, 'away': 0}
-    assert object_under_test.pass_count == {'home': 9, 'away': 0}
+    assert object_under_test.pass_completions == {'home': 9, 'away': 0}
     assert object_under_test.steal_count == {'home': 0, 'away': 1}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 12),
@@ -409,7 +409,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 10, 'away': 1}
-    assert object_under_test.pass_count == {'home': 9, 'away': 1}
+    assert object_under_test.pass_completions == {'home': 9, 'away': 1}
     assert object_under_test.steal_count == {'home': 0, 'away': 1}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 12),
@@ -428,7 +428,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 10, 'away': 2}
-    assert object_under_test.pass_count == {'home': 9, 'away': 2}
+    assert object_under_test.pass_completions == {'home': 9, 'away': 2}
     assert object_under_test.steal_count == {'home': 0, 'away': 1}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 12),
@@ -447,7 +447,7 @@ def test_accumulator(info):
 
     # Assert
     assert object_under_test.pass_attempts == {'home': 10, 'away': 3}
-    assert object_under_test.pass_count == {'home': 9, 'away': 2}
+    assert object_under_test.pass_completions == {'home': 9, 'away': 2}
     assert object_under_test.steal_count == {'home': 1, 'away': 1}
 
     assert object_under_test.time_puck == {'home': pytest.approx(TIME_PER_FRAME * 13),

@@ -6,6 +6,13 @@ TIME_PER_FRAME  = 1.0 / 60
 
 class InfoWrapper:
 
+    # goalie x bounds: (-23, 23)
+    # goalie y bounds: (245, 256)
+    # end line y: ~256
+    # puck in net: 272
+    AWAY_GOAL_Y = 256
+    GOALIE_MAX_X = 23
+
     def __init__(self):
         """
         Grab derived info directly from an individual info object. Basically f(info)
@@ -20,7 +27,6 @@ class InfoWrapper:
         Empty dict if no possessor
         :return:
         """
-
         player_w_puck = {}
 
         for team in TEAMS:
@@ -62,6 +68,25 @@ class InfoWrapper:
 
         return features
 
+    @property
+    def puck_adjusted_away_goalie_x(self):
+        return min(max(self.info['puck-ice-x'], -self.GOALIE_MAX_X), self.GOALIE_MAX_X)
+
+    @property
+    def dela_puck_away_goalie_x(self):
+        return abs(self.puck_adjusted_away_goalie_x - self.info['player-away-G-x'])
+
+    @property
+    def delta_puck_away_net_y(self):
+       return self.AWAY_GOAL_Y - self.info['puck-ice-y']
+
+    @property
+    def delta_slot_net_y(self):
+        """
+        How far the slot is from the net
+        """
+        return 100
+
 
 class InfoAccumulator:
 
@@ -78,7 +103,7 @@ class InfoAccumulator:
             'away': 0.0,
         }
 
-        self.pass_count = {
+        self.pass_completions = {
             'home': 0,
             'away': 0,
         }
@@ -105,6 +130,9 @@ class InfoAccumulator:
             'pos': [],
         }
 
+        self._max_puck_y = 0
+        self._max_shooter_y = 0
+
     @property
     def info(self):
         return self.wrapper.info
@@ -118,7 +146,7 @@ class InfoAccumulator:
         if self._last_possessor:
             if player_w_puck['team'] == self._last_possessor['team']:
                 # via pass
-                self.pass_count[player_w_puck['team']] += 1
+                self.pass_completions[player_w_puck['team']] += 1
             else:
                 # via turnover
                 self.steal_count[player_w_puck['team']] += 1
@@ -170,6 +198,10 @@ class InfoAccumulator:
         # Save the player w/ puck for next frame
         self._last_frame_player_w_puck = player_w_puck
 
+        self._max_puck_y = max(self.info['puck-ice-y'], self._max_puck_y)
+
+        self._max_shooter_y = max(self.info['puck-ice-y'], self._max_shooter_y)
+
     @property
     def consecutive_passes(self):
         """
@@ -208,3 +240,11 @@ s        """
                 pvs_team = cur_team
 
         return {'consecutive': consecutive, 'unique': unique}
+
+    @property
+    def max_puck_y(self):
+        return max(self.info['puck-ice-y'], self._max_puck_y)
+
+    @property
+    def max_shooter_y(self):
+        return max(self.info['puck-ice-y'], self._max_shooter_y)
