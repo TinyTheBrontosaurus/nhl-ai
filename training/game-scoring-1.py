@@ -133,7 +133,7 @@ class GameScoring1Trainer(runner.Trainer):
         # Reward shots on goal. Allow grinding
         score_vector.append(info['home-shots'] * 10000)
 
-        # (E) Total max: ~500k
+        # (E) Total max: ~500k (with multiplier of 0.1--but this one is flaky...)
         # If behind the net, give the same reward as the away side of center ice,
         # to avoid behind-the-net grinding
         delta_puck_net_y = self._accumulator.wrapper.delta_puck_away_net_y
@@ -152,7 +152,7 @@ class GameScoring1Trainer(runner.Trainer):
         self._juke_accumulator += juke_this_frame
 
         # Reward all jukes
-        score_vector.append(self._juke_accumulator * 0.1)
+        score_vector.append(self._juke_accumulator * 0.01)
 
         # TODO (F and G) both required a shot detector
 
