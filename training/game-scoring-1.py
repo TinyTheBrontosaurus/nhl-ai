@@ -3,8 +3,7 @@ from training import runner
 from training import discretizers
 import neat
 import typing
-from training.info_utils import InfoAccumulator
-import math
+from training.info_utils import InfoAccumulator, InfoWrapper
 
 
 class GameScoring1Trainer(runner.Trainer):
@@ -22,6 +21,8 @@ class GameScoring1Trainer(runner.Trainer):
         self._accumulator = InfoAccumulator()
 
         self._pressed = {x: 0 for x in ['A', 'B', 'C']}
+
+        self._juke_accumulator = 0
 
     @classmethod
     def get_config_filename(cls) -> str:
@@ -132,7 +133,23 @@ class GameScoring1Trainer(runner.Trainer):
         # Reward shots on goal. Allow grinding
         score_vector.append(info['home-shots'] * 10000)
 
-        # (E)
+        # (E) Total max: ~500k
+        # If behind the net, give the same reward as the away side of center ice,
+        # to avoid behind-the-net grinding
+        delta_puck_net_y = self._accumulator.wrapper.delta_puck_net_y
+        if delta_puck_net_y <= 2:
+            delta_puck_net_y = 225
+        # No reward past the red line
+        distance_multiplier = max(InfoWrapper.AWAY_GOAL_Y - delta_puck_net_y, 0)
+
+        juke_this_frame = self._accumulator.wrapper.delta_puck_goalie_x * distance_multiplier
+        # Theoretical max of accumulator is 60s * 60frames * 50 x-pixels * 250 y-pixels == 45M
+        # Realistic (human) max of accumulator is a 1Hz sine wave towards the goalie,
+        # average y-distance of 100, average x-distance of 1 * 60fps, 60s == 3,600,000
+        self._juke_accumulator += juke_this_frame
+
+        # Reward all jukes
+        score_vector.append(self._juke_accumulator * 0.1)
 
         # TODO (F and G) both required a shot detector
 
@@ -154,16 +171,15 @@ class GameScoring1Trainer(runner.Trainer):
         # Stats to track
         self._stats = {
             'score': score,
-            'time_w_puck': self._accumulator.time_puck['home'],
-            'time_no_puck': self._accumulator.time_puck[None],
-            'time_opp_puck': self._accumulator.time_puck['away'],
+            'time_w_puck': ", ".join(["{} {.1}s".format(team, time) for team, time in self._accumulator.time_puck.items()]),
             'pass cmp/att': "{}/{} (:.0f}%".format(self._accumulator.pass_completions['home'],
                                            self._accumulator.pass_attempts['home'], cmp_pct * 100),
-            'buttons': self._pressed
+            'buttons': self._pressed,
+
         }
 
         return score
 
 
 if __name__ == "__main__":
-    runner.main(sys.argv[1:], PassingDrillTrainer)
+    runner.main(sys.argv[1:], GameScoring1Trainer)
