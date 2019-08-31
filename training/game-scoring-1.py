@@ -178,6 +178,7 @@ class GameScoring1Trainer(runner.Trainer):
             'pass cmp/att': "{}/{} ({:.0f}%)".format(self._accumulator.pass_completions['home'],
                                            self._accumulator.pass_attempts['home'],
                                                    cmp_pct * 100),
+            'shots': info['home-shots'],
             'buttons': self._pressed,
             'juke_acc': self._juke_accumulator,
         }
