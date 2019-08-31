@@ -22,6 +22,7 @@ class TqdmReporter(neat.reporting.BaseReporter):
         self.stream = stream
         self._last_fitness = None
         self._fitness_stall = 0
+        self._num_extinctions = 0
 
     def end_generation(self, config, population, species_set):
         self.update()
@@ -38,7 +39,12 @@ class TqdmReporter(neat.reporting.BaseReporter):
 
         self.progress_bar.set_postfix(fitness="{:.0f}/{:.0f}".format(best_genome.fitness, config.fitness_threshold),
                                       progress="{:.2f}%".format(best_genome.fitness / config.fitness_threshold * 100),
-                                      stall=self._fitness_stall)
+                                      stall=self._fitness_stall,
+                                      extinctions=int(self._num_extinctions))
+
+    def complete_extinction(self):
+        self._num_extinctions += 1
+        self.stream('All species extinct.')
 
     def update(self):
         if self.progress_bar is not None:

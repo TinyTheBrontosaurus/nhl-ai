@@ -133,6 +133,10 @@ class InfoAccumulator:
         self._max_puck_y = 0
         self._max_shooter_y = 0
 
+        self._frame_counter = 0
+        self._last_tick_frame = 0
+        self._last_time = None
+
     @property
     def info(self):
         return self.wrapper.info
@@ -198,16 +202,22 @@ class InfoAccumulator:
         # Save the player w/ puck for next frame
         self._last_frame_player_w_puck = player_w_puck
 
+        # Keep track how deep the puck has gone, and how deep it's gone when possessed
         self._max_puck_y = max(self.info['puck-ice-y'], self._max_puck_y)
-
         self._max_shooter_y = max(self.info['puck-ice-y'], self._max_shooter_y)
+
+        # Keep track of ticks
+        self._frame_counter += 1
+        if self._last_time != self.info['time']:
+            self._last_tick_frame = self._frame_counter
+            self._last_time = self.info['time']
 
     @property
     def consecutive_passes(self):
         """
         Return stats per team showing the number of consecutive passes (in a list) and the number of
         those passes that are unique (that is, up to 6 different players in a row)
-s        """
+        """
         consecutive = {'home': [0], 'away': [0]}
         unique = {'home': [0], 'away': [0]}
 
@@ -248,3 +258,13 @@ s        """
     @property
     def max_shooter_y(self):
         return max(self.info['puck-ice-y'], self._max_shooter_y)
+
+    @property
+    def has_play_stopped_after_game_start(self):
+        """
+        True if play has stopped, but does not include before the first puck drop
+        """
+        if self.info['time'] < 600:
+            if self._frame_counter - self._last_tick_frame > 120:
+                return True
+        return False

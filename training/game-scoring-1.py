@@ -81,10 +81,12 @@ class GameScoring1Trainer(runner.Trainer):
         if ( info['time'] <= 540
                 # away scores a goal (fail)--which is most likely an own goal,
                 or info['away-goals'] > 0
-                # home scores a goal (success!), or
+                # home scores a goal (success!),
                 or info['home-goals'] > 0
                 # when the away team has the puck for  too long
-                or self._accumulator.time_puck['away'] > 5
+                or self._accumulator.time_puck['away'] > 1
+                # when play stops
+                or self._accumulator.has_play_stopped_after_game_start
              ):
             self._done = True
 
@@ -120,20 +122,20 @@ class GameScoring1Trainer(runner.Trainer):
         # Max (~2000)
         score_vector.append(self._accumulator.max_puck_y * 8)
 
-        # (C) Total max: 5000
+        # (C) Total max: 5,000
         # Reward passes, but don't allow grinding
-        # Max 1x (2500)
+        # Max 1x (2,500)
         MAX_PASS_COUNT_REWARD = 5
         score_vector.append(min(self._accumulator.pass_attempts['home'], MAX_PASS_COUNT_REWARD) * 500)
         # Reward completion, but keep adjusting for cmp percentage
-        # Max 1x (2500)
+        # Max 1x (2,500)
         score_vector.append(min(self._accumulator.pass_completions['home'], MAX_PASS_COUNT_REWARD) * cmp_pct * 500)
 
-        # (D) Total max: ~50,000 (assuming 5 shots is a realistic max)
+        # (D) Total max: ~500,000 (assuming 5 shots is a realistic max)
         # Reward shots on goal. Allow grinding
-        score_vector.append(info['home-shots'] * 10000)
+        score_vector.append(info['home-shots'] * 1e5)
 
-        # (E) Total max: ~500k (with multiplier of 0.1--but this one is flaky...)
+        # (E) Total max: ~50k (with multiplier of 0.01)
         # If behind the net, give the same reward as the away side of center ice,
         # to avoid behind-the-net grinding
         delta_puck_net_y = self._accumulator.wrapper.delta_puck_away_net_y
