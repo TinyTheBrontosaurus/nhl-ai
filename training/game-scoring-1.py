@@ -136,13 +136,13 @@ class GameScoring1Trainer(runner.Trainer):
         # (E) Total max: ~500k
         # If behind the net, give the same reward as the away side of center ice,
         # to avoid behind-the-net grinding
-        delta_puck_net_y = self._accumulator.wrapper.delta_puck_net_y
+        delta_puck_net_y = self._accumulator.wrapper.delta_puck_away_net_y
         if delta_puck_net_y <= 2:
             delta_puck_net_y = 225
         # No reward past the red line
         distance_multiplier = max(InfoWrapper.AWAY_GOAL_Y - delta_puck_net_y, 0)
 
-        juke_this_frame = self._accumulator.wrapper.delta_puck_goalie_x * distance_multiplier
+        juke_this_frame = self._accumulator.wrapper.delta_puck_away_goalie_x * distance_multiplier
         # Theoretical max of accumulator is 60s * 60frames * 50 x-pixels * 250 y-pixels == 45M
         # Realistic (human) max of accumulator is a 1Hz sine wave towards the goalie,
         # average y-distance of 100, average x-distance of 1 * 60fps, 60s == 3,600,000
@@ -171,11 +171,12 @@ class GameScoring1Trainer(runner.Trainer):
         # Stats to track
         self._stats = {
             'score': score,
-            'time_w_puck': ", ".join(["{} {.1}s".format(team, time) for team, time in self._accumulator.time_puck.items()]),
-            'pass cmp/att': "{}/{} (:.0f}%".format(self._accumulator.pass_completions['home'],
-                                           self._accumulator.pass_attempts['home'], cmp_pct * 100),
+            'time_w_puck': ", ".join(["{} {:.1f}s".format(team, time) for team, time in self._accumulator.time_puck.items()]),
+            'pass cmp/att': "{}/{} ({:.0f}%)".format(self._accumulator.pass_completions['home'],
+                                           self._accumulator.pass_attempts['home'],
+                                                   cmp_pct * 100),
             'buttons': self._pressed,
-
+            'juke_acc': self._juke_accumulator,
         }
 
         return score

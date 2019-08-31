@@ -73,7 +73,7 @@ class InfoWrapper:
         return min(max(self.info['puck-ice-x'], -self.GOALIE_MAX_X), self.GOALIE_MAX_X)
 
     @property
-    def dela_puck_away_goalie_x(self):
+    def delta_puck_away_goalie_x(self):
         return abs(self.puck_adjusted_away_goalie_x - self.info['player-away-G-x'])
 
     @property
