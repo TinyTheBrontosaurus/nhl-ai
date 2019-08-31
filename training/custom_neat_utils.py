@@ -23,6 +23,7 @@ class TqdmReporter(neat.reporting.BaseReporter):
         self._last_fitness = None
         self._fitness_stall = 0
         self._num_extinctions = 0
+        self._uniques = 0
 
     def end_generation(self, config, population, species_set):
         self.update()
@@ -34,12 +35,14 @@ class TqdmReporter(neat.reporting.BaseReporter):
         if self._last_fitness != best_genome.fitness:
             self._last_fitness = best_genome.fitness
             self._fitness_stall = 0
+            self._uniques += 1
         else:
             self._fitness_stall += 1
 
         self.progress_bar.set_postfix(fitness="{:.0f}/{:.0f}".format(best_genome.fitness, config.fitness_threshold),
                                       progress="{:.2f}%".format(best_genome.fitness / config.fitness_threshold * 100),
                                       stall=self._fitness_stall,
+                                      uniques=self._uniques,
                                       extinctions=int(self._num_extinctions))
 
     def complete_extinction(self):
