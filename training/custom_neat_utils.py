@@ -36,7 +36,7 @@ class TqdmReporter(neat.reporting.BaseReporter):
         else:
             self._fitness_stall += 1
 
-        self.progress_bar.set_postfix(fitness="{}/{}".format(best_genome.fitness, config.fitness_threshold),
+        self.progress_bar.set_postfix(fitness="{:.0f}/{:.0f}".format(best_genome.fitness, config.fitness_threshold),
                                       progress="{:.2f}%".format(best_genome.fitness / config.fitness_threshold * 100),
                                       stall=self._fitness_stall)
 
