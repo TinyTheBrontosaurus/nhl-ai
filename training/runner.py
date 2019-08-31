@@ -149,8 +149,8 @@ class Runner:
         """
         stats = self._eval_genome(genome, self.config)
 
-        logger.debug("S:{score:+5} Stats:{stats}",
-                    score=genome.fitness, stats=stats)
+        logger.debug("S:{score:+7} Stats:{stats}",
+                    score=int(genome.fitness), stats=stats)
 
     def train(self, nproc:int=1):
         """
