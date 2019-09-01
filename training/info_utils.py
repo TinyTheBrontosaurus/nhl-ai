@@ -29,8 +29,6 @@ class InfoWrapper:
         """
         player_w_puck = {}
 
-        diff = {}
-
         for team in TEAMS:
             for position in POSITIONS:
                 possible_match = True
@@ -39,8 +37,8 @@ class InfoWrapper:
                     puck_pos = 'player-w-puck-ice-{}'.format(dim)
 
                     # Found empirically that the pixel can be off by one
-                    diff[player_label] = self.info[player_label] - self.info[puck_pos]
-                    if abs(diff[player_label]) > 1:
+                    diff = self.info[player_label] - self.info[puck_pos]
+                    if abs(diff) > 1:
                         possible_match = False
 
                 if possible_match:
