@@ -250,7 +250,7 @@ def main(argv, trainer_class):
                                help="Replay a trained network")
     replay_parser.add_argument('--replay-training', action='store_true',
                                help="Replay all major generations of training")
-    replay_parser.add_argument('--latest-only', action='store_true',
+    parser.add_argument('--latest-only', action='store_true',
                                help="Only replay the latest training model")
     parser.add_argument('--model-file', type=str, nargs=1, help="model file for input (replay) or output (train)",
                         default=None)
