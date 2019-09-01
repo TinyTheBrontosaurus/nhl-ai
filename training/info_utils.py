@@ -28,20 +28,19 @@ class InfoWrapper:
         :return:
         """
         player_w_puck = {}
-
+        diff = {}
         for team in TEAMS:
             for position in POSITIONS:
-                possible_match = True
+                total_diff = 0
                 for dim in DIMS:
                     player_label = 'player-{}-{}-{}'.format(team, position, dim)
                     puck_pos = 'player-w-puck-ice-{}'.format(dim)
 
-                    # Found empirically that the pixel can be off by one
-                    diff = self.info[player_label] - self.info[puck_pos]
-                    if abs(diff) > 1:
-                        possible_match = False
+                    # Found empirically that the pixel can be off by two
+                    diff[player_label] = self.info[player_label] - self.info[puck_pos]
+                    total_diff += abs(diff[player_label])
 
-                if possible_match:
+                if total_diff <= 2:
                     player_w_puck['team'] = team
                     player_w_puck['pos'] = position
                     return player_w_puck
