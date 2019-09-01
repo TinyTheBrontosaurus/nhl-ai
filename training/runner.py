@@ -222,7 +222,7 @@ class Runner:
             genome.fitness = trainer.tick(*step, env=self.env)
 
             for listener in self._listeners:
-                listener(*step, trainer.stats)
+                listener(*step, {'stats': trainer.stats, 'score_vector': trainer.score_vector})
 
         self._render()
 
@@ -425,10 +425,19 @@ def movie_maker(movie, metadata, ob, rew, done, info, stats):
 
     to_draw = dict(metadata)
     to_draw['version'] = VERSION
-    to_draw.update(stats)
-    to_draw['score'] = '{:>5.0f}'.format(stats['score'])
+    to_draw.update(stats['stats'])
+
+    score_vector = stats['score_vector']
+    total = sum(score_vector.values())
+    score_breakdown = {"total": int(total)}
+    for key, value in score_vector.items():
+        score_breakdown[key] = "({pct:4,.1f}% {value:8,}".format(pct=value / total * 100., value=int(value))
+
+    to_draw.update(score_breakdown)
 
     for offset, (key, value) in enumerate(to_draw.items()):
+        if (5 + 12 * (offset + 1)) >= 224:
+            break
         draw.text((0, 5 + 12 * offset), "{:15}: {}".format(key, value), fill='rgb(255, 255, 255)')
 
     status_frame = np.array(img)
