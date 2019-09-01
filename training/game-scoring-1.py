@@ -154,7 +154,7 @@ class GameScoring1Trainer(runner.Trainer):
         self._juke_accumulator += juke_this_frame
 
         # Reward all jukes
-        score_vector.append(self._juke_accumulator * 0.01)
+        score_vector.append(self._juke_accumulator * 0.1)
 
         # TODO (F and G) both required a shot detector
 
