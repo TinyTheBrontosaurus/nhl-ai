@@ -431,13 +431,11 @@ def movie_maker(movie, metadata, ob, rew, done, info, stats):
     total = sum(score_vector.values())
     score_breakdown = {"total": int(total)}
     for key, value in score_vector.items():
-        score_breakdown[key] = "({pct:4,.1f}% {value:8,}".format(pct=value / total * 100., value=int(value))
+        score_breakdown[key] = "({pct:5,.1f}% {value:8,}".format(pct=value / total * 100., value=int(value))
 
     to_draw.update(score_breakdown)
 
     for offset, (key, value) in enumerate(to_draw.items()):
-        if (5 + 12 * (offset + 1)) >= 224:
-            break
         draw.text((0, 5 + 12 * offset), "{:15}: {}".format(key, value), fill='rgb(255, 255, 255)')
 
     status_frame = np.array(img)

@@ -186,13 +186,14 @@ class GameScoring1Trainer(runner.Trainer):
         # Save the score vector
         self._score_vector = score_vector
 
+        self._done = any(self._done_reasons.values())
+
         # Stats to track
         self._stats = {
             'time_w_puck': ", ".join(["{} {:.1f}s".format(team, time) for team, time in self._accumulator.time_puck.items()]),
-            'pass cmp/att': "{}/{} ({:.0f}%)".format(self._accumulator.pass_completions['home'],
+            'pass cmp/att': "{}/{} ({:.0f}%) shots={}".format(self._accumulator.pass_completions['home'],
                                            self._accumulator.pass_attempts['home'],
-                                                   cmp_pct * 100),
-            'shots': info['home-shots'],
+                                                   cmp_pct * 100, info['home-shots']),
             'buttons': self._pressed,
         }
 
