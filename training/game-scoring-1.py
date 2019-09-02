@@ -91,13 +91,13 @@ class GameScoring1Trainer(runner.Trainer):
         # End if a minute has passed,
         self._done_reasons['timeout'] = info['time'] <= 540
         # away scores a goal (fail)--which is most likely an own goal,
-        self._done_reasons['timeout'] = info['away-goals'] > 0
+        self._done_reasons['away_score'] = info['away-goals'] > 0
         # home scores a goal (success!),
-        self._done_reasons['timeout'] = info['home-goals'] > 0
+        self._done_reasons['home_score'] = info['home-goals'] > 0
         # when the away team has the puck for  too long
-        self._done_reasons['timeout'] = self._accumulator.time_puck['away'] > 1
+        self._done_reasons['away_has_puck'] = self._accumulator.time_puck['away'] > 1
         # when play stops
-        self._done_reasons['timeout'] = self._accumulator.has_play_stopped_after_game_start
+        self._done_reasons['play_stopped'] = self._accumulator.has_play_stopped_after_game_start
 
 
         # Rewards structure
