@@ -141,9 +141,9 @@ class GameScoring1Trainer(runner.Trainer):
         # Max 1x (2,500)
         score_vector['pass-com'] = min(self._accumulator.pass_completions['home'], MAX_PASS_COUNT_REWARD) * cmp_pct * 500
 
-        # (D) Total max: ~500,000 (assuming 5 shots is a realistic max)
+        # (D) Total max: ~50k (assuming 5 shots is a realistic max)
         # Reward shots on goal. Allow grinding
-        score_vector['home-shots'] = info['home-shots'] * 1e5
+        score_vector['home-shots'] = info['home-shots'] * 1e4
 
         # (E) Total max: ~50k (with multiplier of 0.01)
         # If behind the net, give the same reward as the away side of center ice,
@@ -164,12 +164,12 @@ class GameScoring1Trainer(runner.Trainer):
         self._juke_accumulator += juke_this_frame
 
         # Reward all jukes
-        score_vector['juke'] = self._juke_accumulator * 0.1
+        score_vector['juke'] = self._juke_accumulator * 0.05
 
         # TODO (F and G) both required a shot detector
 
-        # (H) Total max: 10M (to leave room for F and G)
-        score_vector['home-goals'] = info['home-goals'] * 1e7
+        # (H) Total max: 100k (to leave room for F and G)
+        score_vector['home-goals'] = info['home-goals'] * 1e5
 
         score = sum(score_vector.values())
 
