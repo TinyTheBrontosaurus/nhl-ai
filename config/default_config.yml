@@ -1,0 +1,11 @@
+mode: train
+input:
+  scenarios:
+    - scenario: BufAtChi-=Faceoff.state
+      scorekeeper: Scoring1
+  metascorekeeper: Trivial
+movie:
+  enabled: generations
+  stoppage-time-s: 5.0
+render-live: False
+nproc: null
