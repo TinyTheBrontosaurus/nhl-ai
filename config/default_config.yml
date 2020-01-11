@@ -1,7 +1,7 @@
 mode: train
 input:
   scenarios:
-    - scenario: BufAtChi-=Faceoff.state
+    - scenario: BufAtChi-Faceoff.state
       scorekeeper: Scoring1
   metascorekeeper: Trivial
 movie:
