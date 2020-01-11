@@ -3,6 +3,7 @@ import argparse
 import multiprocessing
 import sys
 from loguru import logger
+import crosscheck.definitions as definitions
 
 
 template = {
@@ -74,8 +75,36 @@ def main(argv):
 
 
 
+    if valid_config['mode'] == 'train':
+        train()
+    else:
+        raise NotImplemented
 
 
+def train():
+    scenarios = load_scenarios()
+
+
+def load_scenarios():
+    scenarios = []
+    specs = config['input']['scenarios']
+
+    for spec in specs:
+        scenario = load_scenario(spec['scenario'].get())
+
+        scorekeeper = spec['scorekeeper']
+
+
+def load_scenario(name: str):
+    """
+    Load the scenario, and verify the file exists
+    :param name: The name of a scenario
+    :return: The fully qualified path to the scenario
+    """
+    filename = definitions.SAVE_STATE_FOLDER / name
+    if not filename.is_file():
+        raise FileNotFoundError("Cannot find scenario {}".format(filename))
+    return filename
 
 
 if __name__ == "__main__":
