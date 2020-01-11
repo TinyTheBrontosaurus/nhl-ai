@@ -8,6 +8,9 @@ import crosscheck.scorekeeper
 from typing import List, Dict
 
 
+class CrossCheckError(Exception):
+    pass
+
 template = {
     # The mode in which to run
     #  'train': Create a new model
@@ -77,8 +80,6 @@ def main(argv):
         logger.critical("Problem parsing config: {}", ex)
         return
 
-
-
     if valid_config['mode'] == 'train':
         train()
     else:
@@ -123,7 +124,9 @@ def load_scorekeeper(name: str) -> crosscheck.scorekeeper.Scorekeeper:
     :param name: The name of the scorekeeper
     :return: An instance of the scorekeeper
     """
-    return crosscheck.scorekeeper.string_to_class.get(name)
+    if name not in crosscheck.scorekeeper.string_to_class:
+        raise CrossCheckError(f"Scorekeeper not found: {name} ")
+    return crosscheck.scorekeeper.string_to_class[name]
 
 
 if __name__ == "__main__":

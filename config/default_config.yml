@@ -2,7 +2,7 @@ mode: train
 input:
   scenarios:
     - scenario: BufAtChi-Faceoff.state
-      scorekeeper: winning-faceoff-1
+      scorekeeper: point-per-frame
   metascorekeeper: Trivial
 movie:
   enabled: generations
