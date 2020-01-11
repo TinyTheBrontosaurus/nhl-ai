@@ -55,18 +55,27 @@ def main(argv):
 
     args = parser.parse_args(argv)
 
-    if args.config:
-        config.set_file(args.config)
-    config.set_args(args, dots=True)
+    # Parse the config using confuse, bailing on failure
+    try:
 
-    logger.debug('configuration directory is {}', config.config_dir())
+        if args.config:
+            config.set_file(args.config)
+        config.set_args(args, dots=True)
 
-    if config['nproc'].get() is None:
-        config['nproc'] = multiprocessing.cpu_count()
+        logger.debug('configuration directory is {}', config.config_dir())
 
-    valid = config.get(template)
+        if config['nproc'].get() is None:
+            config['nproc'] = multiprocessing.cpu_count()
 
-    pass
+        valid_config = config.get(template)
+    except confuse.ConfigError as ex:
+        logger.critical("Problem parsing config: {}", ex)
+        return
+
+
+
+
+
 
 
 if __name__ == "__main__":
