@@ -4,6 +4,8 @@ import multiprocessing
 import sys
 from loguru import logger
 import crosscheck.definitions as definitions
+import crosscheck.scorekeeper
+from typing import List, Dict
 
 
 template = {
@@ -17,7 +19,9 @@ template = {
     'input': {
         # The 1+ scenarios that are run in parallel
         'scenarios': confuse.Sequence({
+            # The filename of a scenario (save state) from which to start play
             'scenario': str,
+            # How play in this scenario will be judged
             'scorekeeper': str,
         }),
         # The cost function to use when combining scenarios
@@ -84,15 +88,21 @@ def main(argv):
 def train():
     scenarios = load_scenarios()
 
+    pass
 
-def load_scenarios():
+
+def load_scenarios() -> List[Dict[str, str]]:
     scenarios = []
     specs = config['input']['scenarios']
 
     for spec in specs:
         scenario = load_scenario(spec['scenario'].get())
 
-        scorekeeper = spec['scorekeeper']
+        scorekeeper = load_scorekeeper(spec['scorekeeper'].get())
+
+        scenarios.append({"scenario": scenario, "scorekeeper": scorekeeper})
+
+    return scenarios
 
 
 def load_scenario(name: str):
@@ -105,6 +115,15 @@ def load_scenario(name: str):
     if not filename.is_file():
         raise FileNotFoundError("Cannot find scenario {}".format(filename))
     return filename
+
+
+def load_scorekeeper(name: str) -> crosscheck.scorekeeper.Scorekeeper:
+    """
+    Load the scorekeeper, and verify that the scorekeeper exists
+    :param name: The name of the scorekeeper
+    :return: An instance of the scorekeeper
+    """
+    return crosscheck.scorekeeper.string_to_class.get(name)
 
 
 if __name__ == "__main__":
