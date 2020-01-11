@@ -6,6 +6,8 @@ from loguru import logger
 import crosscheck.definitions as definitions
 import crosscheck.scorekeeper
 from typing import List, Dict
+import neat
+import crosscheck.neat.utils as custom_neat_utils
 
 
 class CrossCheckError(Exception):
@@ -89,7 +91,71 @@ def main(argv):
 def train():
     scenarios = load_scenarios()
 
+    # Setup Neat
+    neat_config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                              neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                              trainer_class.get_config_filename())
+
+    population = neat.Population(neat_config)
+
+    population.add_reporter(custom_neat_utils.GenerationReporter(True, self.stream))
+    population.add_reporter(neat.StatisticsReporter())
+    if progress_bar is not None:
+        population.add_reporter(custom_neat_utils.TqdmReporter(progress_bar))
+    population.add_reporter(custom_neat_utils.Checkpointer(10, stream=self.stream,
+                                              filename_prefix=os.path.join(log_folder, "neat-checkpoint-")))
+    population.add_reporter(custom_neat_utils.SaveBestOfGeneration(os.path.join(log_folder, "generation-")))
+
+    # Iterate
+    fittest = population.run(_eval_genomes)
     pass
+
+
+def _eval_genomes(genomes: List[neat.DefaultGenome], config: neat.Config):
+    """
+    Evaluate many genomes serially in a for-loop
+    """
+
+    for genome_id, genome in genomes:
+        stats = _eval_genome(genome, config)
+        logger.debug("{gid:5} {score:+5} Stats:{stats}",
+                     gid=genome_id, score=genome.fitness, stats=stats)
+
+
+def _eval_genome(genome: neat.DefaultGenome, config: neat.Config):
+    """
+    Evaluate a single genome
+    :return: The trainer's stats, as a dictionary
+    """
+
+    if Runner.genv is None:
+        logger.debug("Creating Env")
+        self.create_env()
+        Runner.genv = self.env
+    self.env = Runner.genv
+
+    _ = self.env.reset()
+
+    trainer = self._trainer_class(genome, config, short_circuit=self.short_circuit)
+
+    while not trainer.done:
+
+        self._render()
+        next_action = trainer.next_action
+
+        # If there is no action, then no buttons are being pressed
+        if next_action is None:
+            next_action = [0] * config.genome_config.num_outputs
+        step = self.env.step(next_action)
+
+        genome.fitness = trainer.tick(*step, env=self.env)
+
+        for listener in self._listeners:
+            listener(*step, {'stats': trainer.stats, 'score_vector': trainer.score_vector})
+
+    self._render()
+
+    return trainer.stats
 
 
 def load_scenarios() -> List[Dict[str, str]]:

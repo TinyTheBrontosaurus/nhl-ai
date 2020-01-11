@@ -1,25 +1,26 @@
-import neat
-import retro
-import pickle
-import gym
-import argparse
-import functools
-from loguru import logger
-import time
-import tqdm
-import multiprocessing
-import subprocess
-import os
-import datetime
-from training.custom_neat_utils import TqdmReporter, GenerationReporter, Checkpointer, SaveBestOfGeneration
 import abc
+import argparse
+import datetime
+import functools
+import multiprocessing
+import os
+import pickle
+import subprocess
+import time
 import typing
-from natsort import natsorted
-import imageio
-import numpy as np
-from PIL import ImageDraw, Image
-from training.visualize import draw_net
 
+import gym
+import imageio
+import neat
+import numpy as np
+import retro
+import tqdm
+from PIL import ImageDraw, Image
+from loguru import logger
+from natsort import natsorted
+
+from crosscheck.neat.utils import TqdmReporter, GenerationReporter, Checkpointer, SaveBestOfGeneration
+from training.visualize import draw_net
 
 VERSION = subprocess.check_output(["git", "describe", "--dirty", "--always"]).decode().strip()
 

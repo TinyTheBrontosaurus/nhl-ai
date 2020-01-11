@@ -17,7 +17,7 @@ imageio==2.5.0
 imageio-ffmpeg==0.3.0
 importlib-metadata==0.19
 kiwisolver==1.1.0
-loguru==0.2.5
+loguru==0.4.0
 makefun==1.6.10
 matplotlib==3.1.0
 more-itertools==7.2.0
