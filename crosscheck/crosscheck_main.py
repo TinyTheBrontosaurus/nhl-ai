@@ -5,10 +5,10 @@ from typing import List, Dict
 import neat
 import pickle
 from loguru import logger
-from . import config
+from .config import config
 from . import definitions
 from . import scorekeeper
-from .neat import utils as custom_neat_utils
+from .neat_ import utils as custom_neat_utils
 
 
 class CrossCheckError(Exception):
