@@ -4,11 +4,14 @@ import multiprocessing
 from typing import List, Dict
 import neat
 import pickle
+import tqdm
 from loguru import logger
-from .config import config
+from .config import cc_config
 from . import definitions
 from . import scorekeeper
 from .neat_ import utils as custom_neat_utils
+from .log_folder import LogFolder
+from .game_env import get_genv
 
 
 class CrossCheckError(Exception):
@@ -68,15 +71,15 @@ def main(argv):
     try:
 
         if args.config:
-            config.set_file(args.config)
-        config.set_args(args, dots=True)
+            cc_config.set_file(args.config)
+        cc_config.set_args(args, dots=True)
 
-        logger.debug('configuration directory is {}', config.config_dir())
+        logger.debug('configuration directory is {}', cc_config.config_dir())
 
-        if config['nproc'].get() is None:
-            config['nproc'] = multiprocessing.cpu_count()
+        if cc_config['nproc'].get() is None:
+            cc_config['nproc'] = multiprocessing.cpu_count()
 
-        valid_config = config.get(template)
+        valid_config = cc_config.get(template)
     except confuse.ConfigError as ex:
         logger.critical("Problem parsing config: {}", ex)
         return
@@ -90,27 +93,34 @@ def main(argv):
 def train():
     scenarios = load_scenarios()
 
+    # TODO: Dynamically create config
+    config_filename = definitions.ROOT_FOLDER / "crosscheck" / "neat_" / \
+                      "config_templates" / "config-game-scoring-1"
+
     # Setup Neat
     neat_config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                               neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                              trainer_class.get_config_filename())
+                              config_filename)
 
-    population = neat.Population(neat_config)
+    # Run tqdm and do training
+    with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
+        population = neat.Population(neat_config)
 
-    population.add_reporter(custom_neat_utils.GenerationReporter(True, self.stream))
-    population.add_reporter(neat.StatisticsReporter())
-    if progress_bar is not None:
+        log_folder = LogFolder.folder
+
+        population.add_reporter(custom_neat_utils.GenerationReporter(True, logger.info))
+        population.add_reporter(neat.StatisticsReporter())
         population.add_reporter(custom_neat_utils.TqdmReporter(progress_bar))
-    population.add_reporter(custom_neat_utils.Checkpointer(10, stream=self.stream,
-                                              filename_prefix=os.path.join(log_folder, "neat-checkpoint-")))
-    population.add_reporter(custom_neat_utils.SaveBestOfGeneration(os.path.join(log_folder, "generation-")))
+        population.add_reporter(custom_neat_utils.Checkpointer(10, stream=logger.info,
+                                                  filename_prefix=log_folder / "neat-checkpoint-"))
+        population.add_reporter(custom_neat_utils.SaveBestOfGeneration(log_folder / "generation-"))
 
-    # Train
-    fittest = population.run(_eval_genomes)
+        # Train
+        fittest = population.run(_eval_genomes)
 
-    # Dump the result
-    with open(model_filename, 'wb') as f:
-        pickle.dump(fittest, f, 1)
+        # Dump the result
+        with open(log_folder / "fittest.pkl", 'wb') as f:
+            pickle.dump(fittest, f, 1)
 
 
 def _eval_genomes(genomes: List[neat.DefaultGenome], config: neat.Config):
@@ -130,32 +140,29 @@ def _eval_genome(genome: neat.DefaultGenome, config: neat.Config):
     :return: The trainer's stats, as a dictionary
     """
 
-    if Runner.genv is None:
-        logger.debug("Creating Env")
-        self.create_env()
-        Runner.genv = self.env
-    self.env = Runner.genv
+    env = get_genv()
 
-    _ = self.env.reset()
+    for scenario, scorekeeper in scenarios:
 
-    trainer = self._trainer_class(genome, config, short_circuit=self.short_circuit)
+        env.load_state(scenario)
+        _ = env.reset()
 
-    while not trainer.done:
+        while not scorekeeper.done:
+
+            self._render()
+            next_action = trainer.next_action
+
+            # If there is no action, then no buttons are being pressed
+            if next_action is None:
+                next_action = [0] * config.genome_config.num_outputs
+            step = self.env.step(next_action)
+
+            genome.fitness = trainer.tick(*step, env=self.env)
+
+            for listener in self._listeners:
+                listener(*step, {'stats': trainer.stats, 'score_vector': trainer.score_vector})
 
         self._render()
-        next_action = trainer.next_action
-
-        # If there is no action, then no buttons are being pressed
-        if next_action is None:
-            next_action = [0] * config.genome_config.num_outputs
-        step = self.env.step(next_action)
-
-        genome.fitness = trainer.tick(*step, env=self.env)
-
-        for listener in self._listeners:
-            listener(*step, {'stats': trainer.stats, 'score_vector': trainer.score_vector})
-
-    self._render()
 
     return trainer.stats
 

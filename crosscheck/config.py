@@ -1,5 +1,5 @@
 import confuse
 
 # Singleton config for the app
-config = confuse.LazyConfig('cross-check', __name__)
+cc_config = confuse.LazyConfig('cross-check', __name__)
 
