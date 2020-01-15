@@ -141,31 +141,45 @@ def _eval_genome(genome: neat.DefaultGenome, config: neat.Config):
     """
 
     env = get_genv()
+    combiner = []  #TODO
 
     for scenario, scorekeeper in scenarios:
 
         env.load_state(scenario)
         _ = env.reset()
+        net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
+
+        next_action = [0] * config.genome_config.num_outputs
+        scorekeeper.env = env
 
         while not scorekeeper.done:
 
-            self._render()
-            next_action = trainer.next_action
+            _render()
 
-            # If there is no action, then no buttons are being pressed
-            if next_action is None:
-                next_action = [0] * config.genome_config.num_outputs
-            step = self.env.step(next_action)
+            step = env.step(next_action)
+            info = step[2]
 
-            genome.fitness = trainer.tick(*step, env=self.env)
+            scorekeeper.info = info
+            scorekeeper.tick()
 
-            for listener in self._listeners:
-                listener(*step, {'stats': trainer.stats, 'score_vector': trainer.score_vector})
+            next_action = net.activate(get_inputs(info))
 
-        self._render()
+            for listener in _listeners:
+                listener(*step, {'stats': scorekeeper.stats, 'score_vector': scorekeeper.score_vector})
 
-    return trainer.stats
+        combiner.add(scorekeeper.score)
+        _render()
 
+    genome.fitness = combiner.fitness
+
+    return combiner.stats
+
+def get_inputs(info):
+    pass
+
+def _render():
+    # TODO
+    pass
 
 def load_scenarios() -> List[Dict[str, str]]:
     scenarios = []

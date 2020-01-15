@@ -4,6 +4,7 @@ class Scorekeeper:
 
     def __init__(self):
         self._done_reasons = {}
+        self.info = None
 
     @abc.abstractmethod
     def tick(self):
@@ -27,3 +28,11 @@ class Scorekeeper:
         scenario complete
         """
         return self._done_reasons
+
+    @property
+    def stats(self):
+        pass
+
+    @property
+    def score_vector(self):
+        pass
