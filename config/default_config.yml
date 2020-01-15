@@ -3,7 +3,7 @@ input:
   scenarios:
     - scenario: BufAtChi-Faceoff.state
       scorekeeper: point-per-frame
-  metascorekeeper: Trivial
+  metascorekeeper: summer
 movie:
   enabled: generations
   stoppage-time-s: 5.0

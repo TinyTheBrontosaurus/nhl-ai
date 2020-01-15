@@ -2,16 +2,12 @@ import confuse
 import argparse
 import multiprocessing
 from typing import List, Dict
-import neat
-import pickle
-import tqdm
 from loguru import logger
 from .config import cc_config
 from . import definitions
 from . import scorekeeper
-from .neat_ import utils as custom_neat_utils
-from .log_folder import LogFolder
-from .game_env import get_genv
+from . import combiner
+from .neat_.trainer import Trainer
 
 
 class CrossCheckError(Exception):
@@ -92,98 +88,14 @@ def main(argv):
 
 def train():
     scenarios = load_scenarios()
+    combiner = load_combiner(cc_config['input']['metascorekeeper'])
+    trainer = Trainer(scenarios, combiner)
+    trainer.train()
 
-    # TODO: Dynamically create config
-    config_filename = definitions.ROOT_FOLDER / "crosscheck" / "neat_" / \
-                      "config_templates" / "config-game-scoring-1"
-
-    # Setup Neat
-    neat_config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                              neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                              config_filename)
-
-    # Run tqdm and do training
-    with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
-        population = neat.Population(neat_config)
-
-        log_folder = LogFolder.folder
-
-        population.add_reporter(custom_neat_utils.GenerationReporter(True, logger.info))
-        population.add_reporter(neat.StatisticsReporter())
-        population.add_reporter(custom_neat_utils.TqdmReporter(progress_bar))
-        population.add_reporter(custom_neat_utils.Checkpointer(10, stream=logger.info,
-                                                  filename_prefix=log_folder / "neat-checkpoint-"))
-        population.add_reporter(custom_neat_utils.SaveBestOfGeneration(log_folder / "generation-"))
-
-        # Train
-        fittest = population.run(_eval_genomes)
-
-        # Dump the result
-        with open(log_folder / "fittest.pkl", 'wb') as f:
-            pickle.dump(fittest, f, 1)
-
-
-def _eval_genomes(genomes: List[neat.DefaultGenome], config: neat.Config):
-    """
-    Evaluate many genomes serially in a for-loop
-    """
-
-    for genome_id, genome in genomes:
-        stats = _eval_genome(genome, config)
-        logger.debug("{gid:5} {score:+5} Stats:{stats}",
-                     gid=genome_id, score=genome.fitness, stats=stats)
-
-
-def _eval_genome(genome: neat.DefaultGenome, config: neat.Config):
-    """
-    Evaluate a single genome
-    :return: The trainer's stats, as a dictionary
-    """
-
-    env = get_genv()
-    combiner = []  #TODO
-
-    for scenario, scorekeeper in scenarios:
-
-        env.load_state(scenario)
-        _ = env.reset()
-        net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
-
-        next_action = [0] * config.genome_config.num_outputs
-        scorekeeper.env = env
-
-        while not scorekeeper.done:
-
-            _render()
-
-            step = env.step(next_action)
-            info = step[2]
-
-            scorekeeper.info = info
-            scorekeeper.tick()
-
-            next_action = net.activate(get_inputs(info))
-
-            for listener in _listeners:
-                listener(*step, {'stats': scorekeeper.stats, 'score_vector': scorekeeper.score_vector})
-
-        combiner.add(scorekeeper.score)
-        _render()
-
-    genome.fitness = combiner.fitness
-
-    return combiner.stats
-
-def get_inputs(info):
-    pass
-
-def _render():
-    # TODO
-    pass
 
 def load_scenarios() -> List[Dict[str, str]]:
     scenarios = []
-    specs = config['input']['scenarios']
+    specs = cc_config['input']['scenarios']
 
     for spec in specs:
         scenario = load_scenario(spec['scenario'].get())
@@ -218,3 +130,7 @@ def load_scorekeeper(name: str) -> scorekeeper.Scorekeeper:
     return scorekeeper.string_to_class[name]
 
 
+def load_combiner(name: str):
+    if name not in combiner.string_to_class:
+        raise CrossCheckError(f"Combiner not found: {name} ")
+    return scorekeeper.string_to_class[name]
