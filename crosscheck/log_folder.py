@@ -12,3 +12,6 @@ class LogFolder:
         cls.friendly_time = str(datetime.datetime.now()).replace(':', "-").replace(" ", "_")
         cls.friendly_name = friendly_name
         cls.folder = pathlib.Path(root) / cls.friendly_name / cls.friendly_time
+
+        # Create the folders
+        cls.folder.mkdir(parents=True, exist_ok=True)

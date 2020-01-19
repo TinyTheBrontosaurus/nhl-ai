@@ -2,6 +2,8 @@ import confuse
 import argparse
 import multiprocessing
 import pathlib
+import shutil
+import yaml
 from typing import List, Callable
 from loguru import logger
 from .config import cc_config
@@ -11,12 +13,16 @@ from . import metascorekeeper
 from .info_utils.feature_vector import string_to_class as feature_vector_string_to_class
 from .neat_.trainer import Trainer
 from .scenario import Scenario
+from .log_folder import LogFolder
+from .version import __version__
 
 
 class CrossCheckError(Exception):
     pass
 
 template = {
+    # The name of this configuration (for logging purposes)
+    'name': str,
     # The mode in which to run
     #  'train': Create a new model
     #  'replay': Run an existing model
@@ -85,6 +91,30 @@ def main(argv):
     except confuse.ConfigError as ex:
         logger.critical("Problem parsing config: {}", ex)
         return
+
+    # Create log path
+    LogFolder.set_path(definitions.LOG_ROOT, cc_config['name'].get())
+
+    # Initialize logger
+    logger.remove(0)
+    logger.add(LogFolder.folder / "event.log")
+    logger.info("Running program: {}", cc_config['name'].get())
+    logger.info("Version: {}", __version__)
+    logger.info("Log folder: {}", LogFolder.folder)
+
+    # Copy configs
+    # Straight copy
+    shutil.copyfile(str(pathlib.Path(args['config'])), LogFolder.folder)
+    logger.info("CLI args: {}", argv)
+    # Copy resulting config
+    with open(LogFolder.folder / "config.yml", 'w') as f:
+        yaml.safe_dump(cc_config, f)
+
+    # Replace the standard logger with logging to a file
+
+    if args.model_file is None:
+        model_filename = LogFolder.folder / "fittest.pkl"
+
 
     if valid_config['mode'] == 'train':
         train()
