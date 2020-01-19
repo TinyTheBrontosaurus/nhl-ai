@@ -196,7 +196,12 @@ class Checkpointer(neat.checkpoint.Checkpointer):
         self.stream("Saving checkpoint to {0}".format(filename))
 
         with gzip.open(filename, 'w', compresslevel=5) as ff:
+            # Prevent reporters from being pickled.(Was having trouble
+            # pickling loguru)
+            reporters = species_set.reporters
+            species_set.reporters = None
             data = (generation, config, population, species_set, random.getstate())
             pickle.dump(data, ff, protocol=pickle.HIGHEST_PROTOCOL)
+            species_set.reporters = reporters
 
 
