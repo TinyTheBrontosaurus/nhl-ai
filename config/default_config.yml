@@ -1,7 +1,8 @@
 mode: train
 input:
   scenarios:
-    - scenario: BufAtChi-Faceoff.state
+    - name: basic
+      state: BufAtChi-Faceoff.state
       scorekeeper: point-per-frame
   metascorekeeper: summer
 movie:

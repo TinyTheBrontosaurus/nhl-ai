@@ -5,9 +5,14 @@ class Scorekeeper:
     def __init__(self):
         self._done_reasons = {}
         self.info = None
+        self._score = 0
+
+    def tick(self) -> float:
+        self._score = self._tick()
+        return self._score
 
     @abc.abstractmethod
-    def tick(self):
+    def _tick(self) -> float:
         """
         Incorporate the latest frame into the total score
         :return: The total score as of this frame
@@ -15,7 +20,14 @@ class Scorekeeper:
         pass
 
     @property
-    def done(self):
+    def score(self) -> float:
+        """
+        Accessor for the score calculated in tick
+        """
+        return self._score
+
+    @property
+    def done(self) -> bool:
         """
         :return: True if the scorekeeper considers the scenario complete
         """
@@ -30,9 +42,11 @@ class Scorekeeper:
         return self._done_reasons
 
     @property
-    def stats(self):
+    @abc.abstractmethod
+    def stats(self) -> dict:
         pass
 
     @property
-    def score_vector(self):
+    @abc.abstractmethod
+    def score_vector(self) -> dict:
         pass

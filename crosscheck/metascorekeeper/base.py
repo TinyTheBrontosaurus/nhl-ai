@@ -1,4 +1,5 @@
 import abc
+from ..scorekeeper import Scorekeeper
 
 class Metascorekeeper:
 
@@ -7,8 +8,14 @@ class Metascorekeeper:
 
     @property
     @abc.abstractmethod
-    def score(self):
+    def score(self) -> float:
         pass
 
-    def add(self, scorekeeper):
+    def add(self, name: str, scorekeeper: Scorekeeper):
+        self._scorekeepers[name] = scorekeeper
+
+    @property
+    @abc.abstractmethod
+    def stats(self) -> dict:
         pass
+

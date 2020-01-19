@@ -24,8 +24,10 @@ template = {
     'input': {
         # The 1+ scenarios that are run in parallel
         'scenarios': confuse.Sequence({
+            # The name of a scenario
+            'name': str,
             # The filename of a scenario (save state) from which to start play
-            'scenario': str,
+            'state': str,
             # How play in this scenario will be judged
             'scorekeeper': str,
         }),
@@ -95,7 +97,8 @@ def train():
 
 def load_scenarios(specs: dict) -> List[Dict[str, str]]:
     scenarios = [{
-        "scenario": load_scenario(spec['scenario'].get()),
+        "name": spec['name'].get(),
+        "state": load_scenario(spec['state'].get()),
         "scorekeeper": load_scorekeeper(spec['scorekeeper'].get())}
                  for spec in specs]
 
