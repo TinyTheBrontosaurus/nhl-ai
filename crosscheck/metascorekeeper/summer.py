@@ -1,6 +1,6 @@
-from .base import Combiner
+from .base import Metascorekeeper
 
-class Summer(Combiner):
+class Summer(Metascorekeeper):
 
     def __init__(self):
         super().__init__()

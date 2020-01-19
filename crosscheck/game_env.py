@@ -19,7 +19,8 @@ def create_genv() -> retro.RetroEnv:
     Create the environment.
     """
     env = retro.make('Nhl94-Genesis',
-                      inttype=retro.data.Integrations.ALL)
+                     state=retro.State.NONE,
+                     inttype=retro.data.Integrations.ALL)
 
     # # TODO: Wrap the env
     # if self._trainer_class.discretizer_class is not None:

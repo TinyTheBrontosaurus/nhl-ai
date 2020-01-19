@@ -1,12 +1,12 @@
 import abc
 
-class Combiner:
+class Metascorekeeper:
 
     def __init__(self):
         self._scorekeepers = {}
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def score(self):
         pass
 

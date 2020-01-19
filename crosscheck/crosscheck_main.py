@@ -6,7 +6,7 @@ from loguru import logger
 from .config import cc_config
 from . import definitions
 from . import scorekeeper
-from . import combiner
+from . import metascorekeeper
 from .neat_.trainer import Trainer
 
 
@@ -87,22 +87,17 @@ def main(argv):
 
 
 def train():
-    scenarios = load_scenarios()
-    combiner = load_combiner(cc_config['input']['metascorekeeper'])
+    scenarios = load_scenarios(cc_config['input']['scenarios'])
+    combiner = load_metascorekeeper(cc_config['input']['metascorekeeper'].get())
     trainer = Trainer(scenarios, combiner)
     trainer.train()
 
 
-def load_scenarios() -> List[Dict[str, str]]:
-    scenarios = []
-    specs = cc_config['input']['scenarios']
-
-    for spec in specs:
-        scenario = load_scenario(spec['scenario'].get())
-
-        scorekeeper = load_scorekeeper(spec['scorekeeper'].get())
-
-        scenarios.append({"scenario": scenario, "scorekeeper": scorekeeper})
+def load_scenarios(specs: dict) -> List[Dict[str, str]]:
+    scenarios = [{
+        "scenario": load_scenario(spec['scenario'].get()),
+        "scorekeeper": load_scorekeeper(spec['scorekeeper'].get())}
+                 for spec in specs]
 
     return scenarios
 
@@ -130,7 +125,12 @@ def load_scorekeeper(name: str) -> scorekeeper.Scorekeeper:
     return scorekeeper.string_to_class[name]
 
 
-def load_combiner(name: str):
-    if name not in combiner.string_to_class:
-        raise CrossCheckError(f"Combiner not found: {name} ")
-    return scorekeeper.string_to_class[name]
+def load_metascorekeeper(name: str):
+    """
+    Load the metascorekeeper, and verify that the metascorekeeper exists
+    :param name: The name of the metascorekeeper
+    :return: An instance of the metascorekeeper
+    """
+    if name not in metascorekeeper.string_to_class:
+        raise CrossCheckError(f"Metascorekeeper not found: {name} ")
+    return metascorekeeper.string_to_class[name]
