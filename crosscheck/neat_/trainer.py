@@ -12,6 +12,7 @@ from ..game_env import get_genv
 from ..metascorekeeper import Metascorekeeper
 from ..scenario import Scenario
 from typing import Callable
+from collections import defaultdict
 
 class Trainer:
 
@@ -40,10 +41,14 @@ class Trainer:
                                    "config_templates" / "config-game-scoring-1"
         parser.read(template_config_filename)
 
-        # Set
+        # Calculate and set fitness threshold
         scorekeepers = [x.scorekeeper for x in self.scenarios]
         fitness_threshold = self.metascorekeeper.fitness_threshold(scorekeepers)
         parser["NEAT"]["fitness_threshold"] = str(fitness_threshold)
+
+        # Calculate and set length of feature vector
+        sample_vector = self.feature_vector(defaultdict(lambda: 0))
+        parser["DefaultGenome"]["num_inputs"] = str(len(sample_vector))
 
         # Apply user config last (top priority)
         for key, subkeys in self.neat_settings.items():
@@ -130,13 +135,20 @@ class Trainer:
 
                 self._render()
 
+                # Run the next step in the simulation
                 step = env.step(next_action)
-                info = step[3]
 
+                # Save the latest state
+                info = step[3]
                 scorekeeper.info = info
+
+                # Determine the next action so it can be fed into the scorekeeper
+                next_action = net.activate(self.feature_vector(info))
+                # TODO: Sort out buttons
+                scorekeeper.buttons_pressed = env.action_labels(self._next_action)
+
                 scorekeeper.tick()
 
-                next_action = net.activate(self.feature_vector(info))
 
                 for listener in self.listeners:
                     listener(*step, {'stats': scorekeeper.stats, 'score_vector': scorekeeper.score_vector})

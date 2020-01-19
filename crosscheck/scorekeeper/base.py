@@ -4,29 +4,15 @@ class Scorekeeper:
 
     def __init__(self):
         self._done_reasons = {}
-        self.info = None
+        self.info: dict = {}
         self._score = 0
+        self._score_vector = {}
+        self._stats = {}
+        self.button_pressed: dict = {}
 
     def tick(self) -> float:
         self._score = self._tick()
         return self._score
-
-    @abc.abstractmethod
-    def _tick(self) -> float:
-        """
-        Incorporate the latest frame into the total score
-        :return: The total score as of this frame
-        """
-        pass
-
-    @classmethod
-    @abc.abstractclassmethod
-    def fitness_threshold(cls) -> float:
-        """
-        Accessor fitness threshold (the score over
-        which to stop training)
-        """
-        pass
 
     @property
     def score(self) -> float:
@@ -51,11 +37,27 @@ class Scorekeeper:
         return self._done_reasons
 
     @property
-    @abc.abstractmethod
-    def stats(self) -> dict:
-        pass
+    def score_vector(self) -> dict:
+        return self._score_vector
 
     @property
+    def stats(self) -> dict:
+        return self._stats
+
     @abc.abstractmethod
-    def score_vector(self) -> dict:
+    def _tick(self) -> float:
+        """
+        Incorporate the latest frame into the total score
+        :return: The total score as of this frame
+        """
         pass
+
+    @classmethod
+    @abc.abstractclassmethod
+    def fitness_threshold(cls) -> float:
+        """
+        Accessor fitness threshold (the score over
+        which to stop training)
+        """
+        pass
+
