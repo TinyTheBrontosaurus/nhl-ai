@@ -3,7 +3,7 @@ import argparse
 import multiprocessing
 import pathlib
 import shutil
-from typing import List, Callable
+from typing import List, Callable, Type
 from loguru import logger
 from .config import cc_config
 from . import definitions
@@ -166,7 +166,7 @@ def load_save_state(name: str) -> pathlib.Path:
     return filename
 
 
-def load_scorekeeper(name: str) -> Callable[[],scorekeeper.Scorekeeper]:
+def load_scorekeeper(name: str) -> Type[scorekeeper.Scorekeeper]:
     """
     Load the scorekeeper, and verify that the scorekeeper exists
     :param name: The name of the scorekeeper
@@ -177,7 +177,7 @@ def load_scorekeeper(name: str) -> Callable[[],scorekeeper.Scorekeeper]:
     return scorekeeper.string_to_class[name]
 
 
-def load_metascorekeeper(name: str) -> Callable[[], metascorekeeper.Metascorekeeper]:
+def load_metascorekeeper(name: str) -> Type[metascorekeeper.Metascorekeeper]:
     """
     Load the metascorekeeper, and verify that the metascorekeeper exists
     :param name: The name of the metascorekeeper
