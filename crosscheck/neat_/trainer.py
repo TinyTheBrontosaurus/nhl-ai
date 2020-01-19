@@ -87,7 +87,7 @@ class Trainer:
                 self._render()
 
                 step = env.step(next_action)
-                info = step[2]
+                info = step[3]
 
                 scorekeeper.info = info
                 scorekeeper.tick()

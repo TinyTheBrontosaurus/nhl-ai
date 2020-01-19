@@ -7,4 +7,4 @@ class Summer(Metascorekeeper):
 
     @property
     def score(self):
-        return sum([x.score for x in self._scorekeepers])
+        return sum([x.score for x in self._scorekeepers.values()])
