@@ -3,7 +3,7 @@ import tqdm
 import pickle
 import pathlib
 import configparser
-from typing import List
+from typing import List, Type
 from loguru import logger
 from crosscheck import definitions
 from crosscheck.log_folder import LogFolder
@@ -16,7 +16,7 @@ from typing import Callable
 class Trainer:
 
     def __init__(self, scenarios: List[Scenario],
-                 metascorekeeper: Callable[[], Metascorekeeper],
+                 metascorekeeper: Type[Metascorekeeper],
                  feature_vector: Callable[[dict], List[float]],
                  neat_settings: dict = None):
         self.scenarios = scenarios
@@ -27,7 +27,7 @@ class Trainer:
             neat_settings = {}
         self.neat_settings = neat_settings
 
-    def setup_neat_config(self) -> pathlib.Path:
+    def _setup_neat_config(self) -> pathlib.Path:
         """
         Dynamically create config from a template, and store it in the log folder
         :return: Path to new config
@@ -41,7 +41,9 @@ class Trainer:
         parser.read(template_config_filename)
 
         # Set
-        parser["NEAT"]["fitness_threshold"] = "250000"
+        scorekeepers = [x.scorekeeper for x in self.scenarios]
+        fitness_threshold = self.metascorekeeper.fitness_threshold(scorekeepers)
+        parser["NEAT"]["fitness_threshold"] = str(fitness_threshold)
 
         # Apply user config last (top priority)
         for key, subkeys in self.neat_settings.items():
@@ -62,7 +64,7 @@ class Trainer:
 
     def train(self):
         # Create neat config
-        config_filename = self.setup_neat_config()
+        config_filename = self._setup_neat_config()
 
         # Setup Neat
         neat_config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,

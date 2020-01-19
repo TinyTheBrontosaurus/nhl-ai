@@ -19,6 +19,15 @@ class Scorekeeper:
         """
         pass
 
+    @classmethod
+    @abc.abstractclassmethod
+    def fitness_threshold(cls) -> float:
+        """
+        Accessor fitness threshold (the score over
+        which to stop training)
+        """
+        pass
+
     @property
     def score(self) -> float:
         """
@@ -31,7 +40,7 @@ class Scorekeeper:
         """
         :return: True if the scorekeeper considers the scenario complete
         """
-        return any(self._done_reasons.items())
+        return any(self._done_reasons.values())
 
     def done_reasons(self) -> dict:
         """
