@@ -40,9 +40,13 @@ class Trainer:
             population.add_reporter(custom_neat_utils.GenerationReporter(True, logger.info))
             population.add_reporter(neat.StatisticsReporter())
             population.add_reporter(custom_neat_utils.TqdmReporter(progress_bar))
+            checkpoint_folder = log_folder / "checkpoints"
+            checkpoint_folder.mkdir(parents=False, exist_ok=False)
             population.add_reporter(custom_neat_utils.Checkpointer(10, stream=logger.info,
-                                                                   filename_prefix=log_folder / "neat-checkpoint-"))
-            population.add_reporter(custom_neat_utils.SaveBestOfGeneration(log_folder / "generation-"))
+                                                                   filename_prefix=checkpoint_folder / "neat-checkpoint-"))
+            generations_folder = (log_folder / "generations")
+            generations_folder.mkdir(parents=False, exist_ok=False)
+            population.add_reporter(custom_neat_utils.SaveBestOfGeneration(generations_folder / "generation-"))
 
             # Train
             fittest = population.run(self._eval_genomes)
