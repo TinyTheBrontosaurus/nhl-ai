@@ -24,6 +24,7 @@ template = {
     #  'play-2p': Play traditional human vs human
     'mode': confuse.OneOf(['train', 'replay', 'compete', 'play', 'play-2p']),
     'input': {
+        'feature-vector': str,
         # The 1+ scenarios that are run in parallel
         'scenarios': confuse.Sequence({
             # The name of a scenario

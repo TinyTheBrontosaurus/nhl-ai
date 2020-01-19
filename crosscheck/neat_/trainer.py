@@ -14,7 +14,8 @@ from typing import Callable
 class Trainer:
 
     def __init__(self, scenarios: List[Scenario],
-                 metascorekeeper: Callable[[], Metascorekeeper]):
+                 metascorekeeper: Callable[[], Metascorekeeper],
+                 feature_vector):
         self.scenarios = scenarios
         self.listeners = []
         self.metascorekeeper = metascorekeeper
