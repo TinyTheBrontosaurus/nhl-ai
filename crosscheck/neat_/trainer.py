@@ -1,6 +1,8 @@
 import neat
 import tqdm
 import pickle
+import pathlib
+import configparser
 from typing import List
 from loguru import logger
 from crosscheck import definitions
@@ -21,10 +23,33 @@ class Trainer:
         self.metascorekeeper = metascorekeeper
         self.feature_vector = feature_vector
 
+    @classmethod
+    def setup_neat_config(cls) -> pathlib.Path:
+        """
+        Dynamically create config from a template, and store it in the log folder
+        :return: Path to new config
+        """
+        log_folder = LogFolder.folder
+
+        # Read template
+        parser = configparser.ConfigParser()
+        template_config_filename = definitions.ROOT_FOLDER / "crosscheck" / "neat_" / \
+                                   "config_templates" / "config-game-scoring-1"
+        parser.read(template_config_filename)
+
+        # Set
+        parser["NEAT"]["pop_size"] = 250
+
+        # Write
+        config_filename = log_folder / "neat_config.ini"
+        with open(config_filename) as f:
+            parser.write(f)
+
+        return config_filename
+
     def train(self):
-        # TODO: Dynamically create config
-        config_filename = definitions.ROOT_FOLDER / "crosscheck" / "neat_" / \
-                          "config_templates" / "config-game-scoring-1"
+        # Create neat config
+        config_filename = self.setup_neat_config()
 
         # Setup Neat
         neat_config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,

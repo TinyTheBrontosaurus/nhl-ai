@@ -7,6 +7,8 @@ input:
       scorekeeper: point-per-frame
   metascorekeeper: summer
   feature-vector: players_and_puck
+  training:
+    pop_size: 250
 movie:
   enabled: generations
   stoppage-time-s: 5.0
