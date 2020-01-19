@@ -2,9 +2,10 @@ mode: train
 input:
   scenarios:
     - name: basic
-      save_state: BufAtChi-Faceoff.state
+      save-state: BufAtChi-Faceoff.state
       scorekeeper: point-per-frame
   metascorekeeper: summer
+  feature-vector: players_and_puck
 movie:
   enabled: generations
   stoppage-time-s: 5.0

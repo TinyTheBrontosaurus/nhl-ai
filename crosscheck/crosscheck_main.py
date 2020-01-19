@@ -8,6 +8,7 @@ from .config import cc_config
 from . import definitions
 from . import scorekeeper
 from . import metascorekeeper
+from .info_utils.feature_vector import string_to_class as feature_vector_string_to_class
 from .neat_.trainer import Trainer
 from .scenario import Scenario
 
@@ -30,7 +31,7 @@ template = {
             # The name of a scenario
             'name': str,
             # The filename of a scenario (save state) from which to start play
-            'save_state': str,
+            'save-state': str,
             # How play in this scenario will be judged
             'scorekeeper': str,
         }),
@@ -92,9 +93,10 @@ def main(argv):
 
 
 def train():
+    feature_vector = load_feature_vector(cc_config['input']['feature-vector'].get())
     scenarios = load_scenarios(cc_config['input']['scenarios'])
     combiner = load_metascorekeeper(cc_config['input']['metascorekeeper'].get())
-    trainer = Trainer(scenarios, combiner)
+    trainer = Trainer(scenarios, combiner, feature_vector)
     trainer.train()
 
 
@@ -106,11 +108,22 @@ def load_scenarios(specs: dict) -> List[Scenario]:
     """
     scenarios = [Scenario(
         name=spec['name'].get(),
-        save_state=load_save_state(spec['save_state'].get()),
+        save_state=load_save_state(spec['save-state'].get()),
         scorekeeper=load_scorekeeper(spec['scorekeeper'].get()))
                  for spec in specs]
 
     return scenarios
+
+
+def load_feature_vector(name: str) -> Callable[[dict], List[float]]:
+    """
+    Load the feature vector, and verify that the it exists
+    :param name: The name of the feature vector
+    :return: An instance of the feature vector
+    """
+    if name not in feature_vector_string_to_class:
+        raise CrossCheckError(f"Feature vector not found: {name} ")
+    return feature_vector_string_to_class[name]
 
 
 def load_save_state(name: str) -> pathlib.Path:

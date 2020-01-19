@@ -13,12 +13,14 @@ class InfoWrapper:
     AWAY_GOAL_Y = 256
     GOALIE_MAX_X = 23
 
-    def __init__(self):
+    def __init__(self, info: dict = None):
         """
         Grab derived info directly from an individual info object. Basically f(info)
         """
         # Info that comes from env
-        self.info: dict = {}
+        if info is None:
+            info = {}
+        self.info: dict = info
 
     @property
     def player_w_puck(self):
@@ -46,29 +48,6 @@ class InfoWrapper:
                     return player_w_puck
 
         return {}
-
-    @property
-    def players_and_puck_feature(self):
-        """
-        :return: All of the player positions and puck position in a list. Useful as a feature vector
-        """
-        features = []
-
-        for team in TEAMS:
-            for position in POSITIONS:
-                for dim in DIMS:
-                    player_label = 'player-{}-{}-{}'.format(team, position, dim)
-                    features.append(self.info[player_label])
-
-        for dim in DIMS:
-            features.append(self.info['player-w-puck-ice-{}'.format(dim)])
-
-        for dim in DIMS:
-            features.append(self.info['puck-ice-{}'.format(dim)])
-
-        features.append(0 if self.player_w_puck is {} else 1)
-
-        return features
 
     @property
     def puck_adjusted_away_goalie_x(self):

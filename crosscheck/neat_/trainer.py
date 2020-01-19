@@ -15,10 +15,11 @@ class Trainer:
 
     def __init__(self, scenarios: List[Scenario],
                  metascorekeeper: Callable[[], Metascorekeeper],
-                 feature_vector):
+                 feature_vector: Callable[[dict], List[float]]):
         self.scenarios = scenarios
         self.listeners = []
         self.metascorekeeper = metascorekeeper
+        self.feature_vector = feature_vector
 
     def train(self):
         # TODO: Dynamically create config
@@ -91,7 +92,7 @@ class Trainer:
                 scorekeeper.info = info
                 scorekeeper.tick()
 
-                next_action = net.activate(self.get_inputs(info))
+                next_action = net.activate(self.feature_vector(info))
 
                 for listener in self.listeners:
                     listener(*step, {'stats': scorekeeper.stats, 'score_vector': scorekeeper.score_vector})
@@ -102,9 +103,6 @@ class Trainer:
         genome.fitness = metascorekeeper.score
 
         return metascorekeeper.stats
-
-    def get_inputs(self, info):
-        pass
 
     def _render(self):
         # TODO
