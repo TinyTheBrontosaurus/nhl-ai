@@ -195,8 +195,8 @@ class Checkpointer(neat.checkpoint.Checkpointer):
         filename = '{0}{1}'.format(self.filename_prefix,generation)
         self.stream("Saving checkpoint to {0}".format(filename))
 
-        with gzip.open(filename, 'w', compresslevel=5) as f:
+        with gzip.open(filename, 'w', compresslevel=5) as ff:
             data = (generation, config, population, species_set, random.getstate())
-            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(data, ff, protocol=pickle.HIGHEST_PROTOCOL)
 
 

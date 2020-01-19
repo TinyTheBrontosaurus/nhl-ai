@@ -97,25 +97,22 @@ def main(argv):
 
     # Initialize logger
     logger.remove(0)
-    logger.add(LogFolder.folder / "event.log")
+    logger.add(LogFolder.folder / "event.log", level="INFO")
     logger.info("Running program: {}", cc_config['name'].get())
     logger.info("Version: {}", __version__)
     logger.info("Log folder: {}", LogFolder.folder)
 
     # Copy configs
     # Straight copy
-    shutil.copyfile(str(pathlib.Path(args['config'])), LogFolder.folder)
+    orig_config = pathlib.Path(args.config)
+    shutil.copyfile(orig_config, LogFolder.folder / orig_config.name)
     logger.info("CLI args: {}", argv)
+
     # Copy resulting config
     with open(LogFolder.folder / "config.yml", 'w') as f:
-        yaml.safe_dump(cc_config, f)
+        f.write(cc_config.dump())
 
-    # Replace the standard logger with logging to a file
-
-    if args.model_file is None:
-        model_filename = LogFolder.folder / "fittest.pkl"
-
-
+    # Start program
     if valid_config['mode'] == 'train':
         train()
     else:
