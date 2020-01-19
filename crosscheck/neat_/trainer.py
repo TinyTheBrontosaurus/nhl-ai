@@ -8,11 +8,13 @@ from crosscheck.log_folder import LogFolder
 from . import utils as custom_neat_utils
 from ..game_env import get_genv
 from ..metascorekeeper import Metascorekeeper
+from ..scenario import Scenario
 from typing import Callable
 
 class Trainer:
 
-    def __init__(self, scenarios: dict, metascorekeeper: Callable[[], Metascorekeeper]):
+    def __init__(self, scenarios: List[Scenario],
+                 metascorekeeper: Callable[[], Metascorekeeper]):
         self.scenarios = scenarios
         self.listeners = []
         self.metascorekeeper = metascorekeeper
@@ -64,21 +66,19 @@ class Trainer:
         """
 
         env = get_genv()
-        metascorekeeper = self.metascorekeeper
+        metascorekeeper = self.metascorekeeper()
 
         for scenario in self.scenarios:
 
-            name = scenario['name']
-            state = scenario['state']
-            scorekeeper = scenario['scorekeeper']()
+            scorekeeper = scenario.scorekeeper()
 
-            env.load_state(str(state))
+            env.load_state(str(scenario.save_state))
             _ = env.reset()
             net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
 
             # No buttons pressed in first frame
             next_action = [0] * config.genome_config.num_outputs
-            scorekeeper.env = env
+            scenario.scorekeeper.env = env
 
             while not scorekeeper.done:
 
@@ -95,7 +95,7 @@ class Trainer:
                 for listener in self.listeners:
                     listener(*step, {'stats': scorekeeper.stats, 'score_vector': scorekeeper.score_vector})
 
-            metascorekeeper.add(name, scorekeeper)
+            metascorekeeper.add(scenario.name, scorekeeper)
             self._render()
 
         genome.fitness = metascorekeeper.score

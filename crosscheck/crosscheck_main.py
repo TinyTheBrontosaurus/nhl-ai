@@ -1,13 +1,15 @@
 import confuse
 import argparse
 import multiprocessing
-from typing import List, Dict
+import pathlib
+from typing import List, Callable
 from loguru import logger
 from .config import cc_config
 from . import definitions
 from . import scorekeeper
 from . import metascorekeeper
 from .neat_.trainer import Trainer
+from .scenario import Scenario
 
 
 class CrossCheckError(Exception):
@@ -27,7 +29,7 @@ template = {
             # The name of a scenario
             'name': str,
             # The filename of a scenario (save state) from which to start play
-            'state': str,
+            'save_state': str,
             # How play in this scenario will be judged
             'scorekeeper': str,
         }),
@@ -95,17 +97,22 @@ def train():
     trainer.train()
 
 
-def load_scenarios(specs: dict) -> List[Dict[str, str]]:
-    scenarios = [{
-        "name": spec['name'].get(),
-        "state": load_scenario(spec['state'].get()),
-        "scorekeeper": load_scorekeeper(spec['scorekeeper'].get())}
+def load_scenarios(specs: dict) -> List[Scenario]:
+    """
+    Convert config to a list of Scenario object
+    :param specs: The config for a scenario
+    :return: List of scenario objects
+    """
+    scenarios = [Scenario(
+        name=spec['name'].get(),
+        save_state=load_save_state(spec['save_state'].get()),
+        scorekeeper=load_scorekeeper(spec['scorekeeper'].get()))
                  for spec in specs]
 
     return scenarios
 
 
-def load_scenario(name: str):
+def load_save_state(name: str) -> pathlib.Path:
     """
     Load the scenario, and verify the file exists
     :param name: The name of a scenario
@@ -117,7 +124,7 @@ def load_scenario(name: str):
     return filename
 
 
-def load_scorekeeper(name: str) -> scorekeeper.Scorekeeper:
+def load_scorekeeper(name: str) -> Callable[[],scorekeeper.Scorekeeper]:
     """
     Load the scorekeeper, and verify that the scorekeeper exists
     :param name: The name of the scorekeeper
@@ -128,7 +135,7 @@ def load_scorekeeper(name: str) -> scorekeeper.Scorekeeper:
     return scorekeeper.string_to_class[name]
 
 
-def load_metascorekeeper(name: str):
+def load_metascorekeeper(name: str) -> Callable[[], metascorekeeper.Metascorekeeper]:
     """
     Load the metascorekeeper, and verify that the metascorekeeper exists
     :param name: The name of the metascorekeeper
