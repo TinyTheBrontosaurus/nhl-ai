@@ -3,7 +3,6 @@ import argparse
 import multiprocessing
 import pathlib
 import shutil
-import yaml
 from typing import List, Callable
 from loguru import logger
 from .config import cc_config
@@ -43,6 +42,8 @@ template = {
         }),
         # The cost function to use when combining scenarios
         'metascorekeeper': str,
+        # Custom configs that are applied directly to the neat.ini files
+        'neat-config': dict,
     },
     # Information about the movie to record
     'movie': {
@@ -105,7 +106,7 @@ def main(argv):
     # Copy configs
     # Straight copy
     orig_config = pathlib.Path(args.config)
-    shutil.copyfile(orig_config, LogFolder.folder / orig_config.name)
+    shutil.copyfile(str(orig_config), str(LogFolder.folder / orig_config.name))
     logger.info("CLI args: {}", argv)
 
     # Copy resulting config
@@ -123,7 +124,7 @@ def train():
     feature_vector = load_feature_vector(cc_config['input']['feature-vector'].get())
     scenarios = load_scenarios(cc_config['input']['scenarios'])
     combiner = load_metascorekeeper(cc_config['input']['metascorekeeper'].get())
-    trainer = Trainer(scenarios, combiner, feature_vector)
+    trainer = Trainer(scenarios, combiner, feature_vector, cc_config['input']['neat-config'])
     trainer.train()
 
 

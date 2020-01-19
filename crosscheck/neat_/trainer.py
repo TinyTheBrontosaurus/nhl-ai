@@ -17,14 +17,17 @@ class Trainer:
 
     def __init__(self, scenarios: List[Scenario],
                  metascorekeeper: Callable[[], Metascorekeeper],
-                 feature_vector: Callable[[dict], List[float]]):
+                 feature_vector: Callable[[dict], List[float]],
+                 neat_settings: dict = None):
         self.scenarios = scenarios
         self.listeners = []
         self.metascorekeeper = metascorekeeper
         self.feature_vector = feature_vector
+        if neat_settings is None:
+            neat_settings = {}
+        self.neat_settings = neat_settings
 
-    @classmethod
-    def setup_neat_config(cls) -> pathlib.Path:
+    def setup_neat_config(self) -> pathlib.Path:
         """
         Dynamically create config from a template, and store it in the log folder
         :return: Path to new config
@@ -38,11 +41,21 @@ class Trainer:
         parser.read(template_config_filename)
 
         # Set
-        parser["NEAT"]["pop_size"] = 250
+        parser["NEAT"]["fitness_threshold"] = "250000"
+
+        # Apply user config last (top priority)
+        for key, subkeys in self.neat_settings.items():
+            for subkey, value in subkeys.items():
+                if key not in parser:
+                    raise KeyError(f"Unrecognized config key for neat config: {key}")
+                if subkey not in parser[key]:
+                    raise KeyError(f"Unrecognized config subkey for neat config: {key}/{subkey}")
+
+                parser[key][subkey] = str(value)
 
         # Write
         config_filename = log_folder / "neat_config.ini"
-        with open(config_filename) as f:
+        with open(config_filename, 'w') as f:
             parser.write(f)
 
         return config_filename
