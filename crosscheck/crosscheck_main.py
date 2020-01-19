@@ -9,6 +9,7 @@ from .config import cc_config
 from . import definitions
 from . import scorekeeper
 from . import metascorekeeper
+from . import discretizers
 from .info_utils.feature_vector import string_to_class as feature_vector_string_to_class
 from .neat_.trainer import Trainer
 from .scenario import Scenario
@@ -31,6 +32,7 @@ template = {
     'mode': confuse.OneOf(['train', 'replay', 'compete', 'play', 'play-2p']),
     'input': {
         'feature-vector': str,
+        'discretizer': str,
         # The 1+ scenarios that are run in parallel
         'scenarios': confuse.Sequence({
             # The name of a scenario
@@ -121,10 +123,12 @@ def main(argv):
 
 
 def train():
+    discretizer = load_discretizer(cc_config['input']['discretizer'].get())
     feature_vector = load_feature_vector(cc_config['input']['feature-vector'].get())
     scenarios = load_scenarios(cc_config['input']['scenarios'])
     combiner = load_metascorekeeper(cc_config['input']['metascorekeeper'].get())
-    trainer = Trainer(scenarios, combiner, feature_vector, cc_config['input']['neat-config'])
+    trainer = Trainer(scenarios, combiner, feature_vector, cc_config['input']['neat-config'],
+                      discretizer)
     trainer.train()
 
 
@@ -141,6 +145,12 @@ def load_scenarios(specs: dict) -> List[Scenario]:
                  for spec in specs]
 
     return scenarios
+
+
+def load_discretizer(name: str) -> Type[discretizers.Independent]:
+    if name not in discretizers.string_to_class:
+        raise CrossCheckError(f"Discretizer not found: {name} ")
+    return discretizers.string_to_class[name]
 
 
 def load_feature_vector(name: str) -> Callable[[dict], List[float]]:

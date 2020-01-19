@@ -22,8 +22,4 @@ def create_genv() -> retro.RetroEnv:
                      state=retro.State.NONE,
                      inttype=retro.data.Integrations.ALL)
 
-    # # TODO: Wrap the env
-    # if self._trainer_class.discretizer_class is not None:
-    #     self.env = self._trainer_class.discretizer_class()(self.env)
-
     return env

@@ -6,6 +6,7 @@ input:
       save-state: BufAtChi-Faceoff.state
       scorekeeper: point-per-frame
   metascorekeeper: summer
+  controller-discretizer: 3-button
   feature-vector: players_and_puck
   neat-config:
     NEAT:

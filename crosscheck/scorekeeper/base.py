@@ -8,7 +8,7 @@ class Scorekeeper:
         self._score = 0
         self._score_vector = {}
         self._stats = {}
-        self.button_pressed: dict = {}
+        self.buttons_pressed: dict = {}
 
     def tick(self) -> float:
         self._score = self._tick()

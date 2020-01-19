@@ -154,23 +154,4 @@ class GameScoring1(Scorekeeper):
         Accessor fitness threshold (the score over
         which to stop training)
         """
-        pass
-
-    @property
-    def stats(self) -> dict:
-        pass
-
-    @property
-    def score_vector(self) -> dict:
-        return self._score_vector
-
-##################################
-
-
-    @classmethod
-    def discretizer_class(cls) -> typing.Callable[[], discretizers.Genesis3ButtonDiscretizer]:
-        return discretizers.Genesis3ButtonDiscretizer
-
-
-    def tick(self, ob, rew, done, info, env) -> float:
-
+        return 1e6

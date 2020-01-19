@@ -11,6 +11,7 @@ from . import utils as custom_neat_utils
 from ..game_env import get_genv
 from ..metascorekeeper import Metascorekeeper
 from ..scenario import Scenario
+from .. import discretizers
 from typing import Callable
 from collections import defaultdict
 
@@ -19,7 +20,8 @@ class Trainer:
     def __init__(self, scenarios: List[Scenario],
                  metascorekeeper: Type[Metascorekeeper],
                  feature_vector: Callable[[dict], List[float]],
-                 neat_settings: dict = None):
+                 neat_settings: dict = None,
+                 discretizer: Type[discretizers.Independent] = None):
         self.scenarios = scenarios
         self.listeners = []
         self.metascorekeeper = metascorekeeper
@@ -27,6 +29,7 @@ class Trainer:
         if neat_settings is None:
             neat_settings = {}
         self.neat_settings = neat_settings
+        self.discretizer = discretizer
 
     def _setup_neat_config(self) -> pathlib.Path:
         """
@@ -49,6 +52,10 @@ class Trainer:
         # Calculate and set length of feature vector
         sample_vector = self.feature_vector(defaultdict(lambda: 0))
         parser["DefaultGenome"]["num_inputs"] = str(len(sample_vector))
+
+        # Calculate and set length of discretizer
+        parser["DefaultGenome"]["num_outputs"] = str(self.discretizer.button_count())
+
 
         # Apply user config last (top priority)
         for key, subkeys in self.neat_settings.items():
@@ -117,6 +124,8 @@ class Trainer:
         """
 
         env = get_genv()
+        if self.discretizer is not None:
+            env = self.discretizer(env)
         metascorekeeper = self.metascorekeeper()
 
         for scenario in self.scenarios:

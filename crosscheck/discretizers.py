@@ -1,13 +1,12 @@
 import gym
 import typing
 import math
-import numpy as np
-import itertools
+import abc
 
 
-class IndependentDiscretizer(gym.ActionWrapper):
+class Independent(gym.ActionWrapper):
     """
-    Simplify inputs
+    Simplify inputs on the D pad. Otherwise 12 inputs
     """
 
     # UP and DOWN can't be pressed at the same time
@@ -17,7 +16,7 @@ class IndependentDiscretizer(gym.ActionWrapper):
     DPAD = [LEFT_RIGHT, UP_DOWN]
 
     def __init__(self, env, independent_buttons: typing.List[typing.List[str]]):
-        super(IndependentDiscretizer, self).__init__(env)
+        super().__init__(env)
         # Values are:
         #  ['B', 'A', 'MODE', 'START', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'C', 'Y', 'X', 'Z']
         self.buttons = env.buttons
@@ -42,24 +41,55 @@ class IndependentDiscretizer(gym.ActionWrapper):
     def action_labels(self, a: typing.List[float]):
         return [button for button, pressed in zip(self.buttons, self.action(a)) if pressed]
 
+    @classmethod
+    def button_count(cls) -> int:
+        # Hardcoded due to chicken/egg
+        return 10
 
-class Genesis3ButtonDiscretizer(IndependentDiscretizer):
-    def __init__(self, env):
-        super().__init__(env, [
+
+class Genesis3Button(Independent):
+    """
+    Only control 3 button (A, B, C) plus the D pad
+    """
+
+    buttons_options = [
             [None, 'A'],
             [None, 'B'],
             [None, 'C'],
-            *IndependentDiscretizer.DPAD
-         ])
-
-class Genesis6ButtonDiscretizer(IndependentDiscretizer):
+            *Independent.DPAD
+         ]
     def __init__(self, env):
-        super().__init__(env, [
+        super().__init__(env, self.buttons_options)
+
+    @classmethod
+    def button_count(cls) -> int:
+        return len(cls.buttons_options)
+
+
+class Genesis6Button(Independent):
+    """
+    Only control 6 button (A, B, C, X, Y, Z) plus the D pad
+    """
+
+    buttons_options = [
             [None, 'A'],
             [None, 'B'],
             [None, 'C'],
             [None, 'X'],
             [None, 'Y'],
             [None, 'Z'],
-            *IndependentDiscretizer.DPAD
-         ])
+            *Independent.DPAD
+         ]
+
+    def __init__(self, env):
+        super().__init__(env, self.buttons_options)
+
+    @classmethod
+    def button_count(cls) -> int:
+        return len(cls.buttons_options)
+
+string_to_class = {
+    '3-button': Genesis3Button,
+    '6-button': Genesis6Button,
+    '8-button': Independent,
+}
