@@ -32,7 +32,7 @@ template = {
     'mode': confuse.OneOf(['train', 'replay', 'compete', 'play', 'play-2p']),
     'input': {
         'feature-vector': str,
-        'discretizer': str,
+        'controller-discretizer': str,
         # The 1+ scenarios that are run in parallel
         'scenarios': confuse.Sequence({
             # The name of a scenario
@@ -123,7 +123,7 @@ def main(argv):
 
 
 def train():
-    discretizer = load_discretizer(cc_config['input']['discretizer'].get())
+    discretizer = load_discretizer(cc_config['input']['controller-discretizer'].get())
     feature_vector = load_feature_vector(cc_config['input']['feature-vector'].get())
     scenarios = load_scenarios(cc_config['input']['scenarios'])
     combiner = load_metascorekeeper(cc_config['input']['metascorekeeper'].get())

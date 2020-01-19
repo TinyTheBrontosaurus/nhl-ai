@@ -4,7 +4,7 @@ input:
   scenarios:
     - name: basic
       save-state: BufAtChi-Faceoff.state
-      scorekeeper: point-per-frame
+      scorekeeper: game-scoring-1
   metascorekeeper: summer
   controller-discretizer: 3-button
   feature-vector: players_and_puck

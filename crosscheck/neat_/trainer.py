@@ -153,8 +153,7 @@ class Trainer:
 
                 # Determine the next action so it can be fed into the scorekeeper
                 next_action = net.activate(self.feature_vector(info))
-                # TODO: Sort out buttons
-                scorekeeper.buttons_pressed = env.action_labels(self._next_action)
+                scorekeeper.buttons_pressed = env.action_labels(next_action)
 
                 scorekeeper.tick()
 
