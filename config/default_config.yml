@@ -10,7 +10,7 @@ input:
   feature-vector: players_and_puck
   neat-config:
     NEAT:
-      pop_size: 30
+      pop_size: 250
 movie:
   enabled: generations
   stoppage-time-s: 5.0
