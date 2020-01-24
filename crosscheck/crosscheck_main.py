@@ -128,7 +128,7 @@ def train():
     scenarios = load_scenarios(cc_config['input']['scenarios'])
     combiner = load_metascorekeeper(cc_config['input']['metascorekeeper'].get())
     trainer = Trainer(scenarios, combiner, feature_vector, cc_config['input']['neat-config'],
-                      discretizer)
+                      discretizer, nproc=cc_config['nproc'].get())
     trainer.train()
 
 

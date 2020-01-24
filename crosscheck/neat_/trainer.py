@@ -21,7 +21,8 @@ class Trainer:
                  metascorekeeper: Type[Metascorekeeper],
                  feature_vector: Callable[[dict], List[float]],
                  neat_settings: dict = None,
-                 discretizer: Type[discretizers.Independent] = None):
+                 discretizer: Type[discretizers.Independent] = None,
+                 nproc:int = 1):
         self.scenarios = scenarios
         self.listeners = []
         self.metascorekeeper = metascorekeeper
@@ -30,6 +31,7 @@ class Trainer:
             neat_settings = {}
         self.neat_settings = neat_settings
         self.discretizer = discretizer
+        self.nproc = nproc
 
     def _setup_neat_config(self) -> pathlib.Path:
         """
@@ -100,8 +102,13 @@ class Trainer:
             generations_folder.mkdir(parents=False, exist_ok=False)
             population.add_reporter(custom_neat_utils.SaveBestOfGeneration(generations_folder / "generation-"))
 
-            # Train
-            fittest = population.run(self._eval_genomes)
+            # Run single-threaded. Kept in for easier debugging
+            if self.nproc <= 1:
+                fittest = population.run(self._eval_genomes)
+            else:
+                # Multi-threaded execution
+                parallelizer = neat.ParallelEvaluator(self.nproc, self._eval_genome_parallel)
+                fittest = population.run(parallelizer.evaluate)
 
             # Dump the result
             with open(log_folder / "fittest.pkl", 'wb') as f:
@@ -116,6 +123,13 @@ class Trainer:
             stats = self._eval_genome(genome, config)
             logger.debug("{gid:5} {score:+5} Stats:{stats}",
                          gid=genome_id, score=genome.fitness, stats=stats)
+
+    def _eval_genome_parallel(self, genome: neat.DefaultGenome, config: neat.Config):
+        """
+        Parallel version of eval_genome (has a slightly different API)
+        """
+        _ = self._eval_genome(genome, config)
+        return genome.fitness
 
     def _eval_genome(self, genome: neat.DefaultGenome, config: neat.Config):
         """
