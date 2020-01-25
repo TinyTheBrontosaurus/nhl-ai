@@ -15,6 +15,7 @@ from .. import discretizers
 from typing import Callable
 from collections import defaultdict
 
+
 class Trainer:
 
     def __init__(self, scenarios: List[Scenario],
@@ -171,9 +172,8 @@ class Trainer:
 
                 scorekeeper.tick()
 
-
                 for listener in self.listeners:
-                    listener(*step, {'stats': scorekeeper.stats, 'score_vector': scorekeeper.score_vector})
+                    listener(*step, {'scorekeeper': scorekeeper})
 
             metascorekeeper.add(scenario.name, scorekeeper)
             self._render()
