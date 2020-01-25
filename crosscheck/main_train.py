@@ -70,11 +70,6 @@ def main(argv):
     parser.add_argument('--nproc', type=int,
                         dest="nproc",
                         help="The number of processes to run")
-    parser.add_argument('--latest-only',
-                        action='store_const',
-                        const="latest",
-                        dest="movie.enabled",
-                        help="Only replay the latest training model")
 
     args = parser.parse_args(argv)
 
