@@ -1,13 +1,14 @@
 import confuse
 import argparse
 import pathlib
+import sys
 from typing import List, Callable, Type
 from loguru import logger
-from . import main_train
-from .config import cc_config
+from crosscheck import main_train
+from crosscheck.config import cc_config
 import imageio
-from .neat_.replayer import Replayer
-from .version import __version__
+from crosscheck.neat_.replayer import Replayer
+from crosscheck.version import __version__
 from PIL import Image, ImageDraw
 import numpy as np
 import functools
@@ -17,16 +18,17 @@ import natsort
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Cross-check: NHL \'94 reinforcement learning')
-    parser.add_argument('--latest-only',
-                        action='store_const',
-                        const="latest",
-                        dest="movie.enabled",
-                        help="Only replay the latest training model")
+    parser.add_argument('folder', type=str, help="The folder to convert to a movie")
+    # parser.add_argument('--latest-only',
+    #                     action='store_const',
+    #                     const="latest",
+    #                     dest="movie.enabled",
+    #                     help="Only replay the latest training model")
 
     args = parser.parse_args(argv)
 
-    # TODO: Find the folder(s) to generate
-    folders = []
+    # Find the folder(s) to generate
+    folders = [pathlib.Path(args.folder)]
 
     # Iterate over the folders
     for folder in folders:
@@ -62,9 +64,9 @@ def replay(folder: pathlib.Path):
 
             # Load the genomes
             generation_folder = folder / "generations"
-            generation_files = natsort.natsorted([generation_folder / x
+            generation_files = natsort.natsorted([x
                                 for x in generation_folder.iterdir()
-                                if str(x).startswith('generation')])
+                                if x.stem.startswith('generation-')])  # type: List[pathlib.Path]
 
             metadata = {
                 "timestamp": None,
@@ -77,7 +79,7 @@ def replay(folder: pathlib.Path):
 
             for generationi, genome_file in enumerate(generation_files):
                 metadata["generation"] = f"{generationi}/{len(generation_files)}"
-                with genome_file.open() as f:
+                with genome_file.open(mode='rb') as f:
                     genome = pickle.load(f)
                 replayer.replay(genome)
 
@@ -108,3 +110,7 @@ def add_frame(movie, metadata, ob, _rew, _done, _info, stats):
 
     new_ob = np.concatenate((ob, status_frame), axis=1)
     movie.append_data(new_ob)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
