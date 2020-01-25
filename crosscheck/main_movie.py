@@ -14,6 +14,7 @@ import numpy as np
 import functools
 import pickle
 import natsort
+import tqdm
 
 
 def main(argv):
@@ -77,11 +78,13 @@ def replay(folder: pathlib.Path):
                                 str(folder / "neat_config.ini"), discretizer)
             replayer.listeners.append(functools.partial(add_frame, movie, metadata))
 
-            for generationi, genome_file in enumerate(generation_files):
-                metadata["generation"] = f"{generationi}/{len(generation_files)}"
-                with genome_file.open(mode='rb') as f:
-                    genome = pickle.load(f)
-                replayer.replay(genome)
+            with tqdm.tqdm(smoothing=0, unit='generation', total=len(generation_files)) as progress_bar:
+                for generationi, genome_file in enumerate(generation_files):
+                    metadata["generation"] = f"{generationi}/{len(generation_files)}"
+                    with genome_file.open(mode='rb') as f:
+                        genome = pickle.load(f)
+                    replayer.replay(genome)
+                    progress_bar.update()
 
 
 def add_frame(movie, metadata, ob, _rew, _done, _info, stats):
