@@ -20,11 +20,6 @@ import tqdm
 def main(argv):
     parser = argparse.ArgumentParser(description='Cross-check: NHL \'94 reinforcement learning')
     parser.add_argument('folder', type=str, help="The folder to convert to a movie")
-    # parser.add_argument('--latest-only',
-    #                     action='store_const',
-    #                     const="latest",
-    #                     dest="movie.enabled",
-    #                     help="Only replay the latest training model")
 
     args = parser.parse_args(argv)
 
