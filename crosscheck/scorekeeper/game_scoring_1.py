@@ -81,7 +81,7 @@ class GameScoring1(Scorekeeper):
         score_vector['deep-puck-dump'] = self._accumulator.max_puck_y * 4
         # (B) Bonus points for player taking the puck deep
         # Max (~2000)
-        score_vector['deep-puck-carry'] = self._accumulator.max_puck_y * 8
+        score_vector['deep-puck-carry'] = self._accumulator.max_shooter_y * 8
 
         # (C) Total max: 5,000
         # Reward passes, but don't allow grinding
@@ -122,6 +122,14 @@ class GameScoring1(Scorekeeper):
         # (H) Total max: 100k (to leave room for F and G)
         score_vector['home-goals'] = self.info['home-goals'] * 1e5
 
+
+        # Fix when the opponent wins the faceoff but gets points for taking
+        # the puck up ice
+        # If the faceoff was lost, then don't count any points
+        if self._done_reasons.get('lost-faceoff'):
+            for key in self._score_vector:
+                score_vector[key] = 0
+
         score = sum(score_vector.values())
 
         # Calculate commands based on features
@@ -134,8 +142,6 @@ class GameScoring1(Scorekeeper):
 
         # Save the score vector
         self._score_vector = score_vector
-
-        self._done = any(self._done_reasons.values())
 
         # Stats to track
         self._stats = {
