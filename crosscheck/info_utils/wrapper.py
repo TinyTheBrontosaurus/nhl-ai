@@ -183,9 +183,12 @@ class InfoAccumulator:
         # Save the player w/ puck for next frame
         self._last_frame_player_w_puck = player_w_puck
 
-        # Keep track how deep the puck has gone, and how deep it's gone when possessed
+        # Keep track how deep the puck has gone
         self._max_puck_y = max(self.info['puck-ice-y'], self._max_puck_y)
-        self._max_shooter_y = max(self.info['puck-ice-y'], self._max_shooter_y)
+
+        # Keep track of how deep the puck has gone when it's possessed
+        if player_w_puck['team'] == 'home':
+            self._max_shooter_y = max(self.info['puck-ice-y'], self._max_shooter_y)
 
         # Keep track of ticks
         self._frame_counter += 1
@@ -234,11 +237,11 @@ class InfoAccumulator:
 
     @property
     def max_puck_y(self):
-        return max(self.info['puck-ice-y'], self._max_puck_y)
+        return self._max_puck_y
 
     @property
     def max_shooter_y(self):
-        return max(self.info['puck-ice-y'], self._max_shooter_y)
+        return self._max_shooter_y
 
     @property
     def has_play_stopped_after_game_start(self):

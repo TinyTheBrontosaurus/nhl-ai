@@ -2,5 +2,6 @@ nhlaivenv
 .idea
 
 training/logs
+log
 
 __pycache__
