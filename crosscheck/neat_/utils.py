@@ -5,6 +5,7 @@ from neat.six_util import itervalues, iterkeys
 
 import gzip
 import random
+import datetime
 
 try:
     import cPickle as pickle # pylint: disable=import-error
@@ -43,12 +44,23 @@ class TqdmReporter(neat.reporting.BaseReporter):
 
         msk = "[" + ", ".join([f"{x:,.0f}" for x in best_genome.metascorekeeper.score_listing()]) + "]"
 
-        self.progress_bar.set_postfix(fitness="{:,.0f}/{:,.0f}".format(best_genome.fitness, config.fitness_threshold),
-                                      progress="{:.2f}%".format(best_genome.fitness / config.fitness_threshold * 100),
-                                      stall=self._fitness_stall,
-                                      uniques=self._uniques,
-                                      extinctions=int(self._num_extinctions),
-                                      zmsk=msk)
+        now = datetime.datetime.now().replace(microsecond=0).time()
+
+        self.progress_bar.set_postfix(
+            # fitness
+            fit="{:,.0f}/{:,.0f}".format(best_genome.fitness, config.fitness_threshold),
+            # Wall time
+            now=str(now),
+            # Progress as a percentage
+            prg="{:.2f}%".format(best_genome.fitness / config.fitness_threshold * 100),
+            # Number of consecutive stalls
+            stl=self._fitness_stall,
+            # Total number of unique "best" genomes
+            unq=self._uniques,
+            # Number of extinctions
+            ext=int(self._num_extinctions),
+            # The metascorekeeper's list of scorekeeper scores (z prefix to put last)
+           zmsk=msk)
 
     def complete_extinction(self):
         self._num_extinctions += 1

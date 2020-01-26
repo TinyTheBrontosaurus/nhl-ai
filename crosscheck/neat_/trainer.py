@@ -87,7 +87,7 @@ class Trainer:
                                   config_filename)
 
         # Run tqdm and do training
-        with tqdm.tqdm(smoothing=0, unit='generation') as progress_bar:
+        with tqdm.tqdm(smoothing=0, unit='gen') as progress_bar:
             population = neat.Population(neat_config)
 
             log_folder = LogFolder.folder
