@@ -75,7 +75,7 @@ def replay(folder: pathlib.Path):
 
             with tqdm.tqdm(smoothing=0, unit='generation', total=len(generation_files)) as progress_bar:
                 for generationi, genome_file in enumerate(generation_files):
-                    metadata["generation"] = f"{generationi}/{len(generation_files)}"
+                    metadata["generation"] = f"{generationi + 1}/{len(generation_files)}"
                     with genome_file.open(mode='rb') as f:
                         genome = pickle.load(f)
                     replayer.replay(genome)
