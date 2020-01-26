@@ -22,3 +22,9 @@ class Median(Metascorekeeper):
         for sk in self._scorekeepers:
             stats.update(sk.stats)
         return stats
+
+    def score_listing(self) -> List[float]:
+        """
+        Sorted for easier quick viewing of median
+        """
+        return sorted([x.score for x in self._scorekeepers.values()])

@@ -1,11 +1,11 @@
 import abc
-from typing import List
+from typing import List, Dict
 from ..scorekeeper import Scorekeeper
 
 class Metascorekeeper:
 
     def __init__(self):
-        self._scorekeepers: List[Scorekeeper] = {}
+        self._scorekeepers: Dict[str, Scorekeeper] = {}
 
     @property
     @abc.abstractmethod
@@ -41,3 +41,6 @@ class Metascorekeeper:
         :return: key/value on statistics
         """
         pass
+
+    def score_listing(self) -> List[float]:
+        return [x.score for x in self._scorekeepers.values()]

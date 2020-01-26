@@ -23,7 +23,8 @@ class TqdmReporter(neat.reporting.BaseReporter):
         self._last_fitness = None
         self._fitness_stall = 0
         self._num_extinctions = 0
-        self._uniques = 1
+        self._uniques = 0
+        self._unique_tracker = NewBestGenomeTracker()
 
     def end_generation(self, config, population, species_set):
         self.update()
@@ -32,18 +33,22 @@ class TqdmReporter(neat.reporting.BaseReporter):
         self.update()
 
     def post_evaluate(self, config, population, species, best_genome):
-        if self._last_fitness != best_genome.fitness:
+        is_unique = self._unique_tracker.log_it(species, best_genome)
+        if is_unique:
             self._last_fitness = best_genome.fitness
             self._fitness_stall = 0
             self._uniques += 1
         else:
             self._fitness_stall += 1
 
+        msk = "[" + ", ".join([f"{x:,.0f}" for x in best_genome.metascorekeeper.score_listing()]) + "]"
+
         self.progress_bar.set_postfix(fitness="{:,.0f}/{:,.0f}".format(best_genome.fitness, config.fitness_threshold),
                                       progress="{:.2f}%".format(best_genome.fitness / config.fitness_threshold * 100),
                                       stall=self._fitness_stall,
                                       uniques=self._uniques,
-                                      extinctions=int(self._num_extinctions))
+                                      extinctions=int(self._num_extinctions),
+                                      zmsk=msk)
 
     def complete_extinction(self):
         self._num_extinctions += 1
@@ -127,6 +132,8 @@ class GenerationReporter(neat.reporting.BaseReporter):
                                                                                  best_genome.size(),
                                                                                  best_species_id,
                                                                                  best_genome.key))
+        msk = "[" + ", ".join([f"{x:,.0f}" for x in best_genome.metascorekeeper.score_listing()]) + "]"
+        self.stream(f"Metascorekeeper summary: {msk}")
 
     def complete_extinction(self):
         self.num_extinctions += 1
@@ -183,6 +190,32 @@ class SaveBestOfGeneration(neat.reporting.BaseReporter):
                 with open(model_filename, 'wb') as f:
                     pickle.dump(best_genome, f, 1)
 
+
+class NewBestGenomeTracker:
+    def __init__(self):
+        self.last_logged = None
+
+    def log_it(self, species, best_genome) -> bool:
+        """
+        Stolen from SaveBestOfGeneration
+        """
+        log_it = None
+        if best_genome is not None:
+            # Only log new genomes; don't log the same genome over and over again when stalled
+            new_best_species_id = species.get_species_id(best_genome.key)
+            new_best_genome_key = best_genome.key
+
+            if self.last_logged is None:
+                log_it = True
+            elif new_best_species_id == self.last_logged[0] and new_best_genome_key == self.last_logged[1]:
+                log_it = False
+            else:
+                log_it = True
+
+            if log_it:
+                self.last_logged = (new_best_species_id, new_best_genome_key)
+
+        return log_it
 
 class Checkpointer(neat.checkpoint.Checkpointer):
     def __init__(self, generation_interval=100, time_interval_seconds=300,
