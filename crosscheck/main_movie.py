@@ -96,8 +96,13 @@ def add_frame(movie, metadata, ob, _rew, _done, _info, stats):
     score_vector = sk.score_vector
     total = sum(score_vector.values())
     score_breakdown = {"total": int(total)}
+
     for key, value in score_vector.items():
-        score_breakdown[key] = "({pct:5,.1f}% {value:8,}".format(pct=value / total * 100., value=int(value))
+        try:
+            pct = value / total * 100.
+        except ZeroDivisionError:
+            pct = 0
+        score_breakdown[key] = "({pct:5,.1f}% {value:8,}".format(pct=pct, value=int(value))
 
     to_draw.update(score_breakdown)
 
