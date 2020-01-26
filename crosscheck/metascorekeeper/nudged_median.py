@@ -23,7 +23,7 @@ class NudgedMedian(Metascorekeeper):
 
     @property
     def score(self):
-        lowest = min([x.score for x in self._scorekeepers])
+        lowest = min([x.score for x in self._scorekeepers.values()])
         return self._median.score + self._mean.score * 0.01 + lowest
 
     @classmethod
