@@ -10,6 +10,9 @@ class Scorekeeper:
         self._stats = {}
         self.buttons_pressed: dict = {}
 
+        # For compatibility with genome stats puller
+        self._scorekeepers = []
+
     def tick(self) -> float:
         self._score = self._tick()
         return self._score

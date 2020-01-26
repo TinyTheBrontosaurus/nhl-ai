@@ -179,6 +179,8 @@ class Trainer:
             self._render()
 
         genome.fitness = metascorekeeper.score
+        # Shove this in the genome for logging purposes
+        genome.metascorekeeper = metascorekeeper
 
         return metascorekeeper.stats
 

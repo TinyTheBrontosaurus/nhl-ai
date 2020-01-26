@@ -93,5 +93,7 @@ class Replayer:
                 total_frames += 1
 
         genome.fitness = scorekeeper.score
+        # Shove this in the genome for logging purposes
+        genome.metascorekeeper = scorekeeper
 
         return scorekeeper.stats
