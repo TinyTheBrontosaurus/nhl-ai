@@ -126,7 +126,7 @@ class GameScoring1(Scorekeeper):
         # Fix when the opponent wins the faceoff but gets points for taking
         # the puck up ice
         # If the faceoff was lost, then don't count any points
-        if self._done_reasons.get('lost-faceoff'):
+        if self._done_reasons.get('lost_faceoff'):
             for key in self._score_vector:
                 score_vector[key] = 0
 
