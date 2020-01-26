@@ -14,7 +14,7 @@ input:
     - name: Score4
       save-state: ChiAtBuf-Faceoff-4.state
       scorekeeper: game-scoring-1
-  metascorekeeper: median
+  metascorekeeper: nudged-median
   controller-discretizer: 2-button-bc
   feature-vector: players_and_puck
   neat-config:
