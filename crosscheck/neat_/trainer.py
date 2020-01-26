@@ -108,7 +108,8 @@ class Trainer:
                 fittest = population.run(self._eval_genomes)
             else:
                 # Multi-threaded execution
-                parallelizer = neat.ParallelEvaluator(self.nproc, self._eval_genome_parallel)
+                parallelizer = custom_neat_utils.CustomParallelEvaluator(
+                    self.nproc, self._eval_genome_parallel)
                 fittest = population.run(parallelizer.evaluate)
 
             # Dump the result
@@ -121,7 +122,8 @@ class Trainer:
         """
 
         for genome_id, genome in genomes:
-            stats = self._eval_genome(genome, config)
+            _, metascorekeeper = self._eval_genome(genome, config)
+            stats = metascorekeeper.stats
             logger.debug("{gid:5} {score:+5} Stats:{stats}",
                          gid=genome_id, score=genome.fitness, stats=stats)
 
@@ -129,8 +131,7 @@ class Trainer:
         """
         Parallel version of eval_genome (has a slightly different API)
         """
-        _ = self._eval_genome(genome, config)
-        return genome.fitness
+        return self._eval_genome(genome, config)
 
     def _eval_genome(self, genome: neat.DefaultGenome, config: neat.Config):
         """
@@ -179,10 +180,8 @@ class Trainer:
             self._render()
 
         genome.fitness = metascorekeeper.score
-        # Shove this in the genome for logging purposes
-        genome.metascorekeeper = metascorekeeper
 
-        return metascorekeeper.stats
+        return genome.fitness, metascorekeeper
 
     def _render(self):
         # TODO

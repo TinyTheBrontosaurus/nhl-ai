@@ -1,19 +1,13 @@
 import neat
 import tqdm
-import pickle
-import pathlib
-import configparser
 from typing import List, Type
-from loguru import logger
-from crosscheck import definitions
-from crosscheck.log_folder import LogFolder
-from . import utils as custom_neat_utils
 from ..game_env import get_genv
 from ..metascorekeeper import Metascorekeeper
+from ..metascorekeeper.summer import Summer
 from ..scenario import Scenario
 from .. import discretizers
 from typing import Callable
-from collections import defaultdict
+
 
 
 class Replayer:
@@ -93,7 +87,7 @@ class Replayer:
                 total_frames += 1
 
         genome.fitness = scorekeeper.score
-        # Shove this in the genome for logging purposes
-        genome.metascorekeeper = scorekeeper
 
-        return scorekeeper.stats
+        msk = Summer()
+        msk.add("Passthru", scorekeeper)
+        return scorekeeper.stats, scorekeeper
