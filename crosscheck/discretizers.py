@@ -88,8 +88,28 @@ class Genesis6Button(Independent):
     def button_count(cls) -> int:
         return len(cls.buttons_options)
 
+
+class Genesis2ButtonBc(Independent):
+    """
+    Only control 2 buttons (B, C) plus the D pad
+    """
+
+    buttons_options = [
+            [None, 'B'],
+            [None, 'C'],
+            *Independent.DPAD
+         ]
+    def __init__(self, env):
+        super().__init__(env, self.buttons_options)
+
+    @classmethod
+    def button_count(cls) -> int:
+        return len(cls.buttons_options)
+
+
 string_to_class = {
     '3-button': Genesis3Button,
     '6-button': Genesis6Button,
     '8-button': Independent,
+    '2-button-bc': Genesis2ButtonBc,
 }

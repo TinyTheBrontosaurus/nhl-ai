@@ -2,11 +2,20 @@ name: default
 mode: train
 input:
   scenarios:
-    - name: basic
-      save-state: BufAtChi-Faceoff.state
+    - name: Score1
+      save-state: ChiAtBuf-Faceoff.state
       scorekeeper: game-scoring-1
-  metascorekeeper: summer
-  controller-discretizer: 3-button
+    - name: Score2
+      save-state: ChiAtBuf-Faceoff-2.state
+      scorekeeper: game-scoring-1
+    - name: Score3
+      save-state: ChiAtBuf-Faceoff-3.state
+      scorekeeper: game-scoring-1
+    - name: Score4
+      save-state: ChiAtBuf-Faceoff-4.state
+      scorekeeper: game-scoring-1
+  metascorekeeper: mean
+  controller-discretizer: 2-button-bc
   feature-vector: players_and_puck
   neat-config:
     NEAT:
