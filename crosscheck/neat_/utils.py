@@ -23,7 +23,7 @@ class TqdmReporter(neat.reporting.BaseReporter):
         self._last_fitness = None
         self._fitness_stall = 0
         self._num_extinctions = 0
-        self._uniques = 0
+        self._uniques = 1
 
     def end_generation(self, config, population, species_set):
         self.update()
