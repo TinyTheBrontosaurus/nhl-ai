@@ -187,7 +187,7 @@ class InfoAccumulator:
         self._max_puck_y = max(self.info['puck-ice-y'], self._max_puck_y)
 
         # Keep track of how deep the puck has gone when it's possessed
-        if player_w_puck['team'] == 'home':
+        if player_w_puck.get('team') == 'home':
             self._max_shooter_y = max(self.info['puck-ice-y'], self._max_shooter_y)
 
         # Keep track of ticks
