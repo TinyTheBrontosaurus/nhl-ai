@@ -11,8 +11,8 @@ input:
     - name: Score3
       save-state: ChiAtBuf-Faceoff-3.state
       scorekeeper: game-scoring-1
-    - name: Score6
-      save-state: ChiAtBuf-Faceoff-6.state
+    - name: Score7
+      save-state: ChiAtBuf-Faceoff-7.state
       scorekeeper: game-scoring-1
   metascorekeeper: nudged-median
   controller-discretizer: 2-button-bc
