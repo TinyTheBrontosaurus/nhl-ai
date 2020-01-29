@@ -23,7 +23,8 @@ class Trainer:
                  feature_vector: Callable[[dict], List[float]],
                  neat_settings: dict = None,
                  discretizer: Type[discretizers.Independent] = None,
-                 nproc:int = 1):
+                 nproc:int = 1,
+                 checkpoint_filename: str = None):
         self.scenarios = scenarios
         self.listeners = []
         self.metascorekeeper = metascorekeeper
@@ -33,6 +34,7 @@ class Trainer:
         self.neat_settings = neat_settings
         self.discretizer = discretizer
         self.nproc = nproc
+        self.checkpoint_filename = checkpoint_filename
 
     def _setup_neat_config(self) -> pathlib.Path:
         """
@@ -88,7 +90,12 @@ class Trainer:
 
         # Run tqdm and do training
         with tqdm.tqdm(smoothing=0, unit='gen') as progress_bar:
-            population = neat.Population(neat_config)
+            if not self.checkpoint_filename:
+                population = neat.Population(neat_config)
+            else:
+                population = custom_neat_utils.Checkpointer.restore_checkpoint(self.checkpoint_filename)
+                # Don't load the old reporters
+                population.reporters.reporter = []
 
             log_folder = LogFolder.folder
 

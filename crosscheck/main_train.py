@@ -46,6 +46,8 @@ template = {
         'metascorekeeper': str,
         # Custom configs that are applied directly to the neat.ini files
         'neat-config': dict,
+        # The checkpoint file to load (relative to yaml file)
+        'load-checkpoint': str,
     },
     # Information about the movie to record
     'movie': {
@@ -86,6 +88,14 @@ def main(argv):
             cc_config['nproc'] = multiprocessing.cpu_count()
 
         valid_config = cc_config.get(template)
+
+        # Setup the checkpoint filename so that it is an absolute path
+        # If it comes in as a relative path, resolve it as being originally relative to the config file path
+        if cc_config['input']['load-checkpoint'] is not None:
+            rel_checkpoint_filename = pathlib.Path(cc_config['input']['load-checkpoint'].get())
+            if not rel_checkpoint_filename.is_absolute():
+                cc_config['input']['load-checkpoint'] = str((pathlib.Path(args.config).parent / rel_checkpoint_filename).resolve())
+
     except confuse.ConfigError as ex:
         logger.critical("Problem parsing config: {}", ex)
         return
@@ -122,8 +132,9 @@ def train():
     feature_vector = load_feature_vector(cc_config['input']['feature-vector'].get())
     scenarios = load_scenarios(cc_config['input']['scenarios'])
     combiner = load_metascorekeeper(cc_config['input']['metascorekeeper'].get())
+    checkpoint_filename = cc_config['input']['load-checkpoint'].get()
     trainer = Trainer(scenarios, combiner, feature_vector, cc_config['input']['neat-config'],
-                      discretizer, nproc=cc_config['nproc'].get())
+                      discretizer, nproc=cc_config['nproc'].get(), checkpoint_filename=checkpoint_filename)
     trainer.train()
 
 

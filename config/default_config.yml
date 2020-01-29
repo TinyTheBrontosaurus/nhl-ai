@@ -11,12 +11,13 @@ input:
     - name: Score3
       save-state: ChiAtBuf-Faceoff-3.state
       scorekeeper: game-scoring-1
-    - name: Score4
-      save-state: ChiAtBuf-Faceoff-4.state
+    - name: Score5
+      save-state: ChiAtBuf-Faceoff-5.state
       scorekeeper: game-scoring-1
   metascorekeeper: nudged-median
   controller-discretizer: 2-button-bc
   feature-vector: players_and_puck
+  load-checkpoint: ../log/default/2020-01-26/2020-01-26_08-43-55.913049/checkpoints/neat-checkpoint-900
   neat-config:
     NEAT:
       pop_size: 250
