@@ -96,6 +96,7 @@ class Trainer:
                 population = custom_neat_utils.Checkpointer.restore_checkpoint(self.checkpoint_filename)
                 # Don't load the old reporters
                 population.reporters.reporters.clear()
+                population.species.reporters = population.reporters
 
             log_folder = LogFolder.folder
 
