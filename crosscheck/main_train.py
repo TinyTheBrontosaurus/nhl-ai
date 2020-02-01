@@ -3,7 +3,7 @@ import argparse
 import multiprocessing
 import pathlib
 import shutil
-from typing import List, Callable, Type
+from typing import List, Callable, Type, Optional
 from loguru import logger
 from .config import cc_config
 from . import definitions
@@ -47,7 +47,7 @@ template = {
         # Custom configs that are applied directly to the neat.ini files
         'neat-config': dict,
         # The checkpoint file to load (relative to yaml file)
-        'load-checkpoint': str,
+        'load-checkpoint': [str, None],
     },
     # Information about the movie to record
     'movie': {
@@ -91,7 +91,7 @@ def main(argv):
 
         # Setup the checkpoint filename so that it is an absolute path
         # If it comes in as a relative path, resolve it as being originally relative to the config file path
-        if cc_config['input']['load-checkpoint'] is not None:
+        if cc_config['input']['load-checkpoint'].get() is not None:
             rel_checkpoint_filename = pathlib.Path(cc_config['input']['load-checkpoint'].get())
             if not rel_checkpoint_filename.is_absolute():
                 cc_config['input']['load-checkpoint'] = str((pathlib.Path(args.config).parent / rel_checkpoint_filename).resolve())
