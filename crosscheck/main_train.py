@@ -104,11 +104,13 @@ def main(argv):
     LogFolder.set_path(definitions.LOG_ROOT, cc_config['name'].get())
 
     # Initialize logger
-    logger.remove(0)
     logger.add(LogFolder.folder / "event.log", level="INFO")
     logger.info("Running program: {}", cc_config['name'].get())
     logger.info("Version: {}", __version__)
     logger.info("Log folder: {}", LogFolder.folder)
+
+    # Don't lost to stderr anymore
+    logger.remove(0)
 
     # Copy configs
     # Straight copy
