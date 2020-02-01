@@ -28,7 +28,7 @@ class NudgedMedian(Metascorekeeper):
 
     @classmethod
     def fitness_threshold(cls, scorekeepers: List[Scorekeeper]) -> float:
-        return Median.fitness_threshold(scorekeepers)
+        return Median.fitness_threshold(scorekeepers) * 2.01
 
     def stats(self):
         return self._median.stats()

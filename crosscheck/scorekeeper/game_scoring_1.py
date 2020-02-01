@@ -96,6 +96,9 @@ class GameScoring1(Scorekeeper):
         # Reward shots on goal. Allow grinding
         score_vector['home-shots'] = self.info['home-shots'] * 1e4
 
+        # (D.2) Give 100k points for the first shot. This to make sure they shoot at least once
+        score_vector['any-shot'] = 1e5 if self.info['home-shots'] > 0 else 0
+
         # (E) Total max: ~50k (with multiplier of 0.01)
         # If behind the net, give the same reward as the away side of center ice,
         # to avoid behind-the-net grinding
@@ -119,8 +122,8 @@ class GameScoring1(Scorekeeper):
 
         # TODO (F and G) both required a shot detector
 
-        # (H) Total max: 100k (to leave room for F and G)
-        score_vector['home-goals'] = self.info['home-goals'] * 1e5
+        # (H) Total max: 500k (to leave room for F and G)
+        score_vector['home-goals'] = self.info['home-goals'] * 5e5
 
 
         # Fix when the opponent wins the faceoff but gets points for taking
@@ -160,4 +163,4 @@ class GameScoring1(Scorekeeper):
         Accessor fitness threshold (the score over
         which to stop training)
         """
-        return 1e6
+        return 7e5
