@@ -61,30 +61,27 @@ class Replayer:
         total_frames = 0
         stoppage_frames = 60 * 5
 
-        with tqdm.tqdm(smoothing=0, unit='frame') as progress_bar:
-            while not scorekeeper.done or frames_since_done < stoppage_frames:
+        while not scorekeeper.done or frames_since_done < stoppage_frames:
 
-                if scorekeeper.done:
-                    frames_since_done += 1
-                    progress_bar.total = total_frames + stoppage_frames - frames_since_done
+            if scorekeeper.done:
+                frames_since_done += 1
 
-                # Run the next step in the simulation
-                step = env.step(next_action)
+            # Run the next step in the simulation
+            step = env.step(next_action)
 
-                # Save the latest state
-                info = step[3]
-                scorekeeper.info = info
+            # Save the latest state
+            info = step[3]
+            scorekeeper.info = info
 
-                # Determine the next action so it can be fed into the scorekeeper
-                next_action = net.activate(self.feature_vector(info))
-                scorekeeper.buttons_pressed = env.action_labels(next_action)
+            # Determine the next action so it can be fed into the scorekeeper
+            next_action = net.activate(self.feature_vector(info))
+            scorekeeper.buttons_pressed = env.action_labels(next_action)
 
-                scorekeeper.tick()
+            scorekeeper.tick()
 
-                for listener in self.listeners:
-                    listener(*step, {'scorekeeper': scorekeeper})
-                progress_bar.update()
-                total_frames += 1
+            for listener in self.listeners:
+                listener(*step, {'scorekeeper': scorekeeper})
+            total_frames += 1
 
         genome.fitness = scorekeeper.score
 
