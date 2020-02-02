@@ -5,22 +5,22 @@ input:
     - name: Score1
       save-state: ChiAtBuf-WonFaceoff.state
       scorekeeper: game-scoring-1
-    - name: Score2
-      save-state: ChiAtBuf-WonFaceoff-2.state
-      scorekeeper: game-scoring-1
-    - name: Score3
-      save-state: ChiAtBuf-WonFaceoff-3.state
-      scorekeeper: game-scoring-1
-    - name: Score4
-      save-state: ChiAtBuf-WonFaceoff-7.state
-      scorekeeper: game-scoring-1
-  metascorekeeper: nudged-median
+#    - name: Score2
+#      save-state: ChiAtBuf-WonFaceoff-2.state
+#      scorekeeper: game-scoring-1
+#    - name: Score3
+#      save-state: ChiAtBuf-WonFaceoff-3.state
+#      scorekeeper: game-scoring-1
+#    - name: Score4
+#      save-state: ChiAtBuf-WonFaceoff-7.state
+#      scorekeeper: game-scoring-1
+  metascorekeeper: summer
   controller-discretizer: 2-button-bc
   feature-vector: players_and_puck
   load-checkpoint:
   neat-config:
     NEAT:
-      pop_size: 250
+      pop_size: 125
 movie:
   enabled: generations
   stoppage-time-s: 5.0
