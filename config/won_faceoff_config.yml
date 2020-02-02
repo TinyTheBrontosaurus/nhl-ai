@@ -5,9 +5,9 @@ input:
     - name: Score1
       save-state: ChiAtBuf-WonFaceoff.state
       scorekeeper: game-scoring-1
-#    - name: Score2
-#      save-state: ChiAtBuf-WonFaceoff-2.state
-#      scorekeeper: game-scoring-1
+    - name: Score2
+      save-state: ChiAtBuf-WonFaceoff-2.state
+      scorekeeper: game-scoring-1
 #    - name: Score3
 #      save-state: ChiAtBuf-WonFaceoff-3.state
 #      scorekeeper: game-scoring-1
