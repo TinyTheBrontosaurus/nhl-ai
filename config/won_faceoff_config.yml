@@ -17,7 +17,9 @@ input:
   metascorekeeper: summer
   controller-discretizer: 2-button-bc
   feature-vector: players_and_puck
-  load-checkpoint: ../log/default/2020-02-02/2020-02-02_16-42-03.605575/checkpoints/neat-checkpoint-2201
+  load-checkpoint:
+    latest: true
+    specific-file: ../log/default/2020-02-02/2020-02-02_16-42-03.605575/checkpoints/neat-checkpoint-2201
   neat-config:
     NEAT:
       pop_size: 50

@@ -6,6 +6,7 @@ import shutil
 from typing import List, Callable, Type, Optional
 from loguru import logger
 from .config import cc_config
+import crosscheck.config
 from . import definitions
 from . import scorekeeper
 from . import metascorekeeper
@@ -15,6 +16,7 @@ from .neat_.trainer import Trainer
 from .scenario import Scenario
 from .log_folder import LogFolder
 from .version import __version__
+import natsort
 
 
 class CrossCheckError(Exception):
@@ -47,7 +49,10 @@ template = {
         # Custom configs that are applied directly to the neat.ini files
         'neat-config': dict,
         # The checkpoint file to load (relative to yaml file)
-        'load-checkpoint': [str, None],
+        'load-checkpoint': [{
+            'latest': bool,
+            'specific-filename': [str, None]
+        }, None],
     },
     # Information about the movie to record
     'movie': {
@@ -89,12 +94,7 @@ def main(argv):
 
         valid_config = cc_config.get(template)
 
-        # Setup the checkpoint filename so that it is an absolute path
-        # If it comes in as a relative path, resolve it as being originally relative to the config file path
-        if cc_config['input']['load-checkpoint'].get() is not None:
-            rel_checkpoint_filename = pathlib.Path(cc_config['input']['load-checkpoint'].get())
-            if not rel_checkpoint_filename.is_absolute():
-                cc_config['input']['load-checkpoint'] = str((pathlib.Path(args.config).parent / rel_checkpoint_filename).resolve())
+        crosscheck.config.filename = args.config
 
     except confuse.ConfigError as ex:
         logger.critical("Problem parsing config: {}", ex)
@@ -134,10 +134,30 @@ def train():
     feature_vector = load_feature_vector(cc_config['input']['feature-vector'].get())
     scenarios = load_scenarios(cc_config['input']['scenarios'])
     combiner = load_metascorekeeper(cc_config['input']['metascorekeeper'].get())
-    checkpoint_filename = cc_config['input']['load-checkpoint'].get()
+    checkpoint_filename = load_checkpoint_filename(cc_config['input']['load-checkpoint'].get())
     trainer = Trainer(scenarios, combiner, feature_vector, cc_config['input']['neat-config'],
                       discretizer, nproc=cc_config['nproc'].get(), checkpoint_filename=checkpoint_filename)
     trainer.train()
+
+
+def load_checkpoint_filename(specs: dict) -> Optional[pathlib.Path]:
+    # Setup the checkpoint filename so that it is an absolute path
+    # If it comes in as a relative path, resolve it as being originally relative to the config file path
+    if specs is None:
+        return None
+
+    if not specs.get('latest'):
+        specific_filename = specs.get('specific-file')
+        if not specific_filename:
+            return None
+
+        rel_checkpoint_filename = pathlib.Path(specific_filename)
+        if not rel_checkpoint_filename.is_absolute():
+            return (pathlib.Path(crosscheck.config.filename).parent / rel_checkpoint_filename).resolve()
+    else:
+        checkpoints_folder = LogFolder.get_latest_log_folder(definitions.LOG_ROOT / "default") / "checkpoints"
+        checkpoints = natsort.natsorted(list(checkpoints_folder.iterdir()))
+        return checkpoints_folder / checkpoints[-1]
 
 
 def load_scenarios(specs: dict) -> List[Scenario]:

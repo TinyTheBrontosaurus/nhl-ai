@@ -16,7 +16,7 @@ import pickle
 import natsort
 import tqdm
 from crosscheck import definitions
-
+from crosscheck.log_folder import LogFolder
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Cross-check: NHL \'94 reinforcement learning')
@@ -28,10 +28,7 @@ def main(argv):
 
     if args.folder is None:
         log_folder = definitions.LOG_ROOT / "default"
-        date_folders = natsort.natsorted(list(log_folder.iterdir()))
-        recent_date_folder = log_folder / date_folders[-1]
-        datetime_folders = natsort.natsorted(list(recent_date_folder.iterdir()))
-        folder_to_load = datetime_folders[-1]
+        folder_to_load = LogFolder.get_latest_log_folder(log_folder)
 
     # Find the folder(s) to generate
     folders = [pathlib.Path(folder_to_load)]
