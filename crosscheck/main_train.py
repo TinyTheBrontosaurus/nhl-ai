@@ -100,6 +100,9 @@ def main(argv):
         logger.critical("Problem parsing config: {}", ex)
         return
 
+    # Cache old log path
+    LogFolder.get_latest_log_folder(definitions.LOG_ROOT / 'default')
+
     # Create log path
     LogFolder.set_path(definitions.LOG_ROOT, cc_config['name'].get())
 
@@ -108,6 +111,8 @@ def main(argv):
     logger.info("Running program: {}", cc_config['name'].get())
     logger.info("Version: {}", __version__)
     logger.info("Log folder: {}", LogFolder.folder)
+    checkpoint_filename = load_checkpoint_filename(cc_config['input']['load-checkpoint'].get())
+    logger.info(f"Checkpoint file: {str(checkpoint_filename)}")
 
     # Don't lost to stderr anymore
     logger.remove(0)

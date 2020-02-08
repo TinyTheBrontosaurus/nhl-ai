@@ -9,6 +9,7 @@ class LogFolder:
     friendly_time = None
     friendly_name = None
     start_time = datetime.datetime.now()
+    latest_log_folder: pathlib.Path = None
 
     @classmethod
     def set_path(cls, root: pathlib.Path, friendly_name: str):
@@ -42,4 +43,11 @@ class LogFolder:
 
     @classmethod
     def get_latest_log_folder(cls, log_folder: pathlib.Path) -> pathlib.Path:
-        return cls.get_recent_datetime_folder(log_folder)
+        """
+        Accessor for the latest log folder. Recommended to call this early in execution
+        (that is, before a new log folder is created)
+        """
+        # Cache the latest log folder
+        if cls.latest_log_folder is None:
+            cls.latest_log_folder = cls.get_recent_datetime_folder(log_folder)
+        return cls.latest_log_folder
