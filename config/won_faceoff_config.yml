@@ -8,19 +8,19 @@ input:
     - name: Score2
       save-state: ChiAtBuf-WonFaceoff-2.state
       scorekeeper: game-scoring-1
-#    - name: Score3
-#      save-state: ChiAtBuf-WonFaceoff-3.state
-#      scorekeeper: game-scoring-1
-#    - name: Score4
-#      save-state: ChiAtBuf-WonFaceoff-7.state
-#      scorekeeper: game-scoring-1
+    - name: Score3
+      save-state: ChiAtBuf-WonFaceoff-3.state
+      scorekeeper: game-scoring-1
+    - name: Score4
+      save-state: ChiAtBuf-WonFaceoff-7.state
+      scorekeeper: game-scoring-1
   metascorekeeper: summer
   controller-discretizer: 2-button-bc
   feature-vector: players_and_puck
-  load-checkpoint:
+  load-checkpoint: ../log/default/2020-02-02/2020-02-02_16-42-03.605575/checkpoints/neat-checkpoint-2201
   neat-config:
     NEAT:
-      pop_size: 125
+      pop_size: 50
 movie:
   enabled: generations
   stoppage-time-s: 5.0

@@ -15,16 +15,26 @@ import functools
 import pickle
 import natsort
 import tqdm
+from crosscheck import definitions
 
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Cross-check: NHL \'94 reinforcement learning')
-    parser.add_argument('folder', type=str, help="The folder to convert to a movie")
+    parser.add_argument('--folder', type=str, help="The folder to convert to a movie")
 
     args = parser.parse_args(argv)
 
+    folder_to_load = args.folder
+
+    if args.folder is None:
+        log_folder = definitions.LOG_ROOT / "default"
+        date_folders = natsort.natsorted(list(log_folder.iterdir()))
+        recent_date_folder = log_folder / date_folders[-1]
+        datetime_folders = natsort.natsorted(list(recent_date_folder.iterdir()))
+        folder_to_load = datetime_folders[-1]
+
     # Find the folder(s) to generate
-    folders = [pathlib.Path(args.folder)]
+    folders = [pathlib.Path(folder_to_load)]
 
     # Iterate over the folders
     for folder in folders:
