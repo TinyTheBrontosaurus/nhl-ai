@@ -1,0 +1,21 @@
+name: debug
+mode: train
+input:
+  scenarios:
+    - name: Score1
+      save-state: ChiAtBuf-WonFaceoff.state
+      scorekeeper: game-scoring-1
+  metascorekeeper: summer
+  controller-discretizer: 2-button-bc
+  feature-vector: players_and_puck
+  load-checkpoint:
+    latest: true
+    specific-file:
+  neat-config:
+    NEAT:
+      pop_size: 50
+movie:
+  enabled: generations
+  stoppage-time-s: 5.0
+render-live: False
+nproc: null
