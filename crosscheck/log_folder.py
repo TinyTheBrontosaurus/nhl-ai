@@ -10,6 +10,7 @@ class LogFolder:
     friendly_name = None
     start_time = datetime.datetime.now()
     latest_log_folder: pathlib.Path = None
+    latest_log_folder_checked = False
 
     @classmethod
     def set_path(cls, root: pathlib.Path, friendly_name: str):
@@ -54,6 +55,8 @@ class LogFolder:
         (that is, before a new log folder is created)
         """
         # Cache the latest log folder
-        cls.latest_log_folder = cls.get_recent_datetime_folder(log_folder)
+        if not cls.latest_log_folder_checked:
+            cls.latest_log_folder_checked = True
+            cls.latest_log_folder = cls.get_recent_datetime_folder(log_folder)
 
         return cls.latest_log_folder
