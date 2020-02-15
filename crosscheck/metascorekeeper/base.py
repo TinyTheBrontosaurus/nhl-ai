@@ -34,13 +34,12 @@ class Metascorekeeper:
         self._scorekeepers[name] = scorekeeper
 
     @property
-    @abc.abstractmethod
     def stats(self) -> dict:
         """
         Statistics on this object so far
         :return: key/value on statistics
         """
-        pass
+        return {key: value.stats() for key, value in self._scorekeepers.items()}
 
     def score_listing(self) -> List[float]:
         return [x.score for x in self._scorekeepers.values()]

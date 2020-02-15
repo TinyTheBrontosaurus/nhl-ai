@@ -30,9 +30,6 @@ class NudgedMedian(Metascorekeeper):
     def fitness_threshold(cls, scorekeepers: List[Scorekeeper]) -> float:
         return Median.fitness_threshold(scorekeepers) * 2.01
 
-    def stats(self):
-        return self._median.stats()
-
     def score_listing(self) -> List[float]:
         """
         Sorted for easier quick viewing of median
