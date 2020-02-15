@@ -101,10 +101,11 @@ def main(argv):
         return
 
     # Cache old log path
-    LogFolder.get_latest_log_folder(definitions.LOG_ROOT / 'default')
+    crosscheck.config.log_name = cc_config['name'].get()
+    LogFolder.get_latest_log_folder(definitions.LOG_ROOT / crosscheck.config.log_name)
 
     # Create log path
-    LogFolder.set_path(definitions.LOG_ROOT, cc_config['name'].get())
+    LogFolder.set_path(definitions.LOG_ROOT, crosscheck.config.log_name)
 
     # Initialize logger
     logger.add(LogFolder.folder / "event.log", level="INFO")
@@ -160,7 +161,7 @@ def load_checkpoint_filename(specs: dict) -> Optional[pathlib.Path]:
         if not rel_checkpoint_filename.is_absolute():
             return (pathlib.Path(crosscheck.config.filename).parent / rel_checkpoint_filename).resolve()
     else:
-        checkpoints_folder = LogFolder.get_latest_log_folder(definitions.LOG_ROOT / "default") / "checkpoints"
+        checkpoints_folder = LogFolder.get_latest_log_folder(definitions.LOG_ROOT / crosscheck.config.log_name) / "checkpoints"
         checkpoints = natsort.natsorted(list(checkpoints_folder.iterdir()))
         return checkpoints_folder / checkpoints[-1]
 
