@@ -94,6 +94,7 @@ class Trainer:
                 population = neat.Population(neat_config)
             else:
                 population = custom_neat_utils.Checkpointer.restore_checkpoint(self.checkpoint_filename)
+                population.config = neat_config
                 # Don't load the old reporters
                 population.reporters.reporters.clear()
                 population.species.reporters = population.reporters
