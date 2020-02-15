@@ -1,7 +1,7 @@
 import pathlib
 import datetime
 import natsort
-from typing import List
+from typing import List, Optional
 
 
 class LogFolder:
@@ -27,18 +27,24 @@ class LogFolder:
         return natsort.natsorted(list(log_folder.iterdir()))
 
     @classmethod
-    def get_recent_date_folder(cls, log_folder: pathlib.Path) -> pathlib.Path:
+    def get_recent_date_folder(cls, log_folder: pathlib.Path) -> Optional[pathlib.Path]:
         date_folders = cls._get_date_folders(log_folder)
+        if not date_folders:
+            raise FileNotFoundError
         return log_folder / date_folders[-1]
 
     @classmethod
     def get_datetime_folders(cls, log_folder: pathlib.Path) -> List[pathlib.Path]:
         recent_date_folder = cls.get_recent_date_folder(log_folder)
+        if not recent_date_folder:
+            raise FileNotFoundError
         return natsort.natsorted(list(recent_date_folder.iterdir()))
 
     @classmethod
-    def get_recent_datetime_folder(cls, log_folder: pathlib.Path) -> pathlib.Path:
+    def get_recent_datetime_folder(cls, log_folder: pathlib.Path) -> Optional[pathlib.Path]:
         datetime_folders = cls.get_datetime_folders(log_folder)
+        if not datetime_folders:
+            raise FileNotFoundError
         return datetime_folders[-1]
 
     @classmethod
@@ -48,6 +54,6 @@ class LogFolder:
         (that is, before a new log folder is created)
         """
         # Cache the latest log folder
-        if cls.latest_log_folder is None:
-            cls.latest_log_folder = cls.get_recent_datetime_folder(log_folder)
+        cls.latest_log_folder = cls.get_recent_datetime_folder(log_folder)
+
         return cls.latest_log_folder

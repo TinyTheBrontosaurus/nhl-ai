@@ -102,7 +102,10 @@ def main(argv):
 
     # Cache old log path
     crosscheck.config.log_name = cc_config['name'].get()
-    LogFolder.get_latest_log_folder(definitions.LOG_ROOT / crosscheck.config.log_name)
+    try:
+        LogFolder.get_latest_log_folder(definitions.LOG_ROOT / crosscheck.config.log_name)
+    except FileNotFoundError:
+        pass
 
     # Create log path
     LogFolder.set_path(definitions.LOG_ROOT, crosscheck.config.log_name)
@@ -161,9 +164,12 @@ def load_checkpoint_filename(specs: dict) -> Optional[pathlib.Path]:
         if not rel_checkpoint_filename.is_absolute():
             return (pathlib.Path(crosscheck.config.filename).parent / rel_checkpoint_filename).resolve()
     else:
-        checkpoints_folder = LogFolder.get_latest_log_folder(definitions.LOG_ROOT / crosscheck.config.log_name) / "checkpoints"
-        checkpoints = natsort.natsorted(list(checkpoints_folder.iterdir()))
-        return checkpoints_folder / checkpoints[-1]
+        try:
+            checkpoints_folder = LogFolder.get_latest_log_folder(definitions.LOG_ROOT / crosscheck.config.log_name) / "checkpoints"
+            checkpoints = natsort.natsorted(list(checkpoints_folder.iterdir()))
+            return checkpoints_folder / checkpoints[-1]
+        except FileNotFoundError:
+            return None
 
 
 def load_scenarios(specs: dict) -> List[Scenario]:
