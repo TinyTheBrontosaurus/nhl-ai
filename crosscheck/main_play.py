@@ -28,23 +28,26 @@ def play():
 
     next_time = time.time() + time_per_frame
 
-    while True:
-        # Run the next step in the simulation
-        with button_state.lock:
-            next_action_dict = dict(button_state.state)
+    try:
+        while True:
+            # Run the next step in the simulation
+            with button_state.lock:
+                next_action_dict = dict(button_state.state)
 
-        # Convert to buttons
-        next_action = [next_action_dict.get(key, 0) for key in env.buttons]
+            # Convert to buttons
+            next_action = [next_action_dict.get(key, 0) for key in env.buttons]
 
-        _step = env.step(next_action)
-        env.render()
-        now = time.time()
-        delay_needed = next_time - now
-        if delay_needed > 0:
-            time.sleep(delay_needed)
-        else:
-            logger.warning(f"Falling behind {-delay_needed:.3f}s")
-        next_time += time_per_frame
+            _step = env.step(next_action)
+            env.render()
+            now = time.time()
+            delay_needed = next_time - now
+            if delay_needed > 0:
+                time.sleep(delay_needed)
+            else:
+                logger.warning(f"Falling behind {-delay_needed:.3f}s")
+            next_time += time_per_frame
+    finally:
+        button_state.running = False
 
 
 if __name__ == "__main__":
