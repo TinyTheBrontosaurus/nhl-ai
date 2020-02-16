@@ -2,6 +2,8 @@ import argparse
 import sys
 from crosscheck.discretizers import Genesis6ButtonWithStart
 from crosscheck.game_env import get_genv
+from crosscheck.player import human
+import threading
 
 
 def main(argv):
@@ -17,11 +19,16 @@ def play():
     env = get_genv()
     env = Genesis6ButtonWithStart(env)
 
-    next_action
+    button_state = human.ButtonState()
+    button_thread = threading.Thread(target=human.maintain_button_state, args=(button_state,))
+    button_thread.start()
 
     while True:
         # Run the next step in the simulation
-        step = env.step(next_action)
+        with button_state.lock:
+            next_action = dict(button_state.state)
+        _step = env.step(next_action)
+        env.render()
 
 
 if __name__ == "__main__":
