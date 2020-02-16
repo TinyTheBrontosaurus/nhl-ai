@@ -5,6 +5,7 @@ from crosscheck.player import human
 import threading
 import time
 from loguru import logger
+import retro
 
 
 def main(argv):
@@ -18,6 +19,7 @@ def main(argv):
 def play():
 
     env = get_genv()
+    env.use_restricted_actions = retro.Actions.ALL
     env.reset()
 
     time_per_frame = 1/60
@@ -35,7 +37,7 @@ def play():
                 next_action_dict = dict(button_state.state)
 
             # Convert to buttons
-            next_action = [next_action_dict.get(key, 0) for key in env.buttons]
+            next_action = [next_action_dict.get(key, 0) > 0.5 for key in env.buttons]
 
             _step = env.step(next_action)
             env.render()
@@ -45,6 +47,7 @@ def play():
                 time.sleep(delay_needed)
             else:
                 logger.warning(f"Falling behind {-delay_needed:.3f}s")
+                next_time = now
             next_time += time_per_frame
     finally:
         button_state.running = False
