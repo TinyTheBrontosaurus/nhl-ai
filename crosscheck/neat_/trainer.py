@@ -94,6 +94,7 @@ class Trainer:
                 population = neat.Population(neat_config)
             else:
                 population = custom_neat_utils.Checkpointer.restore_checkpoint(self.checkpoint_filename)
+                population.config = neat_config
                 # Don't load the old reporters
                 population.reporters.reporters.clear()
                 population.species.reporters = population.reporters
@@ -130,8 +131,8 @@ class Trainer:
         """
 
         for genome_id, genome in genomes:
-            _, metascorekeeper = self._eval_genome(genome, config)
-            stats = metascorekeeper.stats
+            _, genome.metascorekeeper = self._eval_genome(genome, config)
+            stats = genome.metascorekeeper.stats
             logger.debug("{gid:5} {score:+5} Stats:{stats}",
                          gid=genome_id, score=genome.fitness, stats=stats)
 

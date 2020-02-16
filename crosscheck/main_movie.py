@@ -7,6 +7,7 @@ from loguru import logger
 from crosscheck import main_train
 from crosscheck.config import cc_config
 import imageio
+import crosscheck.config
 from crosscheck.neat_.replayer import Replayer
 from crosscheck.version import __version__
 from PIL import Image, ImageDraw
@@ -27,7 +28,7 @@ def main(argv):
     folder_to_load = args.folder
 
     if args.folder is None:
-        log_folder = definitions.LOG_ROOT / "default"
+        log_folder = definitions.LOG_ROOT / crosscheck.config.log_name
         folder_to_load = LogFolder.get_latest_log_folder(log_folder)
 
     # Find the folder(s) to generate

@@ -15,9 +15,3 @@ class Summer(Metascorekeeper):
     @classmethod
     def fitness_threshold(cls, scorekeepers: List[Scorekeeper]) -> float:
         return sum([x.fitness_threshold() for x in scorekeepers])
-
-    def stats(self):
-        stats = {}
-        for sk in self._scorekeepers:
-            stats.update(sk.stats)
-        return stats
