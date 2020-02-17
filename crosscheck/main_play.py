@@ -2,13 +2,13 @@ import argparse
 import sys
 from crosscheck.game_env import get_genv
 from crosscheck.player import human
-from .config import cc_config
+from crosscheck.config import cc_config
 import threading
 import time
 from loguru import logger
 import retro
 import gzip
-import crosscheck.definitions
+import crosscheck.definitions as definitions
 import crosscheck.config
 import datetime
 import confuse
@@ -35,7 +35,7 @@ template = {
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Cross-check: NHL \'94 practice scenarios')
-    parser.add_argument('--config', '-c', help='App config.')
+    parser.add_argument('config', help='App config.')
 
     args = parser.parse_args(argv)
 
@@ -63,7 +63,7 @@ def main(argv):
     button_thread.start()
 
     try:
-        player = Player(scenarios[0], button_state)
+        player = Player(button_state, None)
         player.play()
     finally:
         button_state.running = False
@@ -100,7 +100,7 @@ class RateController:
         else:
             logger.warning(f"Falling behind {-delay_needed:.3f}s")
             next_time = now
-        self._next_time += self._time_per_frame
+        self._next_time += self.time_per_iter
 
 
 class RisingEdge:
@@ -129,7 +129,7 @@ class Player:
 
     @classmethod
     def _save_state(cls, env):
-        state_dir = crosscheck.definitions.NEW_SAVE_STATE_FOLDER
+        state_dir = definitions.NEW_SAVE_STATE_FOLDER
         label = datetime.datetime.now().isoformat().replace(":", "_")
         save_file = state_dir / f"{label}.state"
         save_file.parent.mkdir(parents=True, exist_ok=True)
@@ -141,7 +141,8 @@ class Player:
 
         env = get_genv()
         env.use_restricted_actions = retro.Actions.ALL
-        env.initial_state = self.scenario
+        if self.scenario:
+            env.initial_state = self.scenario
         env.reset()
 
         rate_controller = RateController(1/60)
@@ -152,7 +153,7 @@ class Player:
         while not self._done_request.state:
             # Run the next step in the simulation
             with self.button_state.lock:
-                next_action_dict = dict(button_state.state)
+                next_action_dict = dict(self.button_state.state)
 
             # Convert to buttons
             next_action = [next_action_dict.get(key, 0) > 0.5 for key in env.buttons]
