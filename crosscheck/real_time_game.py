@@ -32,7 +32,7 @@ class RealTimeGame:
         env = get_genv()
         env.use_restricted_actions = retro.Actions.ALL
         if self.scenario:
-            env.initial_state = self.scenario
+            env.load_state(str(self.scenario))
         env.reset()
 
         rate_controller = RateController(1/60)

@@ -59,8 +59,11 @@ def main(argv):
     button_thread.start()
 
     try:
-        player = RealTimeGame(button_state, None)
-        player.play()
+        while True:
+            for scenario in scenarios:
+                logger.info(f"Playing {scenario}")
+                player = RealTimeGame(button_state, scenario)
+                player.play()
     finally:
         button_state.running = False
 

@@ -1,0 +1,4 @@
+name: play
+mode: play
+scenarios:
+  - save-state:

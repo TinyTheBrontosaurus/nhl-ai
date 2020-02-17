@@ -5,3 +5,5 @@ training/logs
 log
 
 __pycache__
+
+save-states-pending
