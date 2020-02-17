@@ -1,0 +1,6 @@
+name: play
+mode: play
+scenarios:
+  - save-state: 01/02-MogilnyOwnZone.state
+  - save-state: 01/03-LaFontaineOwnZone.state
+  - save-state: 01/04-MogilnyBehindNet.state

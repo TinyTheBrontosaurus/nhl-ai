@@ -1,0 +1,5 @@
+name: play
+mode: play
+scenarios:
+  - name: Faceoff
+    save-state: 01/01-faceoff.state
