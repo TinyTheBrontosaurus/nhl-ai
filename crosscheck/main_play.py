@@ -33,7 +33,7 @@ def play():
 
     next_time = time.time() + time_per_frame
 
-    env.players = 2
+    env.players = 1
     frame = 0
     state_dir = crosscheck.definitions.NEW_SAVE_STATE_FOLDER
     save_state_debounce = False
