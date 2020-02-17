@@ -9,6 +9,7 @@ import crosscheck.config
 from crosscheck.real_time_game import RealTimeGame
 import confuse
 import pathlib
+from typing import Optional
 
 
 template = {
@@ -24,7 +25,7 @@ template = {
     # The 1+ scenarios that are run in serial
     'scenarios': confuse.Sequence({
         # The filename of a scenario (save state) from which to start play
-        'save-state': str,
+        'save-state': [str, None],
     }),
 }
 
@@ -69,12 +70,14 @@ def main(argv):
 
 
 
-def load_save_state(name: str) -> pathlib.Path:
+def load_save_state(name: str) -> Optional[pathlib.Path]:
     """
     Load the scenario, and verify the file exists
     :param name: The name of a scenario
     :return: The fully qualified path to the scenario
     """
+    if not name:
+        return None
     filename = definitions.SAVE_STATE_FOLDER / name
     if not filename.is_file():
         raise FileNotFoundError("Cannot find scenario {}".format(filename))
