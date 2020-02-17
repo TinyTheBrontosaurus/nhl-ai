@@ -10,7 +10,7 @@ from crosscheck.real_time_game import RealTimeGame
 import confuse
 import pathlib
 from typing import Optional
-from gym.envs.classic_control.rendering import SimpleImageViewer
+from crosscheck.player.rendering import SimpleImageViewer
 
 
 template = {
