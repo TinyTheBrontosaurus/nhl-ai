@@ -10,6 +10,7 @@ from crosscheck.real_time_game import RealTimeGame
 import confuse
 import pathlib
 from typing import Optional
+from gym.envs.classic_control.rendering import SimpleImageViewer
 
 
 template = {
@@ -60,10 +61,11 @@ def main(argv):
     button_thread.start()
 
     try:
+        viewer = SimpleImageViewer()
         while True:
             for scenario in scenarios:
                 logger.info(f"Playing {scenario}")
-                player = RealTimeGame(button_state, scenario)
+                player = RealTimeGame(button_state, scenario, viewer)
                 player.play()
     finally:
         button_state.running = False

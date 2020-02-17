@@ -7,15 +7,18 @@ import retro
 import gzip
 import datetime
 import pathlib
+from gym.envs.classic_control.rendering import SimpleImageViewer
 
 
 class RealTimeGame:
 
-    def __init__(self, button_state: human.ButtonState, scenario: pathlib.Path):
+    def __init__(self, button_state: human.ButtonState, scenario: pathlib.Path,
+                 viewer: SimpleImageViewer):
         self.button_state = button_state
         self.scenario = scenario
         self._save_state_request = RisingEdge()
         self._done_request = RisingEdge()
+        self.viewer = viewer
 
     @classmethod
     def _save_state(cls, env):
@@ -26,6 +29,9 @@ class RealTimeGame:
         with gzip.open(save_file, 'wb') as f:
             f.write(env.em.get_state())
         logger.info(f"Saved state {str(save_file)}")
+
+    def render(self, ob, *_args):
+        self.viewer.imshow(ob)
 
     def play(self):
 
@@ -53,7 +59,7 @@ class RealTimeGame:
 
             _step = env.step(next_action)
 
-            env.render()
+            self.render(*_step)
 
             # Check custom button presses
             self._done_request.update(next_action_dict.get("X") > 0.5)
