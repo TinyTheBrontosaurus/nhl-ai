@@ -10,6 +10,11 @@ class SimpleImageViewer(object):
         self.isopen = False
         self.display = display
         self.maxwidth = maxwidth
+
+        self._aspect_ratio = None
+        self.window_width = 0
+        self.window_height = 0
+
     def imshow(self, arr):
         if self.window is None:
             height, width, _channels = arr.shape
@@ -17,6 +22,7 @@ class SimpleImageViewer(object):
                 scale = self.maxwidth / width
                 width = int(scale * width)
                 height = int(scale * height)
+            self._aspect_ratio = width / height
             self.window = pyglet.window.Window(width=width, height=height,
                 display=self.display, vsync=False, resizable=True)
             self.width = width
@@ -27,6 +33,10 @@ class SimpleImageViewer(object):
             def on_resize(width, height):
                 self.width = width
                 self.height = height
+                self.window_width = width
+                self.window_height = int(width / self._aspect_ratio)
+                if height != self.window_height:
+                    self.window.set_size(self.window_width, self.window_height)
 
             @self.window.event
             def on_close():
