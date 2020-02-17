@@ -22,7 +22,7 @@ input:
     specific-file:
   neat-config:
     NEAT:
-      pop_size: 50
+      pop_size: 150
 movie:
   enabled: generations
   stoppage-time-s: 5.0

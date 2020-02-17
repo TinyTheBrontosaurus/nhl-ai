@@ -30,6 +30,7 @@ def play():
 
     next_time = time.time() + time_per_frame
 
+    env.players = 2
     try:
         while True:
             # Run the next step in the simulation
@@ -39,7 +40,11 @@ def play():
             # Convert to buttons
             next_action = [next_action_dict.get(key, 0) > 0.5 for key in env.buttons]
 
+            # Two player?
+            next_action.extend(next_action)
+
             _step = env.step(next_action)
+
             env.render()
             now = time.time()
             delay_needed = next_time - now
