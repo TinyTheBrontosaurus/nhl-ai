@@ -8,6 +8,9 @@ import gzip
 import datetime
 import pathlib
 from gym.envs.classic_control.rendering import SimpleImageViewer
+import numpy as np
+from PIL import ImageDraw, Image
+from crosscheck.version import __version__
 
 
 class RealTimeGame:
@@ -19,6 +22,7 @@ class RealTimeGame:
         self._save_state_request = RisingEdge()
         self._done_request = RisingEdge()
         self.viewer = viewer
+        self.frame = 0
 
     @classmethod
     def _save_state(cls, env):
@@ -31,7 +35,22 @@ class RealTimeGame:
         logger.info(f"Saved state {str(save_file)}")
 
     def render(self, ob, *_args):
-        self.viewer.imshow(ob)
+
+        blank_frame = np.zeros(ob.shape, dtype=np.uint8)
+        img = Image.fromarray(blank_frame)
+        draw = ImageDraw.Draw(img)
+
+        to_draw = {"frame": self.frame}
+        to_draw['version'] = __version__
+
+        for offset, (key, value) in enumerate(to_draw.items()):
+            draw.text((0, 5 + 12 * offset), "{:15}: {}".format(key, value), fill='rgb(255, 255, 255)')
+
+        status_frame = np.array(img)
+
+        new_ob = np.concatenate((ob, status_frame), axis=1)
+
+        self.viewer.imshow(new_ob)
 
     def play(self):
 
@@ -44,7 +63,6 @@ class RealTimeGame:
         rate_controller = RateController(1/60)
 
         env.players = 1
-        frame = 0
 
         while not self._done_request.state:
             # Run the next step in the simulation
@@ -69,4 +87,4 @@ class RealTimeGame:
                 self._save_state(env)
 
             rate_controller.tick()
-            frame += 1
+            self.frame += 1
