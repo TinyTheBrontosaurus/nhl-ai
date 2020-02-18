@@ -61,7 +61,7 @@ def main(argv):
     button_thread.start()
 
     try:
-        viewer = SimpleImageViewer()
+        viewer = SimpleImageViewer(initial_scale=3.5)
         while True:
             for scenario in scenarios:
                 logger.info(f"Playing {scenario}")

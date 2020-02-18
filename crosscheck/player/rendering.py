@@ -5,7 +5,7 @@ import sys
 # Copied from
 #   gym.envs.classic_control.rendering
 class SimpleImageViewer(object):
-    def __init__(self, display=None, maxwidth=500):
+    def __init__(self, display=None, maxwidth=500, initial_scale=1.0):
         self.window = None
         self.isopen = False
         self.display = display
@@ -14,6 +14,7 @@ class SimpleImageViewer(object):
         self._aspect_ratio = None
         self.window_width = 0
         self.window_height = 0
+        self.initial_scale = initial_scale
 
     def imshow(self, arr):
         if self.window is None:
@@ -23,7 +24,8 @@ class SimpleImageViewer(object):
                 width = int(scale * width)
                 height = int(scale * height)
             self._aspect_ratio = width / height
-            self.window = pyglet.window.Window(width=width, height=height,
+            self.window = pyglet.window.Window(width=int(width*self.initial_scale),
+                                               height=int(height*self.initial_scale),
                 display=self.display, vsync=False, resizable=True)
             self.width = width
             self.height = height
