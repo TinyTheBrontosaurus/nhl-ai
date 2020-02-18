@@ -11,7 +11,7 @@ from gym.envs.classic_control.rendering import SimpleImageViewer
 import numpy as np
 from PIL import ImageDraw, Image
 from crosscheck.version import __version__
-from crosscheck.practice.menu import TopMenu
+from crosscheck.practice.menu import MenuHandler
 
 
 class RealTimeGame:
@@ -24,7 +24,7 @@ class RealTimeGame:
         self._done_request = RisingEdge()
         self.viewer = viewer
         self.frame = 0
-        self.menu = TopMenu()
+        self.menu = MenuHandler()
 
     @classmethod
     def _save_state(cls, env):
@@ -40,9 +40,9 @@ class RealTimeGame:
 
         self.menu.shape = ob.shape
 
-        new_ob = np.concatenate((ob, self.menu.ob), axis=1)
-
-        self.viewer.imshow(new_ob)
+        if not self.menu.done:
+            new_ob = np.concatenate((ob, self.menu.ob), axis=1)
+            self.viewer.imshow(new_ob)
 
     def play(self):
 
