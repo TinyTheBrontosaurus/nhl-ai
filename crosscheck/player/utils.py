@@ -38,3 +38,7 @@ class RisingEdge:
         self._request_high = request
 
         return self.state
+
+    def reset(self):
+        self._request_high = True
+        self.state = False

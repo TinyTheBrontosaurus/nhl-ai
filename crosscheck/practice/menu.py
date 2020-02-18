@@ -31,6 +31,9 @@ class MenuHandler(Display):
             pass
         elif next_menu is None:
             self._stack.pop(0)
+            if not self.done:
+                # Reset any button monitors from last time
+                self._stack[0].enter()
         else:
             self._stack.insert(0, next_menu)
 
@@ -73,6 +76,9 @@ class Menu(Display):
     def next_menu(self):
         return self._next_menu
 
+    def enter(self):
+        pass
+
 
 class BasicMenu(Menu):
     def __init__(self, options: dict):
@@ -105,7 +111,7 @@ class BasicMenu(Menu):
         self._lines = [f"{'> ' if idx == self.selection else '':2} {label}"
                        for idx, label in enumerate(self.options.keys())]
 
-        # Default to no-o
+        # Default to no-op
         self._next_menu = self
 
         # If select was chosen, go to next menu
@@ -128,6 +134,12 @@ class BasicMenu(Menu):
 
     def __call__(self):
         return self
+
+    def enter(self):
+        self.up.reset()
+        self.down.reset()
+        self.select.reset()
+        self.back.reset()
 
 
 class TopMenu(BasicMenu):
