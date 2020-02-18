@@ -11,6 +11,7 @@ from gym.envs.classic_control.rendering import SimpleImageViewer
 import numpy as np
 from PIL import ImageDraw, Image
 from crosscheck.version import __version__
+from crosscheck.practice.menu import TopMenu
 
 
 class RealTimeGame:
@@ -23,6 +24,7 @@ class RealTimeGame:
         self._done_request = RisingEdge()
         self.viewer = viewer
         self.frame = 0
+        self.menu = TopMenu()
 
     @classmethod
     def _save_state(cls, env):
@@ -36,19 +38,9 @@ class RealTimeGame:
 
     def render(self, ob, *_args):
 
-        blank_frame = np.zeros(ob.shape, dtype=np.uint8)
-        img = Image.fromarray(blank_frame)
-        draw = ImageDraw.Draw(img)
+        self.menu.shape = ob.shape
 
-        to_draw = {"frame": self.frame}
-        to_draw['version'] = __version__
-
-        for offset, (key, value) in enumerate(to_draw.items()):
-            draw.text((0, 5 + 12 * offset), "{:15}: {}".format(key, value), fill='rgb(255, 255, 255)')
-
-        status_frame = np.array(img)
-
-        new_ob = np.concatenate((ob, status_frame), axis=1)
+        new_ob = np.concatenate((ob, self.menu.ob), axis=1)
 
         self.viewer.imshow(new_ob)
 
@@ -68,6 +60,8 @@ class RealTimeGame:
             # Run the next step in the simulation
             with self.button_state.lock:
                 next_action_dict = dict(self.button_state.state)
+
+            self.menu.tick(next_action_dict)
 
             # Convert to buttons
             next_action = [next_action_dict.get(key, 0) > 0.5 for key in env.buttons]
