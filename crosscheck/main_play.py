@@ -11,6 +11,7 @@ import confuse
 import pathlib
 from typing import Optional
 from crosscheck.player.rendering import SimpleImageViewer
+from crosscheck.practice.menu import MenuHandler
 
 
 template = {
@@ -62,10 +63,11 @@ def main(argv):
 
     try:
         viewer = SimpleImageViewer(initial_scale=3.5)
-        while True:
+        menu = MenuHandler()
+        while not menu.done:
             for scenario in scenarios:
                 logger.info(f"Playing {scenario}")
-                player = RealTimeGame(button_state, scenario, viewer)
+                player = RealTimeGame(button_state, scenario, viewer, menu)
                 player.play()
     finally:
         button_state.running = False
