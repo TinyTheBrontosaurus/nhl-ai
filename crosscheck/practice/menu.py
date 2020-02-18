@@ -105,6 +105,10 @@ class BasicMenu(Menu):
         self._lines = [f"{'> ' if idx == self.selection else '':2} {label}"
                        for idx, label in enumerate(self.options.keys())]
 
+        # Default to no-o
+        self._next_menu = self
+
+        # If select was chosen, go to next menu
         if self.select.state:
             next_menus = list(self.options.values())
             if self.selection >= len(next_menus):
@@ -121,6 +125,9 @@ class BasicMenu(Menu):
     @property
     def lines(self):
         return self._lines
+
+    def __call__(self):
+        return self
 
 
 class TopMenu(BasicMenu):
@@ -140,6 +147,6 @@ class MinigameMenu(BasicMenu):
         with manifest.open() as f:
             self._manifest = yaml.safe_load(f)
 
-        options = {f"{x['name']} ({x['file']})": None for x in self._manifest}
+        options = {f"{x['name']} ({x['file']})": self for x in self._manifest}
         super().__init__(options)
 
