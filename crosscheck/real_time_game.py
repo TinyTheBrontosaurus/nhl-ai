@@ -12,12 +12,14 @@ import numpy as np
 from PIL import ImageDraw, Image
 from crosscheck.version import __version__
 from crosscheck.practice.menu import MenuHandler, Menu
+from crosscheck.scorekeeper import Scorekeeper
+from typing import Optional
 
 
 class RealTimeGame:
 
     def __init__(self, button_state: human.ButtonState, scenario: pathlib.Path,
-                 viewer: SimpleImageViewer, menu: MenuHandler):
+                 viewer: SimpleImageViewer, menu: MenuHandler, scorekeeper: Optional[Scorekeeper]):
         self.button_state = button_state
         self.scenario = scenario
         self._save_state_request = RisingEdge()
@@ -25,6 +27,7 @@ class RealTimeGame:
         self.viewer = viewer
         self.frame = 0
         self.menu = menu
+        self.scorekeeper = scorekeeper
 
     @classmethod
     def _save_state(cls, env):
@@ -56,7 +59,7 @@ class RealTimeGame:
 
         env.players = 1
 
-        while not self._done_request.state and not self.menu.done:
+        while not self.done:
             # Run the next step in the simulation
             with self.button_state.lock:
                 next_action_dict = dict(self.button_state.state)
@@ -69,9 +72,15 @@ class RealTimeGame:
             # Two player?
             #next_action.extend(next_action)
 
-            _step = env.step(next_action)
+            step = env.step(next_action)
 
-            self.render(*_step)
+            info = step[3]
+            if self.scorekeeper:
+                self.scorekeeper.info = info
+                self.scorekeeper.buttons_pressed = next_action
+                self.scorekeeper.tick()
+
+            self.render(*step)
 
             # Check custom button presses
             self._done_request.update(next_action_dict.get("X") > 0.5)
@@ -82,3 +91,7 @@ class RealTimeGame:
 
             rate_controller.tick()
             self.frame += 1
+
+    @property
+    def done(self) -> bool:
+        return any([self._done_request.state, self.menu.done, self.scorekeeper.done if self.scorekeeper else False])

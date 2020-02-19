@@ -1,10 +1,14 @@
 import abc
 import numpy as np
-from typing import List
+from typing import List, Type
 from crosscheck.player.utils import RisingEdge
 from PIL import Image, ImageDraw
 import yaml
 import crosscheck.definitions
+import pathlib
+import functools
+from dataclasses import dataclass
+from crosscheck.scorekeeper import Scorekeeper, string_to_class
 
 
 class Display:
@@ -159,6 +163,21 @@ class MinigameMenu(BasicMenu):
         with manifest.open() as f:
             self._manifest = yaml.safe_load(f)
 
-        options = {f"{x['name']} ({x['file']})": self for x in self._manifest}
+        # List everything, with their ctors
+        options = {f"{x['name']} ({x['file']})":
+                       functools.partial(Leaf,
+                                         (x['file'],
+                                         folder / x['file'],
+                                         x['timeout'],
+                                         string_to_class(x['file'])))
+                   for x in self._manifest}
         super().__init__(options)
+
+
+@dataclass
+class Leaf:
+    pkey: str
+    scenario: pathlib.Path
+    timeout: float
+    scorekeeper: Type[Scorekeeper]
 
