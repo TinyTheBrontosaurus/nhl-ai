@@ -35,9 +35,9 @@ class Minigame:
         self.total_score = 0
         for attempt in range(self.iterations):
             scorekeeper = self.scorekeeper_type()
-            player = RealTimeGame(self.button_state, self.scenario, self.viewer, self.menu, scorekeeper)
+            player = RealTimeGame(self.button_state, self.scenario, self.viewer, self.menu, scorekeeper, self.timeout)
             player.play()
             self.total_score += scorekeeper.score
-            self.max_possible_score += scorekeeper.fitness_threshold
+            self.max_possible_score += scorekeeper.fitness_threshold()
             logger.info(f"Score {self.total_score}/{self.max_possible_score}")
 

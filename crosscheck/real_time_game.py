@@ -19,7 +19,8 @@ from typing import Optional
 class RealTimeGame:
 
     def __init__(self, button_state: human.ButtonState, scenario: pathlib.Path,
-                 viewer: SimpleImageViewer, menu: MenuHandler, scorekeeper: Optional[Scorekeeper]):
+                 viewer: SimpleImageViewer, menu: MenuHandler, scorekeeper: Optional[Scorekeeper],
+                 timeout: Optional[float] = None):
         self.button_state = button_state
         self.scenario = scenario
         self._save_state_request = RisingEdge()
@@ -28,6 +29,7 @@ class RealTimeGame:
         self.frame = 0
         self.menu = menu
         self.scorekeeper = scorekeeper
+        self.timeout_frames = timeout * 60 if timeout is not None else None
 
     @classmethod
     def _save_state(cls, env):
@@ -64,7 +66,7 @@ class RealTimeGame:
             with self.button_state.lock:
                 next_action_dict = dict(self.button_state.state)
 
-            self.menu.tick(next_action_dict)
+#            self.menu.tick(next_action_dict)
 
             # Convert to buttons
             next_action = [next_action_dict.get(key, 0) > 0.5 for key in env.buttons]
@@ -94,4 +96,7 @@ class RealTimeGame:
 
     @property
     def done(self) -> bool:
-        return any([self._done_request.state, self.menu.done, self.scorekeeper.done if self.scorekeeper else False])
+        return any([self._done_request.state,
+                    self.menu.done,
+                    self.scorekeeper.done if self.scorekeeper else False,
+                    self.frame > self.timeout_frames if self.timeout_frames is not None else False])
