@@ -67,8 +67,8 @@ def main(argv):
         from crosscheck.scorekeeper import string_to_class
 
         menu = MenuHandler()
-        minigame = Minigame('tst', scenarios[0], 3, string_to_class['score-only'],
-                            5, button_state, viewer, menu)
+        minigame = Minigame('tst', scenarios[0], 10, string_to_class['score-only'],
+                            15, button_state, viewer, menu)
         minigame.play()
     finally:
         button_state.running = False
