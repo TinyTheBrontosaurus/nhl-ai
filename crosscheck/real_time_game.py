@@ -19,7 +19,7 @@ from typing import Optional
 class RealTimeGame:
 
     def __init__(self, button_state: human.ButtonState, scenario: pathlib.Path,
-                 viewer: SimpleImageViewer, menu: MenuHandler, scorekeeper: Optional[Scorekeeper],
+                 viewer: SimpleImageViewer, menu: MenuHandler, scorekeeper: Optional[Scorekeeper] = None,
                  timeout: Optional[float] = None):
         self.button_state = button_state
         self.scenario = scenario

@@ -63,13 +63,24 @@ def main(argv):
 
     try:
         viewer = SimpleImageViewer(initial_scale=3.5)
-        from crosscheck.practice.minigame import Minigame
-        from crosscheck.scorekeeper import string_to_class
-
         menu = MenuHandler()
-        minigame = Minigame('tst', scenarios[0], 10, string_to_class['score-only'],
-                            15, button_state, viewer, menu)
-        minigame.play()
+
+        mode = 'cycle'
+        if mode == 'full_game':
+            minigame = RealTimeGame(button_state, scenarios[0], viewer, menu)
+            minigame.play()
+        elif mode == 'cycle':
+            while True:
+                for scenario in scenarios:
+                    minigame = RealTimeGame(button_state, scenario, viewer, menu)
+                    minigame.play()
+        else:
+            from crosscheck.practice.minigame import Minigame
+            from crosscheck.scorekeeper import string_to_class
+            menu = MenuHandler()
+            minigame = Minigame('tst', scenarios[0], 10, string_to_class['score-only'],
+                                15, button_state, viewer, menu)
+            minigame.play()
     finally:
         button_state.running = False
 
