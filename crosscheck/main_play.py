@@ -65,7 +65,7 @@ def main(argv):
         viewer = SimpleImageViewer(initial_scale=3.5)
         menu = MenuHandler()
 
-        mode = valid_config['mode'].get()
+        mode = valid_config['mode']
         if mode == 'full_game':
             minigame = RealTimeGame(button_state, scenarios[0], viewer, menu)
             minigame.play()
@@ -79,7 +79,7 @@ def main(argv):
             from crosscheck.scorekeeper import string_to_class
             menu = MenuHandler()
             minigame = Minigame('tst', scenarios[0], 10, string_to_class['score-only'],
-                                15, button_state, viewer, menu)
+                                50, button_state, viewer, menu)
             minigame.play()
     finally:
         button_state.running = False

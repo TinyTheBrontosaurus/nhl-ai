@@ -1,0 +1,4 @@
+name: play
+mode: minigame
+scenarios:
+  - save-state: 03-shootout/2020-02-19T21_14_23.397781.state
