@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, 
 
 
 
-masks = ['UP', 'DOWN', 'Left', 'Right', 'A', 'B', 'C']
+masks = list(reversed(['UP', 'DOWN', 'LEFT', 'RIGHT', 'A', 'B', 'C']))
 
 def encode(controls: List[Dict]) -> bytes:
     encoded = []
@@ -22,7 +22,7 @@ def decode(encoded: bytes) -> List[Dict]:
         control = {}
         for shift, label in enumerate(masks):
             mask = (1 << shift)
-            control[label] = mask & value
+            control[label] = (mask & value) > 0
         controls.append(control)
     return controls
 
