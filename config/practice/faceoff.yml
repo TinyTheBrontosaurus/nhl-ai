@@ -1,4 +1,4 @@
 name: play
-mode: play
+mode: cycle
 scenarios:
   - save-state: 01/01-faceoff.state

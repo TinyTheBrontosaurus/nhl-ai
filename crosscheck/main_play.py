@@ -23,7 +23,7 @@ template = {
     #  'compete': Run two models against each other
     #  'play': Run a model against a human player (controller input)
     #  'play-2p': Play traditional human vs human
-    'mode': confuse.OneOf(['train', 'replay', 'compete', 'play', 'play-2p']),
+    'mode': confuse.OneOf(['full-game', 'cycle', 'minigame']),
     # The 1+ scenarios that are run in serial
     'scenarios': confuse.Sequence({
         # The filename of a scenario (save state) from which to start play
@@ -65,7 +65,7 @@ def main(argv):
         viewer = SimpleImageViewer(initial_scale=3.5)
         menu = MenuHandler()
 
-        mode = 'cycle'
+        mode = valid_config['mode'].get()
         if mode == 'full_game':
             minigame = RealTimeGame(button_state, scenarios[0], viewer, menu)
             minigame.play()
