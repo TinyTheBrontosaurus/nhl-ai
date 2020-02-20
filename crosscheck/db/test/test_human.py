@@ -1,5 +1,16 @@
-from ..human import encode, decode
+from ..human import encode, decode, add_play
+import pytest
 
+@pytest.fixture(name="basic_controls")
+def _basic_controls():
+    return [
+        {"UP": True, "DOWN": True, "LEFT": True, "RIGHT": True, "A": True, "B": True, "C": True},
+        {"UP": False, "DOWN": False, "LEFT": False, "RIGHT": True, "A": False, "B": False, "C": False},
+        {"UP": True, "DOWN": True, "LEFT": False, "RIGHT": False, "A": False, "B": True, "C": False},
+        {"UP": False, "DOWN": True, "LEFT": True, "RIGHT": True, "A": False, "B": True, "C": True},
+        {"UP": True, "DOWN": True, "LEFT": True, "RIGHT": False, "A": True, "B": False, "C": False},
+        {"UP": False, "DOWN": False, "LEFT": False, "RIGHT": False, "A": False, "B": False, "C": False},
+    ]
 
 def test_empty():
     """
@@ -17,19 +28,12 @@ def test_empty():
     assert actual_d == orig
 
 
-def test_basic():
+def test_basic(basic_controls):
     """
     Test a handful of basic situations, encode and decode
     """
     # Arrange
-    orig = [
-        {"UP": True, "DOWN": True, "LEFT": True, "RIGHT": True, "A": True, "B": True, "C": True},
-        {"UP": False, "DOWN": False, "LEFT": False, "RIGHT": True, "A": False, "B": False, "C": False},
-        {"UP": True, "DOWN": True, "LEFT": False, "RIGHT": False, "A": False, "B": True, "C": False},
-        {"UP": False, "DOWN": True, "LEFT": True, "RIGHT": True, "A": False, "B": True, "C": True},
-        {"UP": True, "DOWN": True, "LEFT": True, "RIGHT": False, "A": True, "B": False, "C": False},
-        {"UP": False, "DOWN": False, "LEFT": False, "RIGHT": False, "A": False, "B": False, "C": False},
-    ]
+    orig = basic_controls
 
     # Act
     actual_e = encode(orig)
@@ -38,3 +42,14 @@ def test_basic():
     # Assert
     assert actual_e == b'\x7F\x08\x62\x3B\x74\x00'
     assert actual_d == orig
+
+
+def test_db_write(basic_controls):
+    # Arrange
+    orig = basic_controls
+
+    # Act
+    add_play('my_scenario', False, basic_controls)
+
+    # Assert
+    pass

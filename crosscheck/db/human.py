@@ -38,7 +38,9 @@ def add_play(scenario: str, success: bool, controls: List[Dict]):
         Column('success', Boolean),
         Column('controls', LargeBinary),
     )
+    meta.create_all(engine)
 
+    controls_bytes = encode(controls)
     ins = students.insert()
     ins = students.insert().values(scenario=scenario, success=success, controls=controls_bytes)
     conn = engine.connect()
