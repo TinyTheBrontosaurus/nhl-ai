@@ -1,6 +1,11 @@
 from typing import List, Dict
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, LargeBinary
-
+from sqlalchemy import (
+    create_engine, MetaData, Table, Column, Integer,
+    String, Boolean, LargeBinary, DateTime
+)
+from crosscheck import definitions, version
+import datetime
+import pathlib
 
 
 masks = list(reversed(['UP', 'DOWN', 'LEFT', 'RIGHT', 'A', 'B', 'C']))
@@ -27,21 +32,32 @@ def decode(encoded: bytes) -> List[Dict]:
     return controls
 
 
-def add_play(scenario: str, success: bool, controls: List[Dict]):
-    engine = create_engine('sqlite:///college.db', echo=True)
+def add_play(scenario: str, success: bool, controls: List[Dict], db_filename: pathlib.Path = None):
+
+    if db_filename is None:
+        db_filename = definitions.DB_FILE
+    engine = create_engine(f'sqlite:///{str(db_filename.resolve())}', echo=True)
     meta = MetaData()
 
-    students = Table(
-        'human', meta,
+    human_games = Table(
+        'human_games', meta,
         Column('id', Integer, primary_key=True),
         Column('scenario', String),
         Column('success', Boolean),
         Column('controls', LargeBinary),
+        Column('version', String),
+        Column('datetime', DateTime)
     )
     meta.create_all(engine)
 
     controls_bytes = encode(controls)
-    ins = students.insert()
-    ins = students.insert().values(scenario=scenario, success=success, controls=controls_bytes)
+    ins = human_games.insert()
+    ins = human_games.insert().values(
+        scenario=scenario,
+        success=success,
+        controls=controls_bytes,
+        version=version.__version__,
+        datetime=datetime.datetime.now())
+
     conn = engine.connect()
-    result = conn.execute(ins)
+    _result = conn.execute(ins)

@@ -1,5 +1,6 @@
 from ..human import encode, decode, add_play
 import pytest
+import pathlib
 
 @pytest.fixture(name="basic_controls")
 def _basic_controls():
@@ -44,12 +45,14 @@ def test_basic(basic_controls):
     assert actual_d == orig
 
 
-def test_db_write(basic_controls):
+def test_db_write(basic_controls, tmpdir):
     # Arrange
-    orig = basic_controls
+    db_filename = pathlib.Path(str(tmpdir / "tmp.db"))
 
     # Act
-    add_play('my_scenario', False, basic_controls)
+    add_play('my_scenario', False, basic_controls, db_filename)
+    add_play('my_scenario', False, basic_controls, db_filename)
 
     # Assert
+    # Success if it doesn't blow up
     pass
