@@ -6,42 +6,42 @@ import threading
 # inputs from the `inputs` package to a dictionary
 lookup = {
     'ABS_Y': {
-        0: {"UP": 1, "DOWN": 0},
-        127: {"UP": 0, "DOWN": 0},
-        255: {"UP": 0, "DOWN": 1}
+        0: {"UP": True, "DOWN": False},
+        127: {"UP": False, "DOWN": False},
+        255: {"UP": False, "DOWN": True}
     },
     'ABS_X': {
-        0: {"LEFT": 1, "RIGHT": 0},
-        127: {"LEFT": 0, "RIGHT": 0},
-        255: {"LEFT": 0, "RIGHT": 1}
+        0: {"LEFT": True, "RIGHT": False},
+        127: {"LEFT": False, "RIGHT": False},
+        255: {"LEFT": False, "RIGHT": True}
     },
     'BTN_TRIGGER': {
-        1: {"A": 1},
-        0: {"A": 0},
+        1: {"A": True},
+        0: {"A": False},
     },
     'BTN_THUMB': {
-        1: {"B": 1},
-        0: {"B": 0},
+        1: {"B": True},
+        0: {"B": False},
     },
     'BTN_THUMB2': {
-        1: {"C": 1},
-        0: {"C": 0},
+        1: {"C": True},
+        0: {"C": False},
     },
     'BTN_BASE4': {
-        1: {"START": 1},
-        0: {"START": 0},
+        1: {"START": True},
+        0: {"START": False},
     },
     'BTN_TOP': {
-        1: {"X": 1},
-        0: {"X": 0},
+        1: {"X": True},
+        0: {"X": False},
     },
     'BTN_TOP2': {
-        1: {"Y": 1},
-        0: {"Y": 0},
+        1: {"Y": True},
+        0: {"Y": False},
     },
     'BTN_PINKIE': {
-        1: {"Z": 1},
-        0: {"Z": 0},
+        1: {"Z": True},
+        0: {"Z": False},
     },
 }
 
@@ -52,10 +52,10 @@ class ButtonState:
         Create an object that keeps track of button state across threads.
         """
         # The button state, as a dictionary
-        self.state = {'LEFT': 0, "RIGHT": 0, 'UP': 0, 'DOWN': 0,
-                      'A': 0, 'B': 0, 'C': 0,
-                      'X': 0, 'Y': 0, 'Z': 0,
-                      'START': 0}
+        self.state = {'LEFT': False, "RIGHT": False, 'UP': False, 'DOWN': False,
+                      'A': False, 'B': False, 'C': False,
+                      'X': False, 'Y': False, 'Z': False,
+                      'START': False}
         # The lock to use when looking at button state
         self.lock = threading.Lock()
         # Set to false to kill the background thread gracefully

@@ -20,7 +20,7 @@ class RealTimeGame:
 
     def __init__(self, button_state: human.ButtonState, scenario: pathlib.Path,
                  viewer: SimpleImageViewer, menu: MenuHandler, scorekeeper: Optional[Scorekeeper] = None,
-                 timeout: Optional[float] = None):
+                 timeout: Optional[float] = None, save_buttons=False):
         self.button_state = button_state
         self.scenario = scenario
         self._save_state_request = RisingEdge()
@@ -30,6 +30,8 @@ class RealTimeGame:
         self.menu = menu
         self.scorekeeper = scorekeeper
         self.timeout_frames = timeout * 60 if timeout is not None else None
+        self.button_presses = []
+        self.save_buttons = save_buttons
 
     @classmethod
     def _save_state(cls, env):
@@ -66,10 +68,13 @@ class RealTimeGame:
             with self.button_state.lock:
                 next_action_dict = dict(self.button_state.state)
 
+            # Save them all
+            if self.save_buttons:
+                self.button_presses.append(next_action_dict)
 #            self.menu.tick(next_action_dict)
 
             # Convert to buttons
-            next_action = [next_action_dict.get(key, 0) > 0.5 for key in env.buttons]
+            next_action = [next_action_dict.get(key, False) for key in env.buttons]
 
             # Two player?
             #next_action.extend(next_action)
@@ -85,8 +90,8 @@ class RealTimeGame:
             self.render(*step)
 
             # Check custom button presses
-            self._done_request.update(next_action_dict.get("X") > 0.5)
-            self._save_state_request.update(next_action_dict.get("Z") > 0.5)
+            self._done_request.update(next_action_dict.get("X"))
+            self._save_state_request.update(next_action_dict.get("Z"))
 
             if self._save_state_request.state:
                 self._save_state(env)
