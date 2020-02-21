@@ -12,6 +12,8 @@ import pathlib
 from typing import Optional
 from crosscheck.player.rendering import SimpleImageViewer
 from crosscheck.practice.menu import MenuHandler
+from crosscheck.practice.minigame import Minigame
+from crosscheck.scorekeeper import string_to_class
 
 
 template = {
@@ -74,13 +76,15 @@ def main(argv):
                 for scenario in scenarios:
                     minigame = RealTimeGame(button_state, scenario, viewer, menu)
                     minigame.play()
-        else:
-            from crosscheck.practice.minigame import Minigame
-            from crosscheck.scorekeeper import string_to_class
-            menu = MenuHandler()
+        elif mode == 'minigame':
             minigame = Minigame('tst', scenarios[0], 10, string_to_class['score-only'],
                                 50, button_state, viewer, menu)
             minigame.play()
+        else:
+
+            minigame = RealTimeGame(button_state, scenario, viewer, menu)
+            minigame.play()
+
     finally:
         button_state.running = False
 

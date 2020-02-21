@@ -7,7 +7,7 @@ from crosscheck.practice.menu import MenuHandler
 from crosscheck.player.rendering import SimpleImageViewer
 from crosscheck.player.human import ButtonState
 from loguru import logger
-from crosscheck.db.human import add_play
+from crosscheck.db.human import add_round
 
 @dataclass
 class Minigame:
@@ -38,7 +38,7 @@ class Minigame:
             scorekeeper = self.scorekeeper_type()
             player = RealTimeGame(self.button_state, self.scenario, self.viewer, self.menu, scorekeeper, self.timeout, True)
             player.play()
-            add_play(str(self.scenario), scorekeeper.score > 0.5, player.button_presses)
+            add_round(str(self.scenario), scorekeeper.score > 0.5, player.button_presses)
             self.total_score += scorekeeper.score
             self.max_possible_score += scorekeeper.fitness_threshold()
             logger.info(f"Score {self.total_score}/{self.max_possible_score}")

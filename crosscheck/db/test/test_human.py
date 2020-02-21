@@ -1,6 +1,8 @@
-from ..human import encode, decode, add_play
+from ..human import encode, decode, add_round
 import pytest
 import pathlib
+import datetime
+from crosscheck import definitions
 
 @pytest.fixture(name="basic_controls")
 def _basic_controls():
@@ -48,10 +50,12 @@ def test_basic(basic_controls):
 def test_db_write(basic_controls, tmpdir):
     # Arrange
     db_filename = pathlib.Path(str(tmpdir / "tmp.db"))
+    sample_scenario = definitions.SAVE_STATE_FOLDER / 'foo' / 'my_scenario.state'
+    sample_time = datetime.datetime(year=2020, month=2, day=20, hour=21, minute=32, second=29)
 
     # Act
-    add_play('my_scenario', False, basic_controls, db_filename)
-    add_play('my_scenario', False, basic_controls, db_filename)
+    add_round(sample_scenario, False, basic_controls, sample_time, db_filename)
+    add_round(sample_scenario, False, basic_controls, sample_time, db_filename)
 
     # Assert
     # Success if it doesn't blow up

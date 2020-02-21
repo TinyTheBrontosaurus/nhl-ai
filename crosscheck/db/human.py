@@ -1,7 +1,10 @@
 from typing import List, Dict
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import (
     create_engine, MetaData, Table, Column, Integer,
-    String, Boolean, LargeBinary, DateTime
+    String, Boolean, LargeBinary, DateTime, ForeignKey
 )
 from crosscheck import definitions, version
 import datetime
@@ -32,11 +35,66 @@ def decode(encoded: bytes) -> List[Dict]:
     return controls
 
 
-def add_play(scenario: str, success: bool, controls: List[Dict], db_filename: pathlib.Path = None):
+Base = declarative_base()
+class HumanRound(Base):
+    __tablename__ = "human_round"
+    human_game_id = Column(Integer, primary_key=True)
+    scenario_filename = Column(String, ForeignKey('scenario.filename'))
+    version_git_version = Column(String, ForeignKey('version.git_version'))
+    game_time_start = Column(DateTime, ForeignKey('game_time.start'))
+    version = relationship('Version', backref='human_round')
+    success = Column(Boolean)
+    controls = Column(LargeBinary)
+    roundtime = Column(DateTime)
+
+class GameTime(Base):
+    __tablename__ = "game_time"
+    start = Column(DateTime, primary_key=True)
+
+class Version(Base):
+    __tablename__ = "version"
+    git_version = Column(String, primary_key=True)
+
+class Scenario(Base):
+    __tablename__ = "scenario"
+    filename = Column(String, primary_key=True)
+
+
+
+def add_round(scenario: pathlib.Path, success: bool, controls: List[Dict], gametime: datetime.datetime, db_filename: pathlib.Path = None):
 
     if db_filename is None:
         db_filename = definitions.DB_FILE
-    engine = create_engine(f'sqlite:///{str(db_filename.resolve())}', echo=True)
+    engine = create_engine(f'sqlite:///{str(db_filename.resolve())}')
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    scenario_rel = str(scenario.relative_to(definitions.SAVE_STATE_FOLDER))
+    sr = get_or_create(session, Scenario, filename=scenario_rel)
+    vr = get_or_create(session, Version, git_version=version.__version__)
+    gr = get_or_create(session, GameTime, start=gametime)
+
+    controls_bytes = encode(controls)
+    new_round = HumanRound(
+        scenario_filename=sr.filename,
+        version_git_version=vr.git_version,
+        game_time_start=gr.start,
+        success=success,
+        controls=controls_bytes,
+        roundtime=datetime.datetime.now()
+    )
+
+    session.add(new_round)
+    session.commit()
+
+
+def read_plays(db_filename: pathlib.Path = None):
+
+    if db_filename is None:
+        db_filename = definitions.DB_FILE
+
+    engine = create_engine(f'sqlite:///{str(db_filename.resolve())}')
     meta = MetaData()
 
     human_games = Table(
@@ -61,3 +119,15 @@ def add_play(scenario: str, success: bool, controls: List[Dict], db_filename: pa
 
     conn = engine.connect()
     _result = conn.execute(ins)
+
+
+# https://stackoverflow.com/a/6078058/5360912
+def get_or_create(session, model, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).first()
+    if instance:
+        return instance
+    else:
+        instance = model(**kwargs)
+        session.add(instance)
+        session.commit()
+        return instance
