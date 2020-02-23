@@ -82,7 +82,7 @@ def main(argv):
             minigame.play()
         else:
 
-            minigame = RealTimeGame(button_state, scenario, viewer, menu)
+            minigame = RealTimeGame(button_state, None, viewer, menu)
             minigame.play()
 
     finally:
