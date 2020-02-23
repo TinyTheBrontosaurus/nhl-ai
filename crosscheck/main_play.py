@@ -76,8 +76,13 @@ def main(argv):
                 for scenario in scenarios:
                     repeat = True
                     while repeat:
-                        minigame = RealTimeGame(button_state, scenario, viewer, menu)
+                        # Use minigame so it saves
+                        minigame = Minigame('tst', scenario, 1e5, string_to_class['score-only'],
+                                            1, button_state, viewer, menu)
                         minigame.play()
+
+                        # minigame = RealTimeGame(button_state, scenario, viewer, menu)
+                        # minigame.play()
                         repeat = not button_state.state.get("Y")
         elif mode == 'minigame':
             minigame = Minigame('tst', scenarios[0], 10, string_to_class['score-only'],
