@@ -90,7 +90,7 @@ class RealTimeGame:
             self.render(*step)
 
             # Check custom button presses
-            self._done_request.update(next_action_dict.get("X") or next_action_dict.get("Y "))
+            self._done_request.update(next_action_dict.get("X") or next_action_dict.get("Y"))
             self._save_state_request.update(next_action_dict.get("Z"))
 
             if self._save_state_request.state:
