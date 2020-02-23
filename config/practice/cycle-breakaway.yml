@@ -1,0 +1,19 @@
+name: play
+mode: cycle
+scenarios:
+  - save-state: 04-breakaways/2020-02-22T21_45_50.745999.state
+  - save-state: 04-breakaways/2020-02-22T21_46_33.119050.state
+  - save-state: 04-breakaways/2020-02-22T21_46_41.346947.state
+  - save-state: 04-breakaways/2020-02-22T21_47_26.451588.state
+  - save-state: 04-breakaways/2020-02-22T21_47_35.796789.state
+  - save-state: 04-breakaways/2020-02-22T21_48_05.029633.state
+  - save-state: 04-breakaways/2020-02-22T21_49_09.768586.state
+  - save-state: 04-breakaways/2020-02-22T21_51_40.798834.state
+  - save-state: 04-breakaways/2020-02-22T21_53_49.946733.state
+  - save-state: 04-breakaways/2020-02-22T21_56_45.662090.state
+  - save-state: 04-breakaways/2020-02-22T21_57_09.779835.state
+  - save-state: 04-breakaways/2020-02-22T21_58_09.480865.state
+  - save-state: 04-breakaways/2020-02-22T21_58_45.346391.state
+  - save-state: 04-breakaways/2020-02-22T21_59_10.729061.state
+  - save-state: 04-breakaways/2020-02-22T21_59_45.412496.state
+  - save-state: 04-breakaways/2020-02-22T21_59_59.228828.state
