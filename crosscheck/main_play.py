@@ -74,8 +74,11 @@ def main(argv):
         elif mode == 'cycle':
             while True:
                 for scenario in scenarios:
-                    minigame = RealTimeGame(button_state, scenario, viewer, menu)
-                    minigame.play()
+                    repeat = True
+                    while repeat:
+                        minigame = RealTimeGame(button_state, scenario, viewer, menu)
+                        minigame.play()
+                        repeat = not button_state.state.get("Y")
         elif mode == 'minigame':
             minigame = Minigame('tst', scenarios[0], 10, string_to_class['score-only'],
                                 50, button_state, viewer, menu)
