@@ -10,3 +10,7 @@
   file: 2020-02-19T21_15_05.013529.state
   timeout: 10
   type: score
+- name: Mogilny-CrossCrease
+  file: 2020-02-21T21_36_16.613312.state
+  timeout: 10
+  type: score
