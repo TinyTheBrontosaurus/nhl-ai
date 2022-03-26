@@ -13,13 +13,14 @@ from PIL import ImageDraw, Image
 from crosscheck.version import __version__
 from crosscheck.practice.menu import MenuHandler, Menu
 from crosscheck.scorekeeper import Scorekeeper
+from crosscheck.scorekeeper.shootout import Shootout
 from typing import Optional
 
 
 class RealTimeGame:
 
     def __init__(self, button_state: human.ButtonState, scenario: pathlib.Path,
-                 viewer: SimpleImageViewer, menu: MenuHandler, scorekeeper: Optional[Scorekeeper] = None,
+                 viewer: SimpleImageViewer, menu: MenuHandler, scorekeeper_cls: Optional[Scorekeeper] = None,
                  timeout: Optional[float] = None, save_buttons=False):
         self.button_state = button_state
         self.scenario = scenario
@@ -28,10 +29,13 @@ class RealTimeGame:
         self.viewer = viewer
         self.frame = 0
         self.menu = menu
-        self.scorekeeper = scorekeeper
+        self.scorekeeper_ctor = scorekeeper_cls
+        self.scorekeeper = scorekeeper_cls
         self.timeout_frames = timeout * 60 if timeout is not None else None
         self.button_presses = []
         self.save_buttons = save_buttons
+        from crosscheck.discretizers import Independent
+        self.discretizer = Independent
 
     @classmethod
     def _save_state(cls, env):
@@ -47,13 +51,50 @@ class RealTimeGame:
 
         self.menu.shape = ob.shape
 
-        if not self.menu.done:
+        new_ob = ob
+        if self.scorekeeper:
+            blank_frame = np.zeros(ob.shape, dtype=np.uint8)
+            img = Image.fromarray(blank_frame)
+            draw = ImageDraw.Draw(img)
+
+            sk = self.scorekeeper
+
+            to_draw = dict()
+            to_draw['version'] = __version__
+            to_draw.update(sk.stats)
+
+            score_vector = sk.score_vector
+            total = sum(score_vector.values())
+            score_breakdown = {"total": int(total)}
+
+            for key, value in score_vector.items():
+                try:
+                    pct = value / total * 100.
+                except ZeroDivisionError:
+                    pct = 0
+                score_breakdown[key] = "({pct:5,.1f}% {value:8,}".format(pct=pct, value=int(value))
+
+            to_draw.update(score_breakdown)
+
+            for offset, (key, value) in enumerate(to_draw.items()):
+                draw.text((0, 5 + 12 * offset), "{:15}: {}".format(key, value), fill='rgb(255, 255, 255)')
+
+            status_frame = np.array(img)
+
+            new_ob = np.concatenate((ob, status_frame), axis=1)
+
+        if False and not self.menu.done:
             new_ob = np.concatenate((ob, self.menu.ob), axis=1)
-            self.viewer.imshow(new_ob)
+
+        self.viewer.imshow(new_ob)
 
     def play(self):
 
         env = get_genv()
+
+        if self.discretizer is not None:
+            env = self.discretizer(env, [[None, x] for x in ['B', 'A', 'MODE', 'START', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'C', 'Y', 'X', 'Z']])
+
         env.use_restricted_actions = retro.Actions.ALL
         if self.scenario:
             env.load_state(str(self.scenario))
@@ -71,7 +112,7 @@ class RealTimeGame:
             # Save them all
             if self.save_buttons:
                 self.button_presses.append(next_action_dict)
-#            self.menu.tick(next_action_dict)
+            #self.menu.tick(next_action_dict)
 
             # Convert to buttons
             next_action = [next_action_dict.get(key, False) for key in env.buttons]
@@ -84,7 +125,7 @@ class RealTimeGame:
             info = step[3]
             if self.scorekeeper:
                 self.scorekeeper.info = info
-                self.scorekeeper.buttons_pressed = next_action
+                self.scorekeeper.buttons_pressed = env.action_labels(next_action)
                 self.scorekeeper.tick()
 
             self.render(*step)
@@ -103,5 +144,4 @@ class RealTimeGame:
     def done(self) -> bool:
         return any([self._done_request.state,
                     self.menu.done,
-                    self.scorekeeper.done if self.scorekeeper else False,
                     self.frame > self.timeout_frames if self.timeout_frames is not None else False])

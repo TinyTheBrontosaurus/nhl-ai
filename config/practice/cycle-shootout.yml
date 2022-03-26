@@ -1,0 +1,7 @@
+name: play
+mode: cycle
+scenarios:
+  - save-state: Shootout-Shooter-1p-1.state
+  - save-state: Shootout-Shooter-1p-2.state
+  - save-state: Shootout-Shooter-1p-3.state
+  - save-state: Shootout-Shooter-1p-4.state

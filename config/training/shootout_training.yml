@@ -18,7 +18,7 @@ input:
   controller-discretizer: 2-button-bc
   feature-vector: players_and_puck
   load-checkpoint:
-    latest: true
+    latest: false
     specific-filename: null
   neat-config:
     NEAT:
