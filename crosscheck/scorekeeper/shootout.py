@@ -78,7 +78,7 @@ class Shootout(Scorekeeper):
         distance_multiplier = max(InfoWrapper.AWAY_GOAL_Y - delta_puck_net_y, 0)
 
         if self._accumulator.wrapper.player_w_puck.get('team') == 'home':
-            juke_this_frame = self._accumulator.wrapper.puck_adjusted_away_goalie_x * distance_multiplier
+            juke_this_frame = self._accumulator.wrapper.delta_puck_away_goalie_x * distance_multiplier * 0.001
         else:
             juke_this_frame = 0
         # Theoretical max of accumulator is 60s * 60frames * 50 x-pixels * 250 y-pixels == 45M
@@ -93,7 +93,7 @@ class Shootout(Scorekeeper):
         # (F) Give several points for a shot
         score_vector['Press C'] = 1e4 if self._c_ever_pressed else 0
         # Give points for holding a shot, but with a time limit
-        score_vector['Held C'] = 1e3 * min(self._c_held_for_frames, 2*60)
+        score_vector['Held C'] = 1e1 * min(self._c_held_for_frames, 2*60)
         score_vector['Shot'] = 1e4 if self._c_ever_released else 0
 
         # (H) Total max: 500k (to leave room for F and G)

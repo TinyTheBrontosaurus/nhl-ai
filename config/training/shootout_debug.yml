@@ -18,4 +18,4 @@ movie:
   enabled: generations
   stoppage-time-s: 3.0
 render-live: False
-nproc: null
+nproc: 1
