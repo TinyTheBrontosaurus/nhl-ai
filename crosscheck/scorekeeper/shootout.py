@@ -24,7 +24,7 @@ class Shootout(Scorekeeper):
         self._accumulator.accumulate()
 
         # End when play stops. shootout itself ends after 25s
-        self._done_reasons['shoot_stopped'] = self.info['shootout-stoppage'] and True
+        self._done_reasons['shoot_stopped'] = self.info['shootout-stoppage'] > 0
 
 
         # Rewards structure
@@ -94,6 +94,7 @@ class Shootout(Scorekeeper):
 
         # Stats to track
         self._stats = {
+            'shootout-stopped': "{}".format(self.info['shootout-stoppage']),
             'time_w_puck': ", ".join(["{} {:.1f}s".format(team, time) for team, time in self._accumulator.time_puck.items()]),
             'buttons': self._pressed,
         }

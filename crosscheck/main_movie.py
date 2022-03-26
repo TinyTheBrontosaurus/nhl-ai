@@ -79,7 +79,8 @@ def replay(folder: pathlib.Path):
             }
 
             replayer = Replayer(scenario, combiner, feature_vector,
-                                str(folder / "neat_config.ini"), discretizer)
+                                str(folder / "neat_config.ini"), discretizer,
+                                stoppage_time_s=cc_config['movie']['stoppage-time-s'].get())
             replayer.listeners.append(functools.partial(add_frame, movie, metadata))
 
             with tqdm.tqdm(smoothing=0, unit='generation', total=len(generation_files)) as progress_bar:
