@@ -59,6 +59,7 @@ def replay(folder: pathlib.Path):
     feature_vector = main_train.load_feature_vector(cc_config['input']['feature-vector'].get())
     scenarios = main_train.load_scenarios(cc_config['input']['scenarios'])
     combiner = main_train.load_metascorekeeper(cc_config['input']['metascorekeeper'].get())
+    timestamp = folder.name
     for scenario in scenarios:
 
         # Create the movie
@@ -73,7 +74,7 @@ def replay(folder: pathlib.Path):
                                 if x.stem.startswith('generation-')])  # type: List[pathlib.Path]
 
             metadata = {
-                "timestamp": None,
+                "timestamp": timestamp,
                 "scenario": scenario,
             }
 
