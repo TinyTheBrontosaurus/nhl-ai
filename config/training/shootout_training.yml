@@ -17,7 +17,9 @@ input:
   metascorekeeper: nudged-median
   controller-discretizer: 2-button-bc
   feature-vector: players_and_puck
-  load-checkpoint: null
+  load-checkpoint:
+    latest: true
+    specific-filename: null
   neat-config:
     NEAT:
       pop_size: 250

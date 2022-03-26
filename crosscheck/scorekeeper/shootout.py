@@ -94,7 +94,7 @@ class Shootout(Scorekeeper):
         score_vector['Press C'] = 1e4 if self._c_ever_pressed else 0
         # Give points for holding a shot, but with a time limit
         score_vector['Held C'] = 1e1 * min(self._c_held_for_frames, 2*60)
-        score_vector['Shot'] = 1e4 if self._c_ever_released else 0
+        score_vector['Shot'] = 1e3 * juke_this_frame if self._c_ever_released else 0
 
         # (H) Total max: 500k (to leave room for F and G)
         score_vector['home-goals'] = self.info['home-goals'] * 5e5
