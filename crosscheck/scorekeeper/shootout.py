@@ -80,12 +80,12 @@ class Shootout(Scorekeeper):
         # to avoid behind-the-net grinding
         delta_puck_net_y = self._accumulator.wrapper.delta_puck_away_net_y
         if delta_puck_net_y <= 2:
-            delta_puck_net_y = 225
+            delta_puck_net_y = InfoWrapper.AWAY_GOAL_Y
         # No reward past the goal line
         distance_multiplier = max(InfoWrapper.AWAY_GOAL_Y - delta_puck_net_y, 0)
 
         if self._accumulator.wrapper.player_w_puck.get('team') == 'home':
-            juke_this_frame = self._accumulator.wrapper.delta_puck_away_goalie_x * distance_multiplier * 0.001
+            juke_this_frame = self._accumulator.wrapper.delta_puck_away_goalie_x * distance_multiplier
         else:
             juke_this_frame = 0
         # Theoretical max of accumulator is 60s * 60frames * 50 x-pixels * 250 y-pixels == 45M
@@ -103,7 +103,7 @@ class Shootout(Scorekeeper):
         # Give points for holding a shot, but with a time limit
         score_vector['Held C'] = 1e1 * min(self._c_held_for_frames, 2*60)
         if shot_this_frame:
-            self._shot_score = 1e3 * juke_this_frame
+            self._shot_score = juke_this_frame * 10
         score_vector['Shot'] = self._shot_score
 
         # (H) Total max: 500k (to leave room for F and G)
