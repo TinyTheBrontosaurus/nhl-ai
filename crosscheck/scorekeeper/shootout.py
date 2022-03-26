@@ -17,6 +17,7 @@ class Shootout(Scorekeeper):
         self._c_ever_released = False
         self._c_held_for_frames = 0
 
+        self._shot_score = 0
 
     def _tick(self) -> float:
         """
@@ -32,15 +33,21 @@ class Shootout(Scorekeeper):
         self._done_reasons['shoot_stopped'] = self.info['shootout-stoppage'] > 0
 
         # Check if haven't shot yet
+        shot_this_frame = False
+
         if not self._c_ever_released:
             if 'C' in self.buttons_pressed:
                 self._c_held_for_frames += 1
                 self._c_ever_pressed = True
+                # After holding it for a short time, it automatically shoots
+                if self._c_held_for_frames > 30:
+                    self._c_ever_released = True
+                    shot_this_frame = True
             else:
                 if self._c_ever_pressed:
                     # That's a shot
                     self._c_ever_released = True
-
+                    shot_this_frame = True
 
         # Rewards structure
         # The intent it to reward gradually in the following order:
@@ -89,12 +96,15 @@ class Shootout(Scorekeeper):
         # Reward all jukes
         score_vector['juke'] = self._juke_accumulator * 0.05
 
+
         # TODO (F and G) both required a shot detector
         # (F) Give several points for a shot
         score_vector['Press C'] = 1e4 if self._c_ever_pressed else 0
         # Give points for holding a shot, but with a time limit
         score_vector['Held C'] = 1e1 * min(self._c_held_for_frames, 2*60)
-        score_vector['Shot'] = 1e3 * juke_this_frame if self._c_ever_released else 0
+        if shot_this_frame:
+            self._shot_score = 1e3 * juke_this_frame
+        score_vector['Shot'] = self._shot_score
 
         # (H) Total max: 500k (to leave room for F and G)
         score_vector['home-goals'] = self.info['home-goals'] * 5e5
