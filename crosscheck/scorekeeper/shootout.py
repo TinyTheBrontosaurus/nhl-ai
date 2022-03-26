@@ -13,6 +13,11 @@ class Shootout(Scorekeeper):
 
         self._juke_accumulator = 0
 
+        self._c_ever_pressed = False
+        self._c_ever_released = False
+        self._c_held_for_frames = 0
+
+
     def _tick(self) -> float:
         """
         Incorporate the latest frame into the total score
@@ -25,6 +30,16 @@ class Shootout(Scorekeeper):
 
         # End when play stops. shootout itself ends after 25s
         self._done_reasons['shoot_stopped'] = self.info['shootout-stoppage'] > 0
+
+        # Check if haven't shot yet
+        if not self._c_ever_released:
+            if 'C' in self.buttons_pressed:
+                self._c_held_for_frames += 1
+                self._c_ever_pressed = True
+            else:
+                if self._c_ever_pressed:
+                    # That's a shot
+                    self._c_ever_released = True
 
 
         # Rewards structure
@@ -59,11 +74,11 @@ class Shootout(Scorekeeper):
         delta_puck_net_y = self._accumulator.wrapper.delta_puck_away_net_y
         if delta_puck_net_y <= 2:
             delta_puck_net_y = 225
-        # No reward past the red line
+        # No reward past the goal line
         distance_multiplier = max(InfoWrapper.AWAY_GOAL_Y - delta_puck_net_y, 0)
 
         if self._accumulator.wrapper.player_w_puck.get('team') == 'home':
-            juke_this_frame = self._accumulator.wrapper.delta_puck_away_goalie_x * distance_multiplier
+            juke_this_frame = self._accumulator.wrapper.puck_adjusted_away_goalie_x * distance_multiplier
         else:
             juke_this_frame = 0
         # Theoretical max of accumulator is 60s * 60frames * 50 x-pixels * 250 y-pixels == 45M
@@ -75,6 +90,11 @@ class Shootout(Scorekeeper):
         score_vector['juke'] = self._juke_accumulator * 0.05
 
         # TODO (F and G) both required a shot detector
+        # (F) Give several points for a shot
+        score_vector['Press C'] = 1e4 if self._c_ever_pressed else 0
+        # Give points for holding a shot, but with a time limit
+        score_vector['Held C'] = 1e3 * min(self._c_held_for_frames, 2*60)
+        score_vector['Shot'] = 1e4 if self._c_ever_released else 0
 
         # (H) Total max: 500k (to leave room for F and G)
         score_vector['home-goals'] = self.info['home-goals'] * 5e5
