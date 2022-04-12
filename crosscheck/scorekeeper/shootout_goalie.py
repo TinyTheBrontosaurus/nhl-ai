@@ -31,7 +31,7 @@ class ShootoutGoalie(Scorekeeper):
 
         self._score_vector = {}
         score_vector = self._score_vector
-        score_vector['away-goals'] = (1-self.info['away-goals']) * 1e4
+        score_vector['away-goals'] = int((1-self.info['away-goals']) * 1e4)
 
         score = sum(score_vector.values())
 
