@@ -1,0 +1,30 @@
+name: shootout-training
+mode: train
+input:
+  scenarios:
+    - name: ShootoutShooter1
+      save-state: Shootout-Shooter-1p-1.state
+      scorekeeper: shootout-shooter
+    - name: ShootoutShooter2
+      save-state: Shootout-Shooter-1p-2.state
+      scorekeeper: shootout-shooter
+    - name: ShootoutShooter3
+      save-state: Shootout-Shooter-1p-3.state
+      scorekeeper: shootout-shooter
+    - name: ShootoutShooter4
+      save-state: Shootout-Shooter-1p-4.state
+      scorekeeper: shootout-shooter
+  metascorekeeper: nudged-median
+  controller-discretizer: 2-button-bc
+  feature-vector: players_and_puck
+  load-checkpoint:
+    latest: false
+    specific-filename: null
+  neat-config:
+    NEAT:
+      pop_size: 250
+movie:
+  enabled: generations
+  stoppage-time-s: 3.0
+render-live: False
+nproc: null

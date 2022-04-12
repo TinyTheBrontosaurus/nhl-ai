@@ -4,6 +4,7 @@ class Scorekeeper:
 
     def __init__(self):
         self._done_reasons = {}
+        self._ever_done = False
         self.info: dict = {}
         self._score = 0
         self._score_vector = {}
@@ -29,7 +30,11 @@ class Scorekeeper:
         """
         :return: True if the scorekeeper considers the scenario complete
         """
-        return any(self._done_reasons.values())
+        # Check if done this time
+        is_done = any(self._done_reasons.values())
+        # Latch the done signal to yes
+        self._ever_done = is_done or self._ever_done
+        return self._ever_done
 
     def done_reasons(self) -> dict:
         """

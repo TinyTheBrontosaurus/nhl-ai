@@ -59,6 +59,7 @@ def replay(folder: pathlib.Path):
     feature_vector = main_train.load_feature_vector(cc_config['input']['feature-vector'].get())
     scenarios = main_train.load_scenarios(cc_config['input']['scenarios'])
     combiner = main_train.load_metascorekeeper(cc_config['input']['metascorekeeper'].get())
+    timestamp = folder.name
     for scenario in scenarios:
 
         # Create the movie
@@ -73,12 +74,13 @@ def replay(folder: pathlib.Path):
                                 if x.stem.startswith('generation-')])  # type: List[pathlib.Path]
 
             metadata = {
-                "timestamp": None,
+                "timestamp": timestamp,
                 "scenario": scenario,
             }
 
             replayer = Replayer(scenario, combiner, feature_vector,
-                                str(folder / "neat_config.ini"), discretizer)
+                                str(folder / "neat_config.ini"), discretizer,
+                                stoppage_time_s=cc_config['movie']['stoppage-time-s'].get())
             replayer.listeners.append(functools.partial(add_frame, movie, metadata))
 
             with tqdm.tqdm(smoothing=0, unit='generation', total=len(generation_files)) as progress_bar:

@@ -16,13 +16,15 @@ class Replayer:
                  metascorekeeper: Type[Metascorekeeper],
                  feature_vector: Callable[[dict], List[float]],
                  neat_settings_file: str,
-                 discretizer: Type[discretizers.Independent] = None):
+                 discretizer: Type[discretizers.Independent] = None,
+                 stoppage_time_s=5):
         self.scenario = scenario
         self.listeners = []
         self.metascorekeeper = metascorekeeper
         self.feature_vector = feature_vector
         self.neat_settings_file = neat_settings_file
         self.discretizer = discretizer
+        self.stoppage_frames = stoppage_time_s * 50
 
     def replay(self, genome: neat.DefaultGenome):
         # Create neat config
@@ -59,7 +61,7 @@ class Replayer:
 
         frames_since_done = 0
         total_frames = 0
-        stoppage_frames = 60 * 5
+        stoppage_frames = self.stoppage_frames
 
         while not scorekeeper.done or frames_since_done < stoppage_frames:
 
