@@ -2,7 +2,7 @@ import typing
 from .base import Scorekeeper
 from ..info_utils.wrapper import InfoAccumulator, InfoWrapper
 
-class Shootout(Scorekeeper):
+class ShootoutShooter(Scorekeeper):
 
     def __init__(self):
         super().__init__()
@@ -128,34 +128,6 @@ class Shootout(Scorekeeper):
             'time_w_puck': ", ".join(["{} {:.1f}s".format(team, time) for team, time in self._accumulator.time_puck.items()]),
             'buttons': self._pressed,
         }
-
-        return score
-
-
-        if info['home-goals']:
-            score += 100000
-            # Try to solve as quickly as possible
-            score += info['time-shootout'] * 1000
-
-        # Stop early once stoppage occurs
-        if info['shootout-stoppage']:
-            if self.short_circuit:
-                self._done = True
-            self._pending_stoppage = True
-        elif self._pending_stoppage:
-            self._done = True
-
-        features = [
-            shooter_x,
-            shooter_y,
-            goalie_x,
-            goalie_y,
-            puck_x,
-            puck_y
-        ]
-        self._next_action = self.net.activate(features)
-
-        self._stats = {"score": score}
 
         return score
 

@@ -13,7 +13,6 @@ from PIL import ImageDraw, Image
 from crosscheck.version import __version__
 from crosscheck.practice.menu import MenuHandler, Menu
 from crosscheck.scorekeeper import Scorekeeper
-from crosscheck.scorekeeper.shootout import Shootout
 from typing import Optional
 
 
