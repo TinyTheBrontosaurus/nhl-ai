@@ -33,8 +33,7 @@ class RealTimeGame:
         self.timeout_frames = timeout * 60 if timeout is not None else None
         self.button_presses = []
         self.save_buttons = save_buttons
-        from crosscheck.discretizers import Independent
-        self.discretizer = Independent
+        self.discretizer = None
 
     @classmethod
     def _save_state(cls, env):
@@ -124,7 +123,7 @@ class RealTimeGame:
             info = step[3]
             if self.scorekeeper:
                 self.scorekeeper.info = info
-                self.scorekeeper.buttons_pressed = env.action_labels(next_action)
+                self.scorekeeper.buttons_pressed = next_action
                 self.scorekeeper.tick()
 
             self.render(*step)
