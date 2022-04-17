@@ -105,6 +105,25 @@ class RealTimeGame:
 
         env.players = 2
         toggle_2p = False
+
+        # CLEANUP: Load the model
+        import pickle
+        with open(definitions.MODEL_ROOT / "FullGame-2020-02-02_16-42-2145.pkl", mode='rb') as f:
+            genome = pickle.load(f)
+        config_filename = str(definitions.MODEL_ROOT / "FullGame-2020-02-02_16-42-2145.ini")
+        # Setup Neat
+        import neat
+        neat_config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                                  neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                                  config_filename)
+        net = neat.nn.recurrent.RecurrentNetwork.create(genome, neat_config)
+        from crosscheck import main_train
+        feature_vector = main_train.feature_vector_string_to_class["players_and_puck"]
+        ###
+        next_action_2p_ai_ready = False
+        next_action_2p_ai = (0,)
+        discretizer = main_train.load_discretizer('2-button-bc')(env)
+
         while not self.done:
             # Run the next step in the simulation
             with self.button_state.lock:
@@ -121,14 +140,21 @@ class RealTimeGame:
             # Two player
             mt = [False for _ in next_action]
             next_action_2p = next_action + mt
-            if toggle_2p:
+            if toggle_2p and next_action_2p_ai_ready:
                 # Echo the 1p movement as 2p
-                next_action_2p = next_action + next_action
+                next_action_2p = next_action + next_action_2p_ai_labels
 
 
             step = env.step(next_action_2p)
 
             info = step[3]
+
+            # AI's next step
+            next_action_2p_ai_nums = net.activate(feature_vector(info))
+            next_action_2p_ai_labels = discretizer.action(next_action_2p_ai_nums)
+            labels = discretizer.action_labels(next_action_2p_ai_nums)
+            next_action_2p_ai_ready = True
+
             if self.scorekeeper:
                 self.scorekeeper.info = info
                 self.scorekeeper.buttons_pressed = next_action
