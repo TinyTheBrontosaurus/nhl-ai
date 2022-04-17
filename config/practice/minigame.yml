@@ -2,3 +2,4 @@ name: play
 mode: minigame
 scenarios:
   - save-state: 01/02-MogilnyOwnZone.state
+scorekeeper: "score-only"

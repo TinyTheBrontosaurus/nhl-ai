@@ -17,3 +17,4 @@ scenarios:
   - save-state: 04-breakaways/2020-02-22T21_59_10.729061.state
   - save-state: 04-breakaways/2020-02-22T21_59_45.412496.state
   - save-state: 04-breakaways/2020-02-22T21_59_59.228828.state
+scorekeeper: score-only

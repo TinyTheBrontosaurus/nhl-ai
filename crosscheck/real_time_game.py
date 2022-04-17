@@ -13,16 +13,18 @@ from PIL import ImageDraw, Image
 from crosscheck.version import __version__
 from crosscheck.practice.menu import MenuHandler, Menu
 from crosscheck.scorekeeper import Scorekeeper
-from typing import Optional
+from typing import Optional, Callable
 from crosscheck.player.utils import RisingEdge
 from crosscheck.player import ai as player_ai
 
 
 class RealTimeGame:
 
-    def __init__(self, button_state: human.ButtonState, scenario: pathlib.Path,
-                 viewer: SimpleImageViewer, menu: MenuHandler, scorekeeper_cls: Optional[Scorekeeper] = None,
-                 timeout: Optional[float] = None, save_buttons=False):
+    def __init__(self, button_state: human.ButtonState, scenario: Optional[pathlib.Path],
+                 viewer: SimpleImageViewer, menu: MenuHandler,
+                 scorekeeper_cls: Optional[Callable[[], Scorekeeper]] = None,
+                 timeout: Optional[float] = None, save_buttons=False,
+                 exit_on_y=False):
         self.button_state = button_state
         self.scenario = scenario
         self._save_state_request = RisingEdge()
@@ -31,11 +33,12 @@ class RealTimeGame:
         self.frame = 0
         self.menu = menu
         self.scorekeeper_ctor = scorekeeper_cls
-        self.scorekeeper = scorekeeper_cls
+        self.scorekeeper = self.scorekeeper_ctor()
         self.timeout_frames = timeout * 60 if timeout is not None else None
         self.button_presses = []
         self.save_buttons = save_buttons
         self.discretizer = None
+        self.exit_on_y = exit_on_y
 
     @classmethod
     def _save_state(cls, env):
@@ -142,7 +145,7 @@ class RealTimeGame:
 
             if self.scorekeeper:
                 self.scorekeeper.info = info
-                self.scorekeeper.buttons_pressed = next_action
+                self.scorekeeper.buttons_pressed = next_action_dict
                 self.scorekeeper.tick()
 
             self.render(*step)
@@ -152,7 +155,7 @@ class RealTimeGame:
             if press_2p.state:
                 enabled_2p = not enabled_2p
                 logger.info("2P AI {value}abled", value="en" if enabled_2p else "dis")
-            self._done_request.update(next_action_dict.get("X"))
+            self._done_request.update(next_action_dict.get("X") or (self.exit_on_y and next_action_dict.get("Y")))
             self._save_state_request.update(next_action_dict.get("Z"))
 
             if self._save_state_request.state:

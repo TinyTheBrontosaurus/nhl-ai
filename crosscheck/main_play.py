@@ -13,7 +13,7 @@ from typing import Optional
 from crosscheck.player.rendering import SimpleImageViewer
 from crosscheck.practice.menu import MenuHandler
 from crosscheck.practice.minigame import Minigame
-from crosscheck.scorekeeper import string_to_class
+from crosscheck.main_train import load_scorekeeper
 
 
 template = {
@@ -31,7 +31,7 @@ template = {
         # The filename of a scenario (save state) from which to start play
         'save-state': [str, None],
     }),
-    #'scorekeeper': [str, None],
+    'scorekeeper': [str, None],
 }
 
 
@@ -64,6 +64,8 @@ def main(argv):
     button_thread = threading.Thread(target=human.maintain_button_state, args=(button_state,))
     button_thread.start()
 
+    scorekeeper_class = load_scorekeeper(cc_config['scorekeeper'].get()) if cc_config['scorekeeper'].get() else None
+
     try:
         viewer = SimpleImageViewer(initial_scale=3.5)
         menu = MenuHandler()
@@ -78,7 +80,7 @@ def main(argv):
                     repeat = True
                     while repeat:
                         # Use minigame so it saves
-                        minigame = Minigame('tst', scenario, 1e5, string_to_class['shootout-shooter'],
+                        minigame = Minigame('tst', scenario, 1e5, scorekeeper_class,
                                             1, button_state, viewer, menu,)
                         minigame.play()
 
@@ -86,12 +88,12 @@ def main(argv):
                         # minigame.play()
                         repeat = not button_state.state.get("Y")
         elif mode == 'minigame':
-            minigame = Minigame('tst', scenarios[0], 10, string_to_class['score-only'],
+            minigame = Minigame('tst', scenarios[0], 10, load_scorekeeper('score-only'),
                                 50, button_state, viewer, menu)
             minigame.play()
         else:
 
-            minigame = RealTimeGame(button_state, None, viewer, menu)
+            minigame = RealTimeGame(button_state, None, viewer, menu, scorekeeper_cls=scorekeeper_class)
             minigame.play()
 
     finally:

@@ -39,7 +39,8 @@ class Minigame:
         gametime = datetime.datetime.now()
         for attempt in range(self.iterations):
             scorekeeper = self.scorekeeper_type()
-            player = RealTimeGame(self.button_state, self.scenario, self.viewer, self.menu, scorekeeper, self.timeout, True)
+            player = RealTimeGame(self.button_state, self.scenario, self.viewer, self.menu, scorekeeper, self.timeout,
+                                  True, exit_on_y=True)
             player.play()
             add_round(self.scenario, scorekeeper.score > 0.5, player.button_presses, gametime=gametime)
             self.total_score += scorekeeper.score

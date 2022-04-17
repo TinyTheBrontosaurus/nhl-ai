@@ -2,3 +2,4 @@ name: play
 mode: full-game
 scenarios:
   - save-state:
+scorekeeper: shootout-shooter
