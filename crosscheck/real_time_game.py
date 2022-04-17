@@ -145,7 +145,7 @@ class RealTimeGame:
 
             if self.scorekeeper:
                 self.scorekeeper.info = info
-                self.scorekeeper.buttons_pressed = next_action_dict
+                self.scorekeeper.buttons_pressed = [button for button, state in next_action_dict.items() if state]
                 self.scorekeeper.tick()
 
             self.render(*step)

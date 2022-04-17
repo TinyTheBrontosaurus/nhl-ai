@@ -1,7 +1,7 @@
 import gym
 import typing
 import math
-import abc
+
 
 
 class Independent(gym.ActionWrapper):
@@ -38,7 +38,10 @@ class Independent(gym.ActionWrapper):
 
         return buttons_pressed
 
-    def action_labels(self, a: typing.List[float]):
+    def action_labels(self, a: typing.List[float]) -> typing.List[str]:
+        """
+        A list of buttons pressed
+        """
         return [button for button, pressed in zip(self.buttons, self.action(a)) if pressed]
 
     @classmethod

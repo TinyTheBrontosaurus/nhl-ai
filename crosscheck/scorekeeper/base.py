@@ -1,4 +1,5 @@
 import abc
+import typing
 
 class Scorekeeper:
 
@@ -9,7 +10,7 @@ class Scorekeeper:
         self._score = 0
         self._score_vector = {}
         self._stats = {}
-        self.buttons_pressed: dict = {}
+        self.buttons_pressed: typing.List[str] = []
 
         # For compatibility with genome stats puller
         self._scorekeepers = []
