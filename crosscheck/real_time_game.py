@@ -118,11 +118,11 @@ class RealTimeGame:
             # Convert to buttons
             next_action = [next_action_dict.get(key, False) for key in env.buttons]
 
-            # Two player?
-            #next_action.extend(next_action)
+            # Two player
             mt = [False for _ in next_action]
             next_action_2p = next_action + mt
             if toggle_2p:
+                # Echo the 1p movement as 2p
                 next_action_2p = next_action + next_action
 
 
