@@ -23,7 +23,12 @@ class Independent(gym.ActionWrapper):
         self._independent_buttons = independent_buttons
         self._all_false = (False,) * len(self.buttons)
 
-    def action(self, a: typing.List[float]) -> list:
+    def action(self, a: typing.List[float]) -> typing.List[bool]:
+        """
+        Convert a NN output to an env-ordered T/F list of which buttons were pressed
+        :param a: NN output
+        :return: T/F list of which buttons were pressed. ordered by env expectations
+        """
         if len(a) != len(self._independent_buttons):
             raise ValueError("Have {} outputs, expected {} outputs".format(len(a), len(self._independent_buttons)))
         buttons_pressed = list(self._all_false)

@@ -28,7 +28,7 @@ Human training
 Rando
 -----
 [ ] Fix GitHub warnings
-[ ] Clean up minigame scorekeeper selection (bunch is hardcoded)
+[x] Clean up minigame scorekeeper selection (bunch is hardcoded)
 [ ] Clean up auto-selection of "last log" (hardcoded "last" directory; needs a breadcrumb)
 [ ] Fix fitness totals showed in tqdm
 [ ] Display stats for how many frames, seconds (minutes, hours), and how many sims were run. for fun
@@ -40,7 +40,7 @@ Little AI plans
 ---------------
 [ ] Adversarial experiments
 [ ] Play AIs against each other (one training, one frozen)
-[ ] Auto retrain AIs adversarially (one training, on frozen, then flip)
+[ ] Auto retrain AIs adversarially (one training, one frozen, then flip)
 [ ] Transfer learning of from a base model. easy selection
 [ ] Train a goalie. train a shooter. then use them as genomes towards a full shootout train
 

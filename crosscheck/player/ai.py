@@ -7,7 +7,7 @@ from crosscheck import main_train
 
 class AiPlayer:
     """
-    Represents an AI player
+    Represents an AI player. Takes in game state and recommends button pressed
     """
 
     def __init__(self,
@@ -30,15 +30,21 @@ class AiPlayer:
         self._discretizer = main_train.load_discretizer(discretizer_name)(env)
         self._next_action = []
 
-    def step(self, info):
+    def step(self, info) -> typing.List[bool]:
+        """
+        Run an interation of the AI, passing in state and getting controller inputs out
+        :param info: env indicating what the state of the sim is
+        :return: controller button pressed
+        """
         next_action_2p_ai_nums = self._net.activate(self._feature_vector(info))
         self._next_action = self._discretizer.action(next_action_2p_ai_nums)
         # Swap up/down
         self.swap_up_down(self._next_action)
         self._first = False
+        return self.next_action
 
     @classmethod
-    def swap_up_down(cls, next_action):
+    def swap_up_down(cls, next_action: typing.List[bool]) -> typing.List[bool]:
         """
         Swap the up and down buttons. Presumably for when shoot twice direction is swapped
         :param next_action: Modifies directly
@@ -50,7 +56,10 @@ class AiPlayer:
         return next_action
 
     @property
-    def next_action(self) -> typing.List:
+    def next_action(self) -> typing.List[bool]:
+        """
+        Return the buttons to be pressed
+        """
         if self._first:
             # No button pressed if no inputs
             return [False for _ in range(self._discretizer.env.num_buttons)]
