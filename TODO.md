@@ -8,6 +8,7 @@ Adversarial
 -----------
 [ ] Implement multiple contollers
 [ ] Flip controls for shoot twice side
+[ ] Flip inputs for shoot twice side
 
 
 Replays
@@ -18,8 +19,9 @@ Replays
 
 Human training
 --------------
-[ ] Enable models to play against human
-[ ] Easy on/off button for AI (so it doesn't mess with menus)
+[x] Enable models to play against human
+[x] Easy on/off button for AI (so it doesn't mess with menus)
+[ ] Develop "easier" way to select an AI (hardcoded now)
 
 
 Rando

@@ -118,7 +118,7 @@ class RealTimeGame:
                                   config_filename)
         net = neat.nn.recurrent.RecurrentNetwork.create(genome, neat_config)
         from crosscheck import main_train
-        feature_vector = main_train.feature_vector_string_to_class["players_and_puck"]
+        feature_vector = main_train.load_feature_vector("players_and_puck_defend_up")
         ###
         next_action_2p_ai_ready = False
         next_action_2p_ai = (0,)
@@ -152,6 +152,10 @@ class RealTimeGame:
             # AI's next step
             next_action_2p_ai_nums = net.activate(feature_vector(info))
             next_action_2p_ai_labels = discretizer.action(next_action_2p_ai_nums)
+            # Swap up/down
+            tmp = next_action_2p_ai_labels[4]
+            next_action_2p_ai_labels[4] = next_action_2p_ai_labels[5]
+            next_action_2p_ai_labels[5] = tmp
             labels = discretizer.action_labels(next_action_2p_ai_nums)
             next_action_2p_ai_ready = True
 
