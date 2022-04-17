@@ -15,6 +15,7 @@ from crosscheck.practice.menu import MenuHandler, Menu
 from crosscheck.scorekeeper import Scorekeeper
 from typing import Optional
 from crosscheck.player.utils import RisingEdge
+from crosscheck.player import ai as player_ai
 
 
 class RealTimeGame:
@@ -88,41 +89,30 @@ class RealTimeGame:
         self.viewer.imshow(new_ob)
 
     def play(self):
+        """
+        Loop to play the game nominally. Uses a physical controller as 1p and optionally an AI as 2p
+        """
 
         env = get_genv()
 
         if self.discretizer is not None:
             env = self.discretizer(env, [[None, x] for x in ['B', 'A', 'MODE', 'START', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'C', 'Y', 'X', 'Z']])
 
+        # Load the start state, if there is one
         env.use_restricted_actions = retro.Actions.ALL
         if self.scenario:
             env.load_state(str(self.scenario))
         env.reset()
+        env.players = 2
 
+        # Maintain framerate since there is a human playing
         rate_controller = RateController(1/60)
 
+        # Keep track of IO for enabling/disabling AI for 2p.
         press_2p = RisingEdge()
-
-        env.players = 2
-        toggle_2p = False
-
-        # CLEANUP: Load the model
-        import pickle
-        with open(definitions.MODEL_ROOT / "FullGame-2020-02-02_16-42-2145.pkl", mode='rb') as f:
-            genome = pickle.load(f)
-        config_filename = str(definitions.MODEL_ROOT / "FullGame-2020-02-02_16-42-2145.ini")
-        # Setup Neat
-        import neat
-        neat_config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                                  neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                                  config_filename)
-        net = neat.nn.recurrent.RecurrentNetwork.create(genome, neat_config)
-        from crosscheck import main_train
-        feature_vector = main_train.load_feature_vector("players_and_puck_defend_up")
-        ###
-        next_action_2p_ai_ready = False
-        next_action_2p_ai = (0,)
-        discretizer = main_train.load_discretizer('2-button-bc')(env)
+        enabled_2p = False
+        ai_player = player_ai.AiPlayer(env)
+        next_action_2p_disabled = [False for _ in range(env.num_buttons)]
 
         while not self.done:
             # Run the next step in the simulation
@@ -138,25 +128,17 @@ class RealTimeGame:
             next_action = [next_action_dict.get(key, False) for key in env.buttons]
 
             # Two player
-            mt = [False for _ in next_action]
-            next_action_2p = next_action + mt
-            if toggle_2p and next_action_2p_ai_ready:
-                # Echo the 1p movement as 2p
-                next_action_2p = next_action + next_action_2p_ai_labels
-
+            if enabled_2p:
+                next_action_2p = next_action + ai_player.next_action
+            else:
+                next_action_2p = next_action + next_action_2p_disabled
 
             step = env.step(next_action_2p)
 
             info = step[3]
 
             # AI's next step
-            next_action_2p_ai_nums = net.activate(feature_vector(info))
-            next_action_2p_ai_labels = discretizer.action(next_action_2p_ai_nums)
-            # Swap up/down
-            tmp = next_action_2p_ai_labels[4]
-            next_action_2p_ai_labels[4] = next_action_2p_ai_labels[5]
-            next_action_2p_ai_labels[5] = tmp
-            next_action_2p_ai_ready = True
+            ai_player.step(info)
 
             if self.scorekeeper:
                 self.scorekeeper.info = info
@@ -168,8 +150,8 @@ class RealTimeGame:
             # Check custom button presses
             press_2p.update(next_action_dict.get("Y"))
             if press_2p.state:
-                toggle_2p = not toggle_2p
-                logger.info("2P AI {value}abled", value="en" if toggle_2p else "dis")
+                enabled_2p = not enabled_2p
+                logger.info("2P AI {value}abled", value="en" if enabled_2p else "dis")
             self._done_request.update(next_action_dict.get("X"))
             self._save_state_request.update(next_action_dict.get("Z"))
 

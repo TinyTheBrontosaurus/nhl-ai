@@ -33,7 +33,7 @@ Rando
 [ ] Fix fitness totals showed in tqdm
 [ ] Display stats for how many frames, seconds (minutes, hours), and how many sims were run. for fun
 [ ] Use keyboard keys to switch between modes more easily. including exiting the game instead of overload controller
-
+[ ] Clean up selection of AI
 
 
 Little AI plans
