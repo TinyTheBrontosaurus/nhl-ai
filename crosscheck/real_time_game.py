@@ -156,7 +156,6 @@ class RealTimeGame:
             tmp = next_action_2p_ai_labels[4]
             next_action_2p_ai_labels[4] = next_action_2p_ai_labels[5]
             next_action_2p_ai_labels[5] = tmp
-            labels = discretizer.action_labels(next_action_2p_ai_nums)
             next_action_2p_ai_ready = True
 
             if self.scorekeeper:
@@ -170,6 +169,7 @@ class RealTimeGame:
             press_2p.update(next_action_dict.get("Y"))
             if press_2p.state:
                 toggle_2p = not toggle_2p
+                logger.info("2P AI {value}abled", value="en" if toggle_2p else "dis")
             self._done_request.update(next_action_dict.get("X"))
             self._save_state_request.update(next_action_dict.get("Z"))
 

@@ -7,8 +7,9 @@ Goalie training
 Adversarial
 -----------
 [ ] Implement multiple contollers
-[ ] Flip controls for shoot twice side
-[ ] Flip inputs for shoot twice side
+[x] Flip controls for shoot twice side
+[x] Flip inputs for shoot twice side
+[ ] Auto-flip controls based upon period/etc.
 
 
 Replays
