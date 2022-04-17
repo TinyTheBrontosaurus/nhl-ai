@@ -14,6 +14,7 @@ from crosscheck.version import __version__
 from crosscheck.practice.menu import MenuHandler, Menu
 from crosscheck.scorekeeper import Scorekeeper
 from typing import Optional
+from crosscheck.player.utils import RisingEdge
 
 
 class RealTimeGame:
@@ -100,8 +101,10 @@ class RealTimeGame:
 
         rate_controller = RateController(1/60)
 
-        env.players = 1
+        press_2p = RisingEdge()
 
+        env.players = 2
+        toggle_2p = False
         while not self.done:
             # Run the next step in the simulation
             with self.button_state.lock:
@@ -117,8 +120,13 @@ class RealTimeGame:
 
             # Two player?
             #next_action.extend(next_action)
+            mt = [False for _ in next_action]
+            next_action_2p = next_action + mt
+            if toggle_2p:
+                next_action_2p = next_action + next_action
 
-            step = env.step(next_action)
+
+            step = env.step(next_action_2p)
 
             info = step[3]
             if self.scorekeeper:
@@ -129,7 +137,10 @@ class RealTimeGame:
             self.render(*step)
 
             # Check custom button presses
-            self._done_request.update(next_action_dict.get("X") or next_action_dict.get("Y"))
+            press_2p.update(next_action_dict.get("Y"))
+            if press_2p.state:
+                toggle_2p = not toggle_2p
+            self._done_request.update(next_action_dict.get("X"))
             self._save_state_request.update(next_action_dict.get("Z"))
 
             if self._save_state_request.state:
