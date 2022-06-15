@@ -21,9 +21,3 @@ class PointPerFrame(Scorekeeper):
         which to stop training)
         """
         return 400
-
-    def stats(self) -> dict:
-        return {}
-
-    def score_vector(self) -> dict:
-        return {}

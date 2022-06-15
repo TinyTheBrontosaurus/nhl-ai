@@ -14,6 +14,8 @@ from crosscheck.player.rendering import SimpleImageViewer
 from crosscheck.practice.menu import MenuHandler
 from crosscheck.practice.minigame import Minigame
 from crosscheck.main_train import load_scorekeeper
+from crosscheck.log_folder import LogFolder
+from crosscheck.version import __version__
 
 
 template = {
@@ -65,6 +67,13 @@ def main(argv):
     button_thread.start()
 
     scorekeeper_class = load_scorekeeper(cc_config['scorekeeper'].get()) if cc_config['scorekeeper'].get() else None
+
+    # Initialize logger
+    logger.add(LogFolder.folder / "event.log", level="INFO")
+    logger.info("Running program: {}", cc_config['name'].get())
+    logger.info("Version: {}", __version__)
+    logger.info("Log folder: {}", LogFolder.folder)
+
 
     try:
         viewer = SimpleImageViewer(initial_scale=3.5)
