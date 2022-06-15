@@ -68,6 +68,9 @@ def main(argv):
 
     scorekeeper_class = load_scorekeeper(cc_config['scorekeeper'].get()) if cc_config['scorekeeper'].get() else None
 
+    # Create log path
+    LogFolder.set_path(definitions.LOG_ROOT, crosscheck.config.log_name)
+
     # Initialize logger
     logger.add(LogFolder.folder / "event.log", level="INFO")
     logger.info("Running program: {}", cc_config['name'].get())

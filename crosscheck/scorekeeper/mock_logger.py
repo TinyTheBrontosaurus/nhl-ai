@@ -47,11 +47,11 @@ class MockLogger(Scorekeeper):
         self._stats["stoppage_count"] = self._stoppage_count
         self._stats["human_player"] = enum_to_str(self.info["human-player-enum"])
 
-        with self._filename.open("a+") as f:
+        if self._stats["is_playing"]:
+            with self._filename.open("a+") as f:
 
-            self.info.update({"stoppage_count": self._stoppage_count,
-                              "human_player": enum_to_str(self.info["human-player-enum"])})
-            f.write("{}\n".format(json.dumps(self.info)))
+                self.info.update(self._stats)
+                f.write("{}\n".format(json.dumps(self.info)))
 
         return self._total
 
