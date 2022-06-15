@@ -4,6 +4,19 @@ from crosscheck.player.utils import RisingEdge
 
 import json
 
+
+def enum_to_str(enum):
+    if enum == 0:
+        return "demo"
+    elif enum == 1:
+        return "home"
+    elif enum == 2:
+        return "away"
+    elif enum == 3:
+        return "both"
+    else:
+        return "error"
+
 class MockLogger(Scorekeeper):
     """
     This scorekeeper simply logs state
@@ -23,7 +36,7 @@ class MockLogger(Scorekeeper):
             self._filename = LogFolder.folder / "mocklogger.jsonl"
         self._total += 1
 
-        # Figure out if we're playing. it will have a short delay
+        # Figure out if we're playing. it will have a short delay since it's relying on the 1s clock resolution
         if self._total % 24 == 0:
             self._is_playing = self.info['time'] == self._last_time - 1
             self._last_time = self.info['time']
@@ -32,8 +45,12 @@ class MockLogger(Scorekeeper):
 
         self._stats["is_playing"] = self._is_playing
         self._stats["stoppage_count"] = self._stoppage_count
+        self._stats["human_player"] = enum_to_str(self.info["human-player-enum"])
 
         with self._filename.open("a+") as f:
+
+            self.info.update({"stoppage_count": self._stoppage_count,
+                              "human_player": enum_to_str(self.info["human-player-enum"])})
             f.write("{}\n".format(json.dumps(self.info)))
 
         return self._total

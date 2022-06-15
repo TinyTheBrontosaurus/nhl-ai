@@ -1,5 +1,9 @@
 {
   "info": {
+    "human-player-enum": {
+      "address": 16765000,
+      "type": ">u4"
+    },
     "away-attack-time": {
       "address": 16763452,
       "type": ">u2"
